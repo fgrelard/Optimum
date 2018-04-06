@@ -101,8 +101,8 @@ for (var i = 0; i < count; ++i) {
                segments:100,
                flag: true};
     var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
-    featuresArc[i] = new ol.Feature(arc[2]);
-    //vectorLayerArc.addFeatures(arc);
+    featuresArc[i] = new ol.Feature(arc);
+    console.log(featuresArc[i]);
     features[i] = new ol.Feature(new ol.geom.Point(coordinates));
 
 }
