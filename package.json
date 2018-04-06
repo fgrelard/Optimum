@@ -1,0 +1,17 @@
+{
+  "name": "testnpm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "testnpm.js",
+  "dependencies": {
+    "ol": "^4.0.0",
+    "http": "^0.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node testnpm.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
