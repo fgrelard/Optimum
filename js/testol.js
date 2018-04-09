@@ -14,6 +14,7 @@ import Circle  from 'ol/style/circle';
 import Stroke  from 'ol/style/stroke';
 import Fill  from 'ol/style/fill';
 import Text  from 'ol/style/text';
+import LineString from 'ol/geom/linestring';
 
 var count = 200;
 var features = new Array(count);
@@ -33,7 +34,7 @@ function lonLatToDecimal(deg, min, sec) {
     return deg + min / 60 + sec / 3600;
 }
 
-
+var line = [];
 // /**
 //  * Function: objArc
 //  * creates an arc (a linestring with n segments)
@@ -53,38 +54,37 @@ function lonLatToDecimal(deg, min, sec) {
 //  *          the endpoint    (from Point)
 //  *          the chord       (from LineString)
 //  */
-// function objArc(center, radius, alpha, omega, segments, flag)
-// {
-//     var pointList=[];
-//     if(flag)
-//         pointList.push(new ol.geom.Point(center.x, center.y));
+function objArc(center, radius, alpha, omega, segments, flag)
+{
+    var pointList=[];
+    if(flag)
+        pointList.push([center[0], center[1]]);
 
-//     var dAngle= segments+1;
-//     for(var i=0;i<dAngle;i++)
-//     {
-//         var Angle = alpha - (alpha-omega)*i/(dAngle-1);
-//         var x = center.x + radius*Math.cos(Angle*Math.PI/180);
-//         var y = center.y + radius*Math.sin(Angle*Math.PI/180);
+    var dAngle= segments+1;
+    for(var i=0;i<dAngle;i++)
+    {
+        var Angle = alpha - (alpha-omega)*i/(dAngle-1);
+        var x = center[0] + radius*Math.cos(Angle*Math.PI/180);
+        var y = center[1] + radius*Math.sin(Angle*Math.PI/180);
 
-//         var point = new ol.geom.Point(x, y);
-//         pointList.push(point);
-//     }
-//     if(flag)
-//         pointList.push(new ol.geom.Point(center.x, center.y));
+        var point = [x, y];
+        pointList.push(point);
+    }
+    if(flag)
+        pointList.push([center[0], center[1]]);
 
-//     var ftArc    = new ol.source.Vector(new ol.geom.LineString(pointList));
-//     if(flag)
-//     {
-//         var ftArcPt0 = new ol.source.Vector(pointList[1]);
-//         var ftArcPt1 = new ol.source.Vector(pointList[pointList.length-2]);
-//         var ftArcSehne = new ol.source.Vector(new ol.geom.LineString([pointList[1], pointList[pointList.length-2]]));
-//         var arrArc = [ftArc, ftArcPt0, ftArcPt1, ftArcSehne];
-//     }
-//     else
-//         var arrArc = [ftArc];
-
-//     return(arrArc);
-// }
+    var ftArc    = new LineString(pointList);
+    if(flag)
+    {
+        var ftArcPt0 = new Vector(pointList[1]);
+        var ftArcPt1 = new Vector(pointList[pointList.length-2]);
+        var ftArcSehne = new Vector(new LineString([pointList[1], pointList[pointList.length-2]]));
+        var arrArc = [ftArc, ftArcPt0, ftArcPt1, ftArcSehne];
+    }
+    else
+        var arrArc = [ftArc];
+    return(arrArc);
+}
 
 
 var map = new Map({
@@ -113,14 +113,16 @@ for (var i = 0; i < count; ++i) {
     var coordinates = [getRandomArbitrary(middlex-factorx, middlex+factorx), getRandomArbitrary(middley-factory, middley+factory)];
     var obj = {x: coordinates[0],
                y: coordinates[1],
-               radius: 25000000,
+               radius: 150,
                alpha: 0,
-               omega: 180,
+               omega: 20,
                segments:100,
                flag: true};
-    //    var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
-    //    featuresArc[i] = new ol.Feature(arc[2]);
-    //vectorLayerArc.addFeatures(arc);
+    var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
+    if (line.length < 3)
+        line.push(coordinates);
+    featuresArc[i] = new Feature({ geometry: arc[0] });
+//    vectorLayerArc.addFeatures(arc);
     features[i] = new Feature(new Point(coordinates));
 
 }
@@ -134,34 +136,36 @@ var clusterSource = new Cluster({
     source: source
 });
 
-// var vectorLayerArc = new ol.source.Vector({
-//     features: featuresArc
-// });
-
-// var styleCache = {};
-// var arcs = new ol.layer.Vector({
-//     source: vectorLayerArc,
-//     style: function(feature) {
-//         var size = feature.get('features').length;
-//         var style = styleCache[size];
-//         if (!style) {
-//             style = new ol.style.Style({
-//                 pointRadius: 2,
-//                 strokeWidth:3,
-//                 strokeColor:'#FF0000'
-//             });
-//         }
-//         return style;
-//     }
-// });
-
+var vectorLayerArc = new Vector({
+    features: featuresArc
+});
 
 var styleCache = {};
+var arcs = new VectorLayer({
+    source: vectorLayerArc
+    // style: function(feature) {
+    //     var size = feature.length;
+    //     var style = styleCache[size];
+    //     if (!style) {
+    //         style = new Style({
+    //             image: new Circle({
+    //                 radius: 5,
+    //                 fill: new Fill({color: '#666666'}),
+    //                 stroke: new Stroke({color: '#bada55', width: 1})
+    //             })
+    //         });
+    //     }
+    //     return style;
+    // }
+});
+
+
+var styleCache2 = {};
 var clusters = new VectorLayer({
     source: clusterSource,
     style: function(feature) {
         var size = feature.get('features').length;
-        var style = styleCache[size];
+        var style = styleCache2[size];
         if (!style) {
             style = new Style({
                 image: new Circle({
@@ -180,14 +184,15 @@ var clusters = new VectorLayer({
                     })
                 })
             });
-            styleCache[size] = style;
+            styleCache2[size] = style;
         }
         return style;
     }
 });
 
-map.addLayer(clusters);
-//map.addLayer(arcs);
+//map.addLayer(clusters);
+map.addLayer(arcs);
+
 
 // var select = new ol.interaction.Select();
 // map.addInteraction(select);
