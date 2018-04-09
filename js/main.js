@@ -38,20 +38,20 @@ function lonLatToDecimal(deg, min, sec) {
 
 //Loading an exiftool file
 function loadExifToolMetadata(filename) {
-fetch(filename)
-    .then(function(response) {
-        return response.text();
-    })
-    .then(function(text) {
-        var textS = text.toString();
-        CSV.parse(text.replace(/ /g, ""),
-                  {delimiter: ':',
-                   complete: function(results) {
-    	               console.log(results);
-                   },
-                   dynamicTyping: true
-                  });
-    });
+    fetch(filename)
+        .then(function(response) {
+            return response.text();
+        })
+        .then(function(text) {
+            var textS = text.toString();
+            CSV.parse(text.replace(/ /g, ""),
+                      {delimiter: ':',
+                       complete: function(results) {
+    	                   console.log(results);
+                       },
+                       dynamicTyping: true
+                      });
+        });
 }
 
 
@@ -106,7 +106,7 @@ function objArc(center, radius, alpha, omega, segments, flag)
     return(arrArc);
 }
 
-function addRandomFeatures() {
+function addRandomFeatures(extent, count) {
     for (var i = 0; i < count; ++i) {
         var extx = extent[2] - extent[0];
         var exty = extent[3] - extent[1];
@@ -132,6 +132,8 @@ function addRandomFeatures() {
 
 
 //Begin openlayers display functions
+loadExifToolMetadata("file:///home/fgrelard/src/Optimum/data/0W2A0931.txt");
+
 var map = new Map({
     layers: [
         new TileLayer({
@@ -144,10 +146,9 @@ var map = new Map({
         zoom: 15
     })
 });
-
-
 var extent = map.getView().calculateExtent(map.getSize());
 
+addRandomFeatures(extent, count);
 
 var source = new Vector({
     features: features
@@ -197,8 +198,7 @@ var clusters = new VectorLayer({
     }
 });
 
-addRandomFeatures();
-loadExifToolMetadata("file:///home/fgrelard/src/Optimum/data/0W2A0931.txt");
+
 //map.addLayer(clusters);
 map.addLayer(arcs);
 
