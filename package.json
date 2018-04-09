@@ -14,9 +14,8 @@
     "rollup-watch": "^4.3.1"
   },
   "dependencies": {
-    "csv": "^3.0.2",
-    "csv-parser": "^1.12.1",
     "ol": "^4.0.1-beta.2",
+    "papaparse": "^4.3.7",
     "rollup-plugin-node-builtins": "^2.1.2"
   }
 }
