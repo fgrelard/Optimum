@@ -36,10 +36,9 @@ function lonLatToDecimal(deg, min, sec) {
     return deg + min / 60 + sec / 3600;
 }
 
-var line = [];
-
-//Loading a small file
-fetch("file:///home/fgrelard/src/Optimum/data/0W2A0931.txt")
+//Loading an exiftool file
+function loadExifToolMetadata(filename) {
+fetch(filename)
     .then(function(response) {
         return response.text();
     })
@@ -53,6 +52,7 @@ fetch("file:///home/fgrelard/src/Optimum/data/0W2A0931.txt")
                    dynamicTyping: true
                   });
     });
+}
 
 
 // /**
@@ -106,7 +106,32 @@ function objArc(center, radius, alpha, omega, segments, flag)
     return(arrArc);
 }
 
+function addRandomFeatures() {
+    for (var i = 0; i < count; ++i) {
+        var extx = extent[2] - extent[0];
+        var exty = extent[3] - extent[1];
+        var middlex = extent[0]+extx/2;
+        var middley = extent[1]+exty/2;
+        var factorx = extx / 10;
+        var factory = exty / 10;
+        var coordinates = [getRandomArbitrary(middlex-factorx, middlex+factorx), getRandomArbitrary(middley-factory, middley+factory)];
+        var obj = {x: coordinates[0],
+                   y: coordinates[1],
+                   radius: 150,
+                   alpha: 10,
+                   omega: 20,
+                   segments:100,
+                   flag: true};
+        var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
+        featuresArc[i] = new Feature({ geometry: arc[0] });
+        //    vectorLayerArc.addFeatures(arc);
+        features[i] = new Feature(new Point(coordinates));
+    }
 
+}
+
+
+//Begin openlayers display functions
 var map = new Map({
     layers: [
         new TileLayer({
@@ -122,30 +147,6 @@ var map = new Map({
 
 
 var extent = map.getView().calculateExtent(map.getSize());
-
-for (var i = 0; i < count; ++i) {
-    var extx = extent[2] - extent[0];
-    var exty = extent[3] - extent[1];
-    var middlex = extent[0]+extx/2;
-    var middley = extent[1]+exty/2;
-    var factorx = extx / 10;
-    var factory = exty / 10;
-    var coordinates = [getRandomArbitrary(middlex-factorx, middlex+factorx), getRandomArbitrary(middley-factory, middley+factory)];
-    var obj = {x: coordinates[0],
-               y: coordinates[1],
-               radius: 150,
-               alpha: 10,
-               omega: 20,
-               segments:100,
-               flag: true};
-    var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
-    if (line.length < 3)
-        line.push(coordinates);
-    featuresArc[i] = new Feature({ geometry: arc[0] });
-//    vectorLayerArc.addFeatures(arc);
-    features[i] = new Feature(new Point(coordinates));
-
-}
 
 
 var source = new Vector({
@@ -163,20 +164,6 @@ var vectorLayerArc = new Vector({
 var styleCache = {};
 var arcs = new VectorLayer({
     source: vectorLayerArc
-    // style: function(feature) {
-    //     var size = feature.length;
-    //     var style = styleCache[size];
-    //     if (!style) {
-    //         style = new Style({
-    //             image: new Circle({
-    //                 radius: 5,
-    //                 fill: new Fill({color: '#666666'}),
-    //                 stroke: new Stroke({color: '#bada55', width: 1})
-    //             })
-    //         });
-    //     }
-    //     return style;
-    // }
 });
 
 
@@ -210,6 +197,8 @@ var clusters = new VectorLayer({
     }
 });
 
+addRandomFeatures();
+loadExifToolMetadata("file:///home/fgrelard/src/Optimum/data/0W2A0931.txt");
 //map.addLayer(clusters);
 map.addLayer(arcs);
 
