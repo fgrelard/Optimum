@@ -1,7 +1,7 @@
 {
-  "name": "optimum",
+  "name": "csvparser",
   "version": "0.0.1",
-  "description": "Projet Optimum",
+  "description": "Test CSV Parser",
   "scripts": {
     "build": "rollup --config rollup.config.js",
     "start": "rollup --config rollup.config.js --watch"
@@ -9,6 +9,8 @@
   "devDependencies": {
     "rollup": "^0.41.4",
     "rollup-plugin-commonjs": "^7.0.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.2.0",
     "rollup-plugin-node-resolve": "^2.0.0",
     "rollup-plugin-uglify": "^1.0.1",
     "rollup-watch": "^4.3.1"
@@ -16,7 +18,7 @@
   "dependencies": {
     "csv": "^3.0.2",
     "csv-parser": "^1.12.1",
-    "ol": "^4.0.1-beta.2",
-    "rollup-plugin-node-builtins": "^2.1.2"
+    "fs": "0.0.1-security",
+    "papaparse": "^4.3.7"
   }
 }

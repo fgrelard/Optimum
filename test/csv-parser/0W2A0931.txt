@@ -1,0 +1,3 @@
+ExifToolVersion                 : 10.10
+FileName                        : 0W2A0931.CR2
+Directory                       : /home/fgrelard/data/raw/Centre deux
