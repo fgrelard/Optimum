@@ -180,22 +180,30 @@ function displayPosition(mapMetadata) {
     }
 }
 
+function computeAlphaOmegaFromDir(direction, fov) {
+    var dirTrigRad = (direction + 90) % 360;
+    var alpha = (dirTrigRad - fov / 2) % 360;
+    var omega = (alpha + fov) % 360;
+    return [alpha, omega];
+}
+
 function displayOrientation(mapMetadata, position) {
     if (mapMetadata.hasOwnProperty('GPSImgDirection') &&
         mapMetadata.hasOwnProperty('Orientation') &&
         mapMetadata.hasOwnProperty('FOV')) {
         var dir = mapMetadata.GPSImgDirection;
         var orientation = mapMetadata.Orientation;
-        var fov = mapMetadata.FOV.split(" ")[0];
+        var fov = Number(mapMetadata.FOV.match(/[0-9.]+/g));
+        var angles = computeAlphaOmegaFromDir(dir, fov);
         var obj = {x: position[0],
                    y: position[1],
                    radius: 150,
-                   alpha: 10,
-                   omega: 20,
+                   alpha: angles[0],
+                   omega: angles[1],
                    segments:100,
                    flag: true};
         var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
-        return arc[0];
+        return new Feature({ geometry: arc[0] });
     }
 }
 
@@ -212,9 +220,10 @@ metadata.then(function(results){
 
     var feature = displayPosition(metadataJSON);
     positions.push(feature);
-    console.log(feature);
-    var cone = displayOrientation(metadataJSON, feature);
 
+    var posArray = feature.getGeometry()['flatCoordinates'];
+    var cone = displayOrientation(metadataJSON, posArray);
+    cones.push(cone);
     var map = new Map({
         layers: [
             new TileLayer({
@@ -238,14 +247,14 @@ metadata.then(function(results){
         source: source
     });
 
-    // var vectorLayerArc = new Vector({
-    //     features: featuresArc
-    // });
+    var vectorLayerArc = new Vector({
+        features: cones
+    });
 
-    // var styleCache = {};
-    // var arcs = new VectorLayer({
-    //     source: vectorLayerArc
-    // });
+    var styleCache = {};
+    var arcs = new VectorLayer({
+        source: vectorLayerArc
+    });
 
 
     var styleCache2 = {};
@@ -280,9 +289,7 @@ metadata.then(function(results){
 
 
     map.addLayer(clusters);
-    //map.addLayer(arcs);
-
-
+    map.addLayer(arcs);
 });
 
 
