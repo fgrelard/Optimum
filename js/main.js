@@ -18,6 +18,8 @@ import LineString from 'ol/geom/linestring';
 import CSV from 'papaparse';
 import transpose from 'transpose';
 
+
+
 var count = 200;
 //var features = [];
 var featuresArc = new Array(count);
@@ -253,7 +255,20 @@ metadata.then(function(results){
 
     var styleCache = {};
     var arcs = new VectorLayer({
-        source: vectorLayerArc
+        source: vectorLayerArc,
+        style: function(feature) {
+            var size = feature.length;
+            var style = styleCache[size];
+            style = new Style({
+                stroke: new Stroke({
+                    color: '#ff9933'
+                }),
+                fill: new Fill({
+                    color:'#ff9933'
+                })
+            });
+            return style;
+        }
     });
 
 
