@@ -16,6 +16,7 @@
   "dependencies": {
     "ol": "^4.0.1-beta.2",
     "papaparse": "^4.3.7",
-    "rollup-plugin-node-builtins": "^2.1.2"
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "transpose": "0.0.2"
   }
 }

@@ -16,14 +16,12 @@ import Fill  from 'ol/style/fill';
 import Text  from 'ol/style/text';
 import LineString from 'ol/geom/linestring';
 import CSV from 'papaparse';
-
+import transpose from 'transpose';
 
 var count = 200;
-var features = new Array(count);
+//var features = [];
 var featuresArc = new Array(count);
-var lon = 4.39366;
-var lat = 45.44174;
-var stEtienneLonLat = [lon, lat];
+var stEtienneLonLat = [4.392569444444445, 45.42289722222222];
 var stEtienneLonLatConv = proj.fromLonLat(stEtienneLonLat);
 var lonConv = stEtienneLonLatConv[0];
 var latConv = stEtienneLonLatConv[1];
@@ -38,20 +36,23 @@ function lonLatToDecimal(deg, min, sec) {
 
 //Loading an exiftool file
 function loadExifToolMetadata(filename) {
-    fetch(filename)
-        .then(function(response) {
-            return response.text();
-        })
-        .then(function(text) {
-            var textS = text.toString();
-            CSV.parse(text.replace(/ /g, ""),
-                      {delimiter: ':',
-                       complete: function(results) {
-    	                   console.log(results);
-                       },
-                       dynamicTyping: true
-                      });
-        });
+    var f = fetch(filename);
+    var t1 = f.then(function(response) {
+        return response.text();
+    });
+    var t2 = t1.then(function(text) {
+        var textS = text.toString();
+        return CSV.parse(text.replace(/ /g, ""),
+                  {delimiter: ':',
+                   complete: function(results) {
+                       return results;
+                   },
+                   dynamicTyping: true
+                  });
+
+    });
+    return t2;
+
 }
 
 
@@ -125,82 +126,166 @@ function addRandomFeatures(extent, count) {
         var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
         featuresArc[i] = new Feature({ geometry: arc[0] });
         //    vectorLayerArc.addFeatures(arc);
-        features[i] = new Feature(new Point(coordinates));
+        //features[i] = new Feature(new Point(coordinates));
     }
 
 }
 
+function convertMetadataToJSON(metadata) {
+    const transposed = transpose(metadata.data);
+    const headers = transposed.shift();
+    const res = transposed.map(function(row) {
+        return row.reduce(function(acc, col, ind) {
+            acc[headers[ind]] = col;
+            return acc;
+        }, {});
+    })[0];
+    return res;
+}
+
+function createPositionArray(positionString) {
+    var patt1 = /[0-9.]/g;
+    var patt2 = /[a-zA-Z]/g;
+    var arrayPos = [];
+    var numberString = "";
+    for (var i = 0; i < positionString.length; i++) {
+        var character = positionString.charAt(i);
+        if (character.match(patt1)) {
+            numberString += character;
+        }
+        else {
+            if (numberString != '')
+                arrayPos.push(Number(numberString));
+            numberString = '';
+        }
+    }
+    return arrayPos;
+}
+
+function displayPosition(mapMetadata) {
+    if (mapMetadata.hasOwnProperty('GPSPosition')) {
+        var positionString = mapMetadata.GPSPosition;
+        var positionSplit = positionString.split(",");
+        if (positionSplit.length >= 2) {
+            var firstPos = positionSplit[0];
+            var secondPos = positionSplit[1];
+            var fPosDMS = createPositionArray(firstPos);
+            var sPosDMS = createPositionArray(secondPos);
+            var fPosDec = lonLatToDecimal(fPosDMS[0], fPosDMS[1], fPosDMS[2]);
+            var sPosDec = lonLatToDecimal(sPosDMS[0], sPosDMS[1], sPosDMS[2]);
+            var lonLat = [sPosDec, fPosDec];
+            var projLonLat = proj.fromLonLat(lonLat);
+            return new Feature(new Point(projLonLat));
+        }
+    }
+}
+
+function displayOrientation(mapMetadata, position) {
+    if (mapMetadata.hasOwnProperty('GPSImgDirection') &&
+        mapMetadata.hasOwnProperty('Orientation') &&
+        mapMetadata.hasOwnProperty('FOV')) {
+        var dir = mapMetadata.GPSImgDirection;
+        var orientation = mapMetadata.Orientation;
+        var fov = mapMetadata.FOV.split(" ")[0];
+        var obj = {x: position[0],
+                   y: position[1],
+                   radius: 150,
+                   alpha: 10,
+                   omega: 20,
+                   segments:100,
+                   flag: true};
+        var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
+        return arc[0];
+    }
+}
 
 //Begin openlayers display functions
-loadExifToolMetadata("file:///home/fgrelard/src/Optimum/data/0W2A0931.txt");
 
-var map = new Map({
-    layers: [
-        new TileLayer({
-            source: new OSM()
+var metadata = loadExifToolMetadata("file:///home/fgrelard/src/Optimum/data/0W2A0931.txt");
+
+
+metadata.then(function(results){
+    var positions = [];
+    var cones = [];
+
+    var metadataJSON = convertMetadataToJSON(results);
+
+    var feature = displayPosition(metadataJSON);
+    positions.push(feature);
+    console.log(feature);
+    var cone = displayOrientation(metadataJSON, feature);
+
+    var map = new Map({
+        layers: [
+            new TileLayer({
+                source: new OSM()
+            })
+        ],
+        target: 'map',
+        view: new View({
+            center: stEtienneLonLatConv,
+            zoom: 15
         })
-    ],
-    target: 'map',
-    view: new View({
-        center: stEtienneLonLatConv,
-        zoom: 15
-    })
-});
-var extent = map.getView().calculateExtent(map.getSize());
+    });
+    var extent = map.getView().calculateExtent(map.getSize());
+    //addRandomFeatures(extent, count);
 
-addRandomFeatures(extent, count);
+    var source = new Vector({
+        features: positions
+    });
 
-var source = new Vector({
-    features: features
-});
+    var clusterSource = new Cluster({
+        source: source
+    });
 
-var clusterSource = new Cluster({
-    source: source
-});
+    // var vectorLayerArc = new Vector({
+    //     features: featuresArc
+    // });
 
-var vectorLayerArc = new Vector({
-    features: featuresArc
-});
-
-var styleCache = {};
-var arcs = new VectorLayer({
-    source: vectorLayerArc
-});
+    // var styleCache = {};
+    // var arcs = new VectorLayer({
+    //     source: vectorLayerArc
+    // });
 
 
-var styleCache2 = {};
-var clusters = new VectorLayer({
-    source: clusterSource,
-    style: function(feature) {
-        var size = feature.get('features').length;
-        var style = styleCache2[size];
-        if (!style) {
-            style = new Style({
-                image: new Circle({
-                    radius: 10,
-                    stroke: new Stroke({
-                        color: '#fff'
+    var styleCache2 = {};
+    var clusters = new VectorLayer({
+        source: clusterSource,
+        style: function(feature) {
+            var size = feature.get('features').length;
+            var style = styleCache2[size];
+            if (!style) {
+                style = new Style({
+                    image: new Circle({
+                        radius: 10,
+                        stroke: new Stroke({
+                            color: '#fff'
+                        }),
+                        fill: new Fill({
+                            color: '#3399CC'
+                        })
                     }),
-                    fill: new Fill({
-                        color: '#3399CC'
+                    text: new Text({
+                        text: size.toString(),
+                        fill: new Fill({
+                            color: '#fff'
+                        })
                     })
-                }),
-                text: new Text({
-                    text: size.toString(),
-                    fill: new Fill({
-                        color: '#fff'
-                    })
-                })
-            });
-            styleCache2[size] = style;
+                });
+                styleCache2[size] = style;
+            }
+            return style;
         }
-        return style;
-    }
+    });
+
+
+    map.addLayer(clusters);
+    //map.addLayer(arcs);
+
+
 });
 
 
-//map.addLayer(clusters);
-map.addLayer(arcs);
 
 
 // var select = new ol.interaction.Select();
