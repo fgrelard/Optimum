@@ -6,7 +6,11 @@ module.exports = {
     plugins: [
         require('rollup-plugin-node-resolve')(),
         require('rollup-plugin-commonjs')(),
-        require('rollup-plugin-uglify')()
+        require('rollup-plugin-uglify')(),
+        require('rollup-plugin-node-globals')(),
+        require('rollup-plugin-node-builtins')({
+            preferBuiltins: true
+        })
     ],
     sourceMap: 'inline'
 };
