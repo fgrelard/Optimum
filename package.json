@@ -1,17 +1,18 @@
 {
-  "name": "testnpm",
-  "version": "1.0.0",
-  "description": "",
-  "main": "testnpm.js",
-  "dependencies": {
-    "ol": "^4.0.0",
-    "http": "^0.0.0"
-  },
-  "devDependencies": {},
+  "name": "optimum",
+  "version": "0.0.1",
+  "description": "Projet Optimum",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node testnpm.js"
+    "build": "rollup --config rollup.config.js"
   },
-  "author": "",
-  "license": "ISC"
+  "devDependencies": {
+    "rollup": "^0.41.4",
+    "rollup-plugin-commonjs": "^7.0.0",
+    "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-uglify": "^1.0.1"
+  },
+  "dependencies": {
+    "ol": "^4.0.1-beta.2",
+    "rollup-plugin-node-builtins": "^2.1.2"
+  }
 }
