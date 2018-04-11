@@ -18,7 +18,11 @@
     "rollup-watch": "^4.3.1"
   },
   "dependencies": {
+    "dist-exiftool": "^10.53.0",
+    "express": "^4.16.3",
     "http": "0.0.0",
-    "node-exiftool": "^2.3.0"
+    "node-exiftool": "^2.3.0",
+    "npm": "^5.8.0",
+    "reload": "^2.2.2"
   }
 }
