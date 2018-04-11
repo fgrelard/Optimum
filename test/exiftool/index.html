@@ -7,7 +7,11 @@
   </head>
   <body>
     <h1> Exiftool </h1>
-    <input type="file" id="dirMetadata" webkitdirectory directory multiple />
+    <form>
+      <label for="dirMetadata">Path to directory to scan </label>
+      <input id="dirMetadata" id="path" value="/home/fgrelard/data/raw/">
+      <input type="button" id="buttonDir" />
+    </form>
     <script src="bundle.js"></script>
   </body>
 </html>

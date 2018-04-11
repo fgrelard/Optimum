@@ -17,7 +17,7 @@ import Text  from 'ol/style/text';
 import LineString from 'ol/geom/linestring';
 import CSV from 'papaparse';
 import transpose from 'transpose';
-
+import exif from '../node_modules/exiftool-local';
 
 
 var count = 200;

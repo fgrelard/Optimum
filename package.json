@@ -15,6 +15,9 @@
         "rollup-watch": "^4.3.1"
     },
     "dependencies": {
+        "exiftool-local": "file:test/exiftool-local",
+        "express": "^4.16.3",
+        "mkdirp": "^0.5.1",
         "ol": "^4.0.1-beta.2",
         "papaparse": "^4.3.7",
         "transpose": "0.0.2"
