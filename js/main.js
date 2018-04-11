@@ -15,10 +15,11 @@ import Stroke  from 'ol/style/stroke';
 import Fill  from 'ol/style/fill';
 import Text  from 'ol/style/text';
 import LineString from 'ol/geom/linestring';
+import Polygon from 'ol/geom/polygon';
 import CSV from 'papaparse';
 import transpose from 'transpose';
-import exif from '../node_modules/exiftool-local';
-
+import extent from 'ol/extent';
+import has from 'ol/has';
 
 var count = 200;
 //var features = [];
@@ -45,12 +46,12 @@ function loadExifToolMetadata(filename) {
     var t2 = t1.then(function(text) {
         var textS = text.toString();
         return CSV.parse(text.replace(/ /g, ""),
-                  {delimiter: ':',
-                   complete: function(results) {
-                       return results;
-                   },
-                   dynamicTyping: true
-                  });
+                         {delimiter: ':',
+                          complete: function(results) {
+                              return results;
+                          },
+                          dynamicTyping: true
+                         });
 
     });
     return t2;
@@ -96,7 +97,7 @@ function objArc(center, radius, alpha, omega, segments, flag)
     if(flag)
         pointList.push([center[0], center[1]]);
 
-    var ftArc    = new LineString(pointList);
+    var ftArc    = new Polygon([pointList]);
     if(flag)
     {
         var ftArcPt0 = new Vector(pointList[1]);
@@ -132,6 +133,62 @@ function addRandomFeatures(extent, count) {
     }
 
 }
+
+function gradient(feature, resolution) {
+    var extent2 = feature.getGeometry().getExtent();
+
+    var pixelRatio = has.DEVICE_PIXEL_RATIO;
+    // Gradient starts on the left edge of each feature, and ends on the right.
+    // Coordinate origin is the top-left corner of the extent of the geometry, so
+    // we just divide the geometry's extent width by resolution and multiply with
+    // pixelRatio to match the renderer's pixel coordinate system.
+
+    var x1, x2, y1, y2;
+    var height = extent.getHeight(extent2) / resolution * pixelRatio;
+    var width = extent.getWidth(extent2) / resolution * pixelRatio;
+
+    var angle = feature.get('angle');
+    var angleRad = angle * Math.PI / 180 + Math.PI / 2;
+    var rotateDegrees = Math.round((Math.PI - angleRad) * 360 / (2*Math.PI));
+    if (rotateDegrees < 0)
+        rotateDegrees = 360 + rotateDegrees;
+    console.log(rotateDegrees);
+    if ((0 <= rotateDegrees && rotateDegrees < 45)) {
+        x1 = 0;
+        y1 = height / 2 * (45 - rotateDegrees) / 45;
+        x2 = width;
+        y2 = height - y1;
+    } else if ((45 <= rotateDegrees && rotateDegrees < 135)) {
+        x1 = width * (rotateDegrees - 45) / (135 - 45);
+        y1 = 0;
+        x2 = width - x1;
+        y2 = height;
+    } else if ((135 <= rotateDegrees && rotateDegrees < 225)) {
+        x1 = width;
+        y1 = height * (rotateDegrees - 135) / (225 - 135);
+        x2 = 0;
+        y2 = height - y1;
+    } else if ((225 <= rotateDegrees && rotateDegrees < 315)) {
+        x1 = width * (1 - (rotateDegrees - 225) / (315 - 225));
+        y1 = height;
+        x2 = width - x1;
+        y2 = 0;
+    } else if (315 <= rotateDegrees) {
+        x1 = 0;
+        y1 = height - height / 2 * (rotateDegrees - 315) / (360 - 315);
+        x2 = width;
+        y2 = height - y1;
+    }
+    // var grad = context.createLinearGradient(0, 0,
+    //                                         extent.getWidth(extent2) / resolution * pixelRatio , extent.getHeight(extent2) / resolution * pixelRatio);
+      var grad = context.createLinearGradient(x1, y1,
+                                             x2, y2);
+    console.log(extent.getHeight(extent2) / resolution * pixelRatio);
+    grad.addColorStop(0, 'transparent');
+    grad.addColorStop(0.5, 'orange');
+    return grad;
+}
+
 
 function convertMetadataToJSON(metadata) {
     const transposed = transpose(metadata.data);
@@ -205,13 +262,14 @@ function displayOrientation(mapMetadata, position) {
                    segments:100,
                    flag: true};
         var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
-        return new Feature({ geometry: arc[0] });
+        return new Feature({ geometry: arc[0], angle: dir });
     }
 }
 
 //Begin openlayers display functions
-
-var metadata = loadExifToolMetadata("file:///home/fgrelard/src/Optimum/data/0W2A0931.txt");
+var canvas = document.createElement('canvas');
+var context = canvas.getContext('2d');
+var metadata = loadExifToolMetadata("file:///home/fgrelard/Code/Optimum/0W2A0931.txt");
 
 
 metadata.then(function(results){
@@ -254,21 +312,23 @@ metadata.then(function(results){
     });
 
     var styleCache = {};
+    var fill = new Fill();
+    var style = new Style({
+        stroke: new Stroke({
+            color: '#ff9933'
+        }),
+        fill: fill
+    });
+
+
+    function setStyle(feature, resolution) {
+        fill.setColor(gradient(feature, resolution));
+        return style;
+    }
+
     var arcs = new VectorLayer({
         source: vectorLayerArc,
-        style: function(feature) {
-            var size = feature.length;
-            var style = styleCache[size];
-            style = new Style({
-                stroke: new Stroke({
-                    color: '#ff9933'
-                }),
-                fill: new Fill({
-                    color:'#ff9933'
-                })
-            });
-            return style;
-        }
+        style: setStyle
     });
 
 
