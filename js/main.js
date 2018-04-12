@@ -20,6 +20,7 @@ import CSV from 'papaparse';
 import transpose from 'transpose';
 import extent from 'ol/extent';
 import has from 'ol/has';
+import Select from 'ol/interaction/select';
 import $ from 'jquery';
 
 var count = 200;
@@ -361,6 +362,24 @@ map.addLayer(clusters);
 map.addLayer(arcs);
 
 
+var select = new Select();
+map.addInteraction(select);
+select.on('select', function(e) {
+    var selectedFeatures = select.getFeatures();
+    arcs.getSource().clear();
+    e.selected.filter(function(feature) {
+        var selectedFeatures = feature.get('features');
+        $.each(selectedFeatures, function(i, f) {
+            if (f.hasOwnProperty('cone')) {
+                arcs.getSource().addFeature(f.cone);
+            }
+        });
+    });
+
+
+});
+
+
 $("#buttonDir").on("click", function(event) {
     var files = [];
     var dir = $("#dirMetadata").val();
@@ -385,7 +404,7 @@ $("#buttonDir").on("click", function(event) {
                     var posArray = feature.getGeometry()['flatCoordinates'];
                     var cone = displayOrientation(photo, posArray);
                     if (cone !== null)
-                        cones.push(cone);
+                        feature.cone = cone;
                 }
             }
         });
@@ -394,35 +413,5 @@ $("#buttonDir").on("click", function(event) {
         clusters.getSource().getSource().addFeatures(positions);
 
         arcs.getSource().clear();
-        arcs.getSource().addFeatures(cones);
     });
-});
-
-// metadata.then(function(results){
-
-// });
-
-
-
-
-var select = new ol.interaction.Select();
-map.addInteraction(select);
-var selectedFeatures = select.getFeatures();
-selectedFeatures.on(['add', 'remove'], function() {
-    var names = selectedFeatures.getArray().map(function(feature) {
-        var style =  new ol.style.Style({
-                image: new ol.style.Circle({
-                    radius: 10,
-                    stroke: new ol.style.Stroke({
-                        color: '#fff'
-                    }),
-                    fill: new ol.style.Fill({
-                        color: '#FF0000'
-                    })
-                })
-
-            });
-        feature.setStyle(style);
-    });
-
 });
