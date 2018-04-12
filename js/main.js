@@ -249,7 +249,7 @@ function displayPosition(mapMetadata) {
 function computeAlphaOmegaFromDir(direction, fov) {
     var dirTrigRad = (direction + 90) % 360;
     var alpha = (dirTrigRad - fov / 2) % 360;
-    var omega = (alpha + fov) % 360;
+    var omega = (alpha + fov);
     return [alpha, omega];
 }
 
@@ -372,6 +372,8 @@ select.on('select', function(e) {
         $.each(selectedFeatures, function(i, f) {
             if (f.hasOwnProperty('cone')) {
                 arcs.getSource().addFeature(f.cone);
+                console.log("coucou");
+                console.log(f.fileName);
             }
         });
     });
@@ -399,6 +401,7 @@ $("#buttonDir").on("click", function(event) {
             if (photo.hasOwnProperty('ImageWidth')) {
                 var feature = displayPosition(photo);
                 if (feature !== null) {
+                    feature.fileName = photo.SourceFile;
                     positions.push(feature);
 
                     var posArray = feature.getGeometry()['flatCoordinates'];
