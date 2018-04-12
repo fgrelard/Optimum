@@ -20,6 +20,7 @@ import CSV from 'papaparse';
 import transpose from 'transpose';
 import extent from 'ol/extent';
 import has from 'ol/has';
+import $ from 'jquery';
 
 var count = 200;
 //var features = [];
@@ -28,6 +29,10 @@ var stEtienneLonLat = [4.392569444444445, 45.42289722222222];
 var stEtienneLonLatConv = proj.fromLonLat(stEtienneLonLat);
 var lonConv = stEtienneLonLatConv[0];
 var latConv = stEtienneLonLatConv[1];
+
+
+var url = "http://localhost:8080/";
+
 
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
@@ -152,7 +157,7 @@ function gradient(feature, resolution) {
     var rotateDegrees = Math.round((Math.PI - angleRad) * 360 / (2*Math.PI));
     if (rotateDegrees < 0)
         rotateDegrees = 360 + rotateDegrees;
-    console.log(rotateDegrees);
+
     if ((0 <= rotateDegrees && rotateDegrees < 45)) {
         x1 = 0;
         y1 = height / 2 * (45 - rotateDegrees) / 45;
@@ -181,9 +186,9 @@ function gradient(feature, resolution) {
     }
     // var grad = context.createLinearGradient(0, 0,
     //                                         extent.getWidth(extent2) / resolution * pixelRatio , extent.getHeight(extent2) / resolution * pixelRatio);
-      var grad = context.createLinearGradient(x1, y1,
-                                             x2, y2);
-    console.log(extent.getHeight(extent2) / resolution * pixelRatio);
+    var grad = context.createLinearGradient(x1, y1,
+                                            x2, y2);
+
     grad.addColorStop(0, 'transparent');
     grad.addColorStop(0.5, 'orange');
     return grad;
@@ -237,6 +242,7 @@ function displayPosition(mapMetadata) {
             return new Feature(new Point(projLonLat));
         }
     }
+    return null;
 }
 
 function computeAlphaOmegaFromDir(direction, fov) {
@@ -264,130 +270,159 @@ function displayOrientation(mapMetadata, position) {
         var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
         return new Feature({ geometry: arc[0], angle: dir });
     }
+    return null;
 }
 
 //Begin openlayers display functions
 var canvas = document.createElement('canvas');
 var context = canvas.getContext('2d');
-var metadata = loadExifToolMetadata("file:///home/fgrelard/Code/Optimum/0W2A0931.txt");
+// var metadata = loadExifToolMetadata("file:///home/fgrelard/Code/Optimum/0W2A0931.txt");
 
+var positions = [];
+var cones = [];
 
-metadata.then(function(results){
-    var positions = [];
-    var cones = [];
-
-    var metadataJSON = convertMetadataToJSON(results);
-
-    var feature = displayPosition(metadataJSON);
-    positions.push(feature);
-
-    var posArray = feature.getGeometry()['flatCoordinates'];
-    var cone = displayOrientation(metadataJSON, posArray);
-    cones.push(cone);
-    var map = new Map({
-        layers: [
-            new TileLayer({
-                source: new OSM()
-            })
-        ],
-        target: 'map',
-        view: new View({
-            center: stEtienneLonLatConv,
-            zoom: 15
+var map = new Map({
+    layers: [
+        new TileLayer({
+            source: new OSM()
         })
-    });
-    var extent = map.getView().calculateExtent(map.getSize());
-    //addRandomFeatures(extent, count);
+    ],
+    target: 'map',
+    view: new View({
+        center: stEtienneLonLatConv,
+        zoom: 15
+    })
+});
 
-    var source = new Vector({
-        features: positions
-    });
+var extent2 = map.getView().calculateExtent(map.getSize());
+//addRandomFeatures(extent, count);
 
-    var clusterSource = new Cluster({
-        source: source
-    });
+var source = new Vector();
 
-    var vectorLayerArc = new Vector({
-        features: cones
-    });
+var clusterSource = new Cluster({
+    source: source
+});
 
-    var styleCache = {};
-    var fill = new Fill();
-    var style = new Style({
-        stroke: new Stroke({
-            color: '#ff9933'
-        }),
-        fill: fill
-    });
+var vectorLayerArc = new Vector();
 
-
-    function setStyle(feature, resolution) {
-        fill.setColor(gradient(feature, resolution));
-        return style;
-    }
-
-    var arcs = new VectorLayer({
-        source: vectorLayerArc,
-        style: setStyle
-    });
-
-
-    var styleCache2 = {};
-    var clusters = new VectorLayer({
-        source: clusterSource,
-        style: function(feature) {
-            var size = feature.get('features').length;
-            var style = styleCache2[size];
-            if (!style) {
-                style = new Style({
-                    image: new Circle({
-                        radius: 10,
-                        stroke: new Stroke({
-                            color: '#fff'
-                        }),
-                        fill: new Fill({
-                            color: '#3399CC'
-                        })
-                    }),
-                    text: new Text({
-                        text: size.toString(),
-                        fill: new Fill({
-                            color: '#fff'
-                        })
-                    })
-                });
-                styleCache2[size] = style;
-            }
-            return style;
-        }
-    });
-
-
-    map.addLayer(clusters);
-    map.addLayer(arcs);
+var styleCache = {};
+var fill = new Fill();
+var style = new Style({
+    stroke: new Stroke({
+        color: '#ff9933'
+    }),
+    fill: fill
 });
 
 
+function setStyle(feature, resolution) {
+    fill.setColor(gradient(feature, resolution));
+    return style;
+}
+
+var arcs = new VectorLayer({
+    source: vectorLayerArc,
+    style: setStyle
+});
 
 
-// var select = new ol.interaction.Select();
-// map.addInteraction(select);
-// var selectedFeatures = select.getFeatures();
-// selectedFeatures.on(['add', 'remove'], function() {
-//     var names = selectedFeatures.getArray().map(function(feature) {
-//         var style =  new ol.style.Style({
-//                 image: new ol.style.Circle({
-//                     radius: 10,
-//                     stroke: new ol.style.Stroke({
-//                         color: '#fff'
-//                     }),
-//                     fill: new ol.style.Fill({
-//                         color: '#FF0000'
-//                     })
-//                 })
+var styleCache2 = {};
+var clusters = new VectorLayer({
+    source: clusterSource,
+    style: function(feature) {
+        var size = feature.get('features').length;
+        var style = styleCache2[size];
+        if (!style) {
+            style = new Style({
+                image: new Circle({
+                    radius: 20,
+                    stroke: new Stroke({
+                        color: '#fff'
+                    }),
+                    fill: new Fill({
+                        color: '#3399CC'
+                    })
+                }),
+                text: new Text({
+                    text: size.toString(),
+                    fill: new Fill({
+                        color: '#fff'
+                    })
+                })
+            });
+            styleCache2[size] = style;
+        }
+        return style;
+    }
+});
 
-//             });
-//         feature.setStyle(style);
-//     });
+
+map.addLayer(clusters);
+map.addLayer(arcs);
+
+
+$("#buttonDir").on("click", function(event) {
+    var files = [];
+    var dir = $("#dirMetadata").val();
+    var t0 = fetch(url, {
+        method: 'post',
+        body: JSON.stringify({str: dir})
+    });
+    var t1 = t0.then(function (response) {
+        return response.json();
+    });
+
+    t1.then(function(resultPost) {
+
+        var metadataJSON = resultPost.data;
+
+        $.each(metadataJSON, function(i, photo) {
+            if (photo.hasOwnProperty('ImageWidth')) {
+                var feature = displayPosition(photo);
+                if (feature !== null) {
+                    positions.push(feature);
+
+                    var posArray = feature.getGeometry()['flatCoordinates'];
+                    var cone = displayOrientation(photo, posArray);
+                    if (cone !== null)
+                        cones.push(cone);
+                }
+            }
+        });
+
+        clusters.getSource().getSource().clear();
+        clusters.getSource().getSource().addFeatures(positions);
+
+        arcs.getSource().clear();
+        arcs.getSource().addFeatures(cones);
+    });
+});
+
+// metadata.then(function(results){
 
 // });
+
+
+
+
+var select = new ol.interaction.Select();
+map.addInteraction(select);
+var selectedFeatures = select.getFeatures();
+selectedFeatures.on(['add', 'remove'], function() {
+    var names = selectedFeatures.getArray().map(function(feature) {
+        var style =  new ol.style.Style({
+                image: new ol.style.Circle({
+                    radius: 10,
+                    stroke: new ol.style.Stroke({
+                        color: '#fff'
+                    }),
+                    fill: new ol.style.Fill({
+                        color: '#FF0000'
+                    })
+                })
+
+            });
+        feature.setStyle(style);
+    });
+
+});

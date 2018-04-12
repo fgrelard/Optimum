@@ -4,7 +4,7 @@
   "description": "Test exiftool",
   "scripts": {
     "build": "rollup --config rollup.config.js",
-    "start": "rollup --config rollup.config.js --watch"
+    "start": "node js/server.js & rollup --config rollup.config.js --watch"
   },
   "devDependencies": {
     "rollup": "^0.41.4",
