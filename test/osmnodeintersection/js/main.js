@@ -30,7 +30,6 @@ import loadingstrategy from 'ol/loadingstrategy';
 
 import $ from 'jquery';
 
-
 var map;
 
 var styles = {
@@ -133,6 +132,7 @@ function objArc(center, radius, alpha, omega, segments, flag)
 
 var featuresArc=[];
 var features=[];
+var featuresLine =[];
 
 function addRandomFeatures(extent, count) {
     for (var i = 0; i < count; ++i) {
@@ -140,11 +140,14 @@ function addRandomFeatures(extent, count) {
         var exty = extent[3] - extent[1];
         var middlex = extent[0]+extx/2;
         var middley = extent[1]+exty/2;
-        var factorx = extx / 10;
-        var factory = exty / 10;
+        var factorx = extx / 3;
+        var factory = exty / 3;
         var coordinates = [getRandomArbitrary(middlex-factorx, middlex+factorx), getRandomArbitrary(middley-factory, middley+factory)];
+        coordinates = [739880.8194006054, 5905880.253554305 ]
         var alpha = getRandomArbitrary(0, 360);
         var omega = alpha+getRandomArbitrary(10, 40);
+        alpha = 180;
+        omega = 50;
         var obj = {x: coordinates[0],
                    y: coordinates[1],
                    radius: 150,
@@ -153,15 +156,155 @@ function addRandomFeatures(extent, count) {
                    segments:100,
                    flag: true};
         var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
-        featuresArc[i] = new Feature({ geometry: arc[0] });
+        var featureArc = new Feature({ geometry: arc[0] });
+        featureArc.position = coordinates;
+        featuresArc.push(featureArc);
         //    vectorLayerArc.addFeatures(arc);
-        features[i] = new Feature(new Point(coordinates));
+        features.push(new Feature(new Point(coordinates)));
     }
 
 }
 
 
+function getStyleVisible() {
+    var style = new Style({
+        zIndex: 100,
+        stroke: new Stroke({
+            color: 'rgba(30, 30, 200, 1.0)',
+            width: 1
+        }),
+        fill: new Fill({
+            color: 'rgba(180, 180, 30, 0.3)'
+        })
+    });
+    return style;
+}
 
+function segmentsIntersect(s1, s2) {
+    var pS1F = s1.getFirstCoordinate();
+    var pS1L = s1.getLastCoordinate();
+    var pS2F = s2.getFirstCoordinate();
+    var pS2L = s2.getLastCoordinate();
+    var intersection = segment_intersection(pS1F[0], pS1F[1],
+                                            pS1L[0], pS1L[1],
+                                            pS2F[0], pS2F[1],
+                                            pS2L[0], pS2L[1]);
+    return intersection;
+
+}
+
+function arraysEqual(a, b) {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (a.length != b.length) return false;
+
+  // If you don't care about the order of the elements inside
+  // the array, you should sort both arrays here.
+
+  for (var i = 0; i < a.length; ++i) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+var eps = 0.0000001;
+function between(a, b, c) {
+    return a-eps <= b && b <= c+eps;
+}
+function segment_intersection(x1,y1,x2,y2, x3,y3,x4,y4) {
+    var x=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4)) /
+            ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+    var y=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4)) /
+            ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+    if (isNaN(x)||isNaN(y)) {
+        return false;
+    } else {
+        if (x1>=x2) {
+            if (!between(x2, x, x1)) {return false;}
+        } else {
+            if (!between(x1, x, x2)) {return false;}
+        }
+        if (y1>=y2) {
+            if (!between(y2, y, y1)) {return false;}
+        } else {
+            if (!between(y1, y, y2)) {return false;}
+        }
+        if (x3>=x4) {
+            if (!between(x4, x, x3)) {return false;}
+        } else {
+            if (!between(x3, x, x4)) {return false;}
+        }
+        if (y3>=y4) {
+            if (!between(y4, y, y3)) {return false;}
+        } else {
+            if (!between(y3, y, y4)) {return false;}
+        }
+    }
+    return {x: x, y: y};
+}
+
+function isVisible(segment, position, segments) {
+    var p1 = segment.getFirstCoordinate();
+    var p2 = segment.getLastCoordinate();
+
+    // var poly = new Polygon([[position, s1,
+    //                          s1, s2,
+    //                          s2, position]]);
+    var s1 = new LineString([position, p1]);
+    var s2 = new LineString([position, p2]);
+    var toPush = false;
+    $.each(segments, function(i, s) {
+        var ps1 = s.getFirstCoordinate();
+        var ps2 = s.getLastCoordinate();
+        if (s === segment)
+            return true;
+        var i1 = segmentsIntersect(s1, s);
+        var i2 = segmentsIntersect(s2, s);
+
+        if (i1 || i2) {
+            toPush = true;
+        }
+    });
+    if (toPush)
+        featuresLine.push(new Feature(segment));
+}
+
+function isoVist(featuresArc, features) {
+
+    $.each(featuresArc, function(a, arc) {
+        var extentArc = arc.getGeometry().getExtent();
+        var position = arc.position;
+        var segments = [];
+        $.each(features, function(b, f) {
+            f.segments = [];
+            var geometryFeature = f.getGeometry();
+            if (geometryFeature.intersectsExtent(extentArc)) {
+                var style = getStyleVisible();
+                f.setStyle(style);
+                if (geometryFeature.getType() === "Polygon") {
+                    var polygonVertices = geometryFeature.getCoordinates()[0];
+                    for (var i = 0; i < polygonVertices.length-1; i++) {
+                        var segment = new LineString([polygonVertices[i], polygonVertices[i+1]]);
+                        segments.push(segment);
+                        f.segments.push(segment);
+                    }
+                }
+            }
+        });
+        $.each(features, function(i, f) {
+            $.each(f.segments, function(j, segment) {
+                isVisible(segment, position, segments);
+            });
+        });
+    });
+    lines.getSource().clear();
+    lines.getSource().addFeatures(featuresLine);
+    // arcs.getSource().clear();
+    // $.each( polys, function(i, poly) {
+    //     featuresArc.push(new Feature({geometry:poly}));
+    // });
+    // arcs.getSource().addFeatures(featuresArc);
+}
 
 
 var vectorSource = new Vector({
@@ -176,29 +319,7 @@ var vectorSource = new Vector({
                 featureProjection: map.getView().getProjection()
             });
             vectorSource.addFeatures(features);
-
-
-            $.each(featuresArc, function(i, arc) {
-                var extentArc = arc.getGeometry().getExtent();
-                $.each(features, function(i, f) {
-                    var geometryFeature = f.getGeometry();
-                    if (geometryFeature.intersectsExtent(extentArc)) {
-                        var style = new Style({
-                                zIndex: 100,
-                            stroke: new Stroke({
-                                color: 'rgba(30, 30, 200, 1.0)',
-                                width: 1
-                            }),
-                            fill: new Fill({
-                                color: 'rgba(180, 180, 30, 0.3)'
-                            })
-                        });
-                        f.setStyle(style);
-                    }
-                });
-
-            });
-//            extent.getIntersection(exBuilding,
+            isoVist(featuresArc, features);
         });
         var query = '(node(' +
             epsg4326Extent[1] + ',' + epsg4326Extent[0] + ',' +
@@ -245,10 +366,14 @@ map = new Map({
 
 var extent2 = map.getView().calculateExtent(map.getSize());
 
-addRandomFeatures(extent2, 2);
+addRandomFeatures(extent2, 1);
 
 var source = new Vector({
     features : features
+});
+
+var lineSource = new Vector({
+    features: featuresLine
 });
 
 var clusterSource = new Cluster({
@@ -304,6 +429,28 @@ var clusters = new VectorLayer({
     }
 });
 
+var lines = new VectorLayer({
+    source: lineSource,
+    style: new Style({
+        stroke : new Stroke({
+            color: '#FF0000'
+        })
+    })
+});
+
 
 map.addLayer(clusters);
 map.addLayer(arcs);
+map.addLayer(lines);
+
+
+var select = new Select();
+map.addInteraction(select);
+select.on('select', function(e) {
+    var selectedFeatures = select.getFeatures();
+    e.selected.filter(function(feature) {
+        console.log(feature);
+    });
+
+
+});

@@ -372,7 +372,6 @@ select.on('select', function(e) {
         $.each(selectedFeatures, function(i, f) {
             if (f.hasOwnProperty('cone')) {
                 arcs.getSource().addFeature(f.cone);
-                console.log("coucou");
                 console.log(f.fileName);
             }
         });
