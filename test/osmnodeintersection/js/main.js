@@ -143,11 +143,11 @@ function addRandomFeatures(extent, count) {
         var factorx = extx / 3;
         var factory = exty / 3;
         var coordinates = [getRandomArbitrary(middlex-factorx, middlex+factorx), getRandomArbitrary(middley-factory, middley+factory)];
-        coordinates = [739880.8194006054, 5905880.253554305 ]
+        coordinates = [739885.8194006054, 5905880.253554305 ]
         var alpha = getRandomArbitrary(0, 360);
         var omega = alpha+getRandomArbitrary(10, 40);
-        alpha = 180;
-        omega = 50;
+        alpha = 270;
+        omega = 360;
         var obj = {x: coordinates[0],
                    y: coordinates[1],
                    radius: 150,
@@ -243,7 +243,7 @@ function segment_intersection(x1,y1,x2,y2, x3,y3,x4,y4) {
     return {x: x, y: y};
 }
 
-function isVisible(segment, position, segments) {
+function isNonBlocking(segment, position, segments) {
     var p1 = segment.getFirstCoordinate();
     var p2 = segment.getLastCoordinate();
 
@@ -265,8 +265,52 @@ function isVisible(segment, position, segments) {
             toPush = true;
         }
     });
-    if (toPush)
-        featuresLine.push(new Feature(segment));
+    return toPush;
+}
+
+function visionBlockingArc(segment, position) {
+    var radius = 150;
+
+    var p1 = segment.getFirstCoordinate();
+    var p2 = segment.getLastCoordinate();
+
+    var v1 = [p1[0] - position[0],
+              p1[1] - position[1]];
+    var v2 = [p2[0] - position[0],
+              p2[1] - position[1]];
+
+    var dot1 = v1[0] * radius;
+    var dot2 = v2[0] * radius;
+
+    var norm1 = Math.sqrt(Math.pow(v1[0], 2) + Math.pow(v1[1], 2));
+    var norm2 = Math.sqrt(Math.pow(v2[0], 2) + Math.pow(v2[1], 2));
+
+    var alpha = Math.acos(dot1  / (norm1 * radius)) * 180 / Math.PI;
+    if (v1[1] < 0) alpha = 360-alpha;
+    var omega = Math.acos(dot2 / (norm2 * radius)) * 180 / Math.PI;
+
+    if (v2[1] < 0) omega = 360-omega ;
+    if (omega < alpha) {
+        var tmp = alpha;
+        alpha = omega;
+        omega = tmp;
+    }
+    var diffOA = omega - alpha;
+    var diffOA360 = 360+alpha-omega;
+    if (diffOA360 < diffOA)
+        alpha = alpha + 360;
+
+    var obj = {x: position[0],
+               y: position[1],
+               radius: radius,
+               alpha: alpha,
+               omega: omega,
+               segments:100,
+               flag: true};
+    var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
+    featuresArc.push(new Feature({geometry : arc[0]}));
+    arcs.getSource().clear();
+    arcs.getSource().addFeatures(featuresArc);
 }
 
 function isoVist(featuresArc, features) {
@@ -275,10 +319,12 @@ function isoVist(featuresArc, features) {
         var extentArc = arc.getGeometry().getExtent();
         var position = arc.position;
         var segments = [];
+        var blockingSegments = [];
         $.each(features, function(b, f) {
             f.segments = [];
             var geometryFeature = f.getGeometry();
-            if (geometryFeature.intersectsExtent(extentArc)) {
+            if (arc.getGeometry().intersectsExtent(geometryFeature.getExtent()) &&
+                geometryFeature.intersectsExtent(extentArc)) {
                 var style = getStyleVisible();
                 f.setStyle(style);
                 if (geometryFeature.getType() === "Polygon") {
@@ -291,11 +337,21 @@ function isoVist(featuresArc, features) {
                 }
             }
         });
+
         $.each(features, function(i, f) {
             $.each(f.segments, function(j, segment) {
-                isVisible(segment, position, segments);
+                var nonBlocking = isNonBlocking(segment, position,
+                                                segments);
+                if (!nonBlocking) {
+                    blockingSegments.push(segment);
+                }
             });
         });
+        $.each(blockingSegments, function(j, segment) {
+            featuresLine.push(new Feature(segment));
+            visionBlockingArc(segment, position);
+        });
+
     });
     lines.getSource().clear();
     lines.getSource().addFeatures(featuresLine);
