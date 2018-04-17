@@ -19,6 +19,7 @@ import Polygon from 'ol/geom/polygon';
 import CSV from 'papaparse';
 import transpose from 'transpose';
 
+import MultiLineString from 'ol/geom/multilinestring';
 import Tile from 'ol/layer/tile';
 import BingMaps from 'ol/source/bingmaps';
 import control from 'ol/control';
@@ -120,9 +121,9 @@ function objArc(center, radius, alpha, omega, segments, flag)
     var ftArc    = new Polygon([pointList]);
     if(flag)
     {
-        var ftArcPt0 = new Vector(pointList[1]);
-        var ftArcPt1 = new Vector(pointList[pointList.length-2]);
-        var ftArcSehne = new Vector(new LineString([pointList[1], pointList[pointList.length-2]]));
+        var ftArcPt0 = new Point(pointList[1]);
+        var ftArcPt1 = new Point(pointList[pointList.length-2]);
+        var ftArcSehne = new LineString([pointList[1], pointList[pointList.length-2]]);
         var arrArc = [ftArc, ftArcPt0, ftArcPt1, ftArcSehne];
     }
     else
@@ -133,9 +134,12 @@ function objArc(center, radius, alpha, omega, segments, flag)
 var featuresArc=[];
 var features=[];
 var featuresLine =[];
+var alpha = 270;
+var omega = 360;
+var radius = 150;
 
 function addRandomFeatures(extent, count) {
-    for (var i = 0; i < count; ++i) {
+    for (var i = 0; i < count; i++) {
         var extx = extent[2] - extent[0];
         var exty = extent[3] - extent[1];
         var middlex = extent[0]+extx/2;
@@ -143,14 +147,11 @@ function addRandomFeatures(extent, count) {
         var factorx = extx / 3;
         var factory = exty / 3;
         var coordinates = [getRandomArbitrary(middlex-factorx, middlex+factorx), getRandomArbitrary(middley-factory, middley+factory)];
-        coordinates = [739885.8194006054, 5905880.253554305 ]
-        var alpha = getRandomArbitrary(0, 360);
-        var omega = alpha+getRandomArbitrary(10, 40);
-        alpha = 270;
-        omega = 360;
+        coordinates = [739885.8194006054, 5905880.253554305 ];
+
         var obj = {x: coordinates[0],
                    y: coordinates[1],
-                   radius: 150,
+                   radius: radius,
                    alpha: alpha,
                    omega: omega,
                    segments:100,
@@ -207,7 +208,7 @@ function arraysEqual(a, b) {
   return true;
 }
 
-var eps = 0.0000001;
+var eps = 0;
 function between(a, b, c) {
     return a-eps <= b && b <= c+eps;
 }
@@ -269,7 +270,6 @@ function isNonBlocking(segment, position, segments) {
 }
 
 function visionBlockingArc(segment, position) {
-    var radius = 150;
 
     var p1 = segment.getFirstCoordinate();
     var p2 = segment.getLastCoordinate();
@@ -297,21 +297,154 @@ function visionBlockingArc(segment, position) {
     }
     var diffOA = omega - alpha;
     var diffOA360 = 360+alpha-omega;
-    if (diffOA360 < diffOA)
-        alpha = alpha + 360;
+    if (diffOA360 < diffOA) {
+        var tmp = alpha;
+        alpha = omega;
+        omega = tmp + 360;
+    }
 
-    var obj = {x: position[0],
-               y: position[1],
-               radius: radius,
-               alpha: alpha,
-               omega: omega,
-               segments:100,
-               flag: true};
-    var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
-    featuresArc.push(new Feature({geometry : arc[0]}));
-    arcs.getSource().clear();
-    arcs.getSource().addFeatures(featuresArc);
+    return {alpha: alpha, omega:omega};
 }
+
+function trimArray(array) {
+    var trimmedArray = [];
+    array.sort(function(a,b) {
+        return a.alpha > b.alpha;
+    });
+    var alpha = 0;
+    var omega = 0;
+    for (var i = 0; i < array.length - 1; i++) {
+        var current = array[i];
+        var next = array[i+1];
+        if (i === 0) {
+            alpha = current.alpha;
+        }
+        if (current.omega > omega)
+            omega = current.omega;
+
+        if (omega < next.alpha) {
+            trimmedArray.push({alpha: alpha, omega : omega});
+            alpha = next.alpha;
+        }
+        if (i === array.length - 2) {
+            trimmedArray.push({alpha: alpha, omega: next.omega});
+        }
+    }
+    return trimmedArray;
+
+}
+
+function freeAngles(blockedAngles, alpha, omega) {
+    var freeAngles = [];
+    var start = alpha;
+    var index = 0;
+    while (index < blockedAngles.length) {
+        var currentBlocked = blockedAngles[index];
+        if (start < currentBlocked.alpha) {
+            freeAngles.push({alpha: start, omega: currentBlocked.alpha});
+        } else if (index === blockedAngles.length - 1 && currentBlocked.omega < omega) {
+            freeAngles.push({alpha: currentBlocked.omega, omega: omega});
+        }
+        start = currentBlocked.omega;
+        index++;
+    }
+    return freeAngles;
+}
+
+function segmentPartVisible(intersection, segment, arc) {
+    var segStart = segment.getFirstCoordinate();
+    var segEnd = segment.getLastCoordinate();
+
+    var norm = distance(segStart, [intersection.x, intersection.y]);
+    var middle = [(intersection.x + (segStart[0] - intersection.x) / norm), (intersection.y + (segStart[1] - intersection.y) / norm) ];
+    var p;
+    if (arc[0].intersectsCoordinate(middle))
+        p = segStart;
+    else
+        p = segEnd;
+    var visibleSegment = new LineString([[intersection.x, intersection.y], p]);
+    return visibleSegment;
+
+}
+
+function distance(point1, point2) {
+    return Math.sqrt(Math.pow((point1[0]-point2[0]), 2) + Math.pow((point1[1]-point2[1]), 2));
+}
+
+function freeArcs(angles, position, segment) {
+    var visibleSegment = null;
+    segment.visibleSegments = [];
+    $.each(angles, function(i, angle) {
+        var obj = {x: position[0],
+                   y: position[1],
+                   radius: radius,
+                   alpha: angle.alpha,
+                   omega: angle.omega,
+                   segments:100,
+                   flag: true};
+        var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
+        // featuresArc.push(new Feature({geometry : arc[0]}));
+        // arcs.getSource().clear();
+        // arcs.getSource().addFeatures(featuresArc);
+
+        var p1 = arc[1].getFlatCoordinates();
+        var p2 = arc[2].getFlatCoordinates();
+        var s1 = new LineString([position, p1]);
+        var s2 = new LineString([position, p2]);
+        var i1 = segmentsIntersect(segment, s1);
+        var i2 = segmentsIntersect(segment, s2);
+        if (i1 || i2) {
+
+
+            if (i1 && i2) {
+                visibleSegment = new LineString([[i1.x, i1.y],
+                                                 [i2.x, i2.y]]);
+            }
+            else if (i1) {
+                visibleSegment = segmentPartVisible(i1, segment, arc);
+            }
+            else if (i2)
+                 visibleSegment = segmentPartVisible(i2, segment, arc);
+            segment.visibleSegments.push(visibleSegment);
+        }
+    });
+    return (segment.visibleSegments.length > 0) ? segment : null;
+
+}
+
+
+function computeBlockingSegments(segments, position) {
+    var blockingSegments = [];
+     $.each(segments, function(i, segment) {
+            var nonBlocking = isNonBlocking(segment, position,
+                                            segments);
+            if (!nonBlocking) {
+                blockingSegments.push(segment);
+            }
+     });
+    return  blockingSegments;
+}
+
+function computeFreeSegments(blockingSegments, position, segments) {
+    var blockingAngles = [];
+    var freeSegments = [];
+    $.each(blockingSegments, function(j, segment) {
+        var blockingAngle = visionBlockingArc(segment, position);
+        blockingAngles.push(blockingAngle);
+    });
+    var trimmedBlockingAngles = trimArray(blockingAngles);
+    var freeVisionAngles = freeAngles(trimmedBlockingAngles, alpha, omega);
+    $.each(segments, function(j, segment) {
+        if (blockingSegments.indexOf(segment) === -1) {
+            var visibleSegment = freeArcs(freeVisionAngles, position, segment);
+            if (visibleSegment)
+                freeSegments.push(visibleSegment);
+        }
+    });
+    return freeSegments;
+}
+
+
 
 function isoVist(featuresArc, features) {
 
@@ -321,7 +454,7 @@ function isoVist(featuresArc, features) {
         var segments = [];
         var blockingSegments = [];
         $.each(features, function(b, f) {
-            f.segments = [];
+
             var geometryFeature = f.getGeometry();
             if (arc.getGeometry().intersectsExtent(geometryFeature.getExtent()) &&
                 geometryFeature.intersectsExtent(extentArc)) {
@@ -332,25 +465,32 @@ function isoVist(featuresArc, features) {
                     for (var i = 0; i < polygonVertices.length-1; i++) {
                         var segment = new LineString([polygonVertices[i], polygonVertices[i+1]]);
                         segments.push(segment);
-                        f.segments.push(segment);
                     }
                 }
             }
         });
 
-        $.each(features, function(i, f) {
-            $.each(f.segments, function(j, segment) {
-                var nonBlocking = isNonBlocking(segment, position,
-                                                segments);
-                if (!nonBlocking) {
-                    blockingSegments.push(segment);
-                }
+        var BS = computeBlockingSegments(segments, position);
+        var FS = computeFreeSegments(BS, position, segments);
+        var previous = FS.length+1;
+        while (FS.length > 0) {
+            previous = FS.length;
+            FS.sort(function(a,b) {
+                return distance(position, a.getClosestPoint(position)) > distance(position, b.getClosestPoint(position));
             });
+            BS.push(FS[0]);
+            FS = computeFreeSegments(BS, position, segments);
+        }
+        $.each(BS, function(i, segment) {
+            if (segment.hasOwnProperty('visibleSegments')) {
+                $.each(segment.visibleSegments, function(j, visSeg) {
+                    featuresLine.push(new Feature(visSeg));
+                });
+            }
+            else
+                featuresLine.push(new Feature(segment));
         });
-        $.each(blockingSegments, function(j, segment) {
-            featuresLine.push(new Feature(segment));
-            visionBlockingArc(segment, position);
-        });
+
 
     });
     lines.getSource().clear();
