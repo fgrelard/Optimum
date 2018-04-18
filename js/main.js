@@ -22,6 +22,9 @@ import extent from 'ol/extent';
 import has from 'ol/has';
 import Select from 'ol/interaction/select';
 import $ from 'jquery';
+import Image from 'ol/layer/image';
+import ImageStatic from 'ol/source/imagestatic';
+import Projection from 'ol/proj/projection';
 
 var count = 200;
 //var features = [];
@@ -33,6 +36,14 @@ var latConv = stEtienneLonLatConv[1];
 
 
 var url = "http://localhost:8080/";
+var projection = proj.get();
+var thumbnails = new Image();
+var positions = [];
+var cones = [];
+//Begin openlayers display functions
+var canvas = document.createElement('canvas');
+var context = canvas.getContext('2d');
+var radius = 20;
 
 
 function getRandomArbitrary(min, max) {
@@ -274,13 +285,30 @@ function displayOrientation(mapMetadata, position) {
     return null;
 }
 
-//Begin openlayers display functions
-var canvas = document.createElement('canvas');
-var context = canvas.getContext('2d');
+
+
+function setStyle(feature, resolution) {
+    fill.setColor(gradient(feature, resolution));
+    return style;
+}
+
+
+
+function createNewImage(base64String, position) {
+    var uri = base64String.replace("base64:", "data:image/png;base64,");
+    var imageStatic = new ImageStatic({
+        url: '',
+        imageLoadFunction : function(image){
+            console.log(image.getImage().width);
+            image.getImage().src = uri;
+        },
+        projection: projection,
+        imageExtent:[position[0]-radius, position[1]-radius, position[0]+radius, position[1]+radius]
+    });
+    thumbnails.setSource(imageStatic);
+}
 // var metadata = loadExifToolMetadata("file:///home/fgrelard/Code/Optimum/0W2A0931.txt");
 
-var positions = [];
-var cones = [];
 
 var map = new Map({
     layers: [
@@ -316,11 +344,6 @@ var style = new Style({
 });
 
 
-function setStyle(feature, resolution) {
-    fill.setColor(gradient(feature, resolution));
-    return style;
-}
-
 var arcs = new VectorLayer({
     source: vectorLayerArc,
     style: setStyle
@@ -336,7 +359,7 @@ var clusters = new VectorLayer({
         if (!style) {
             style = new Style({
                 image: new Circle({
-                    radius: 20,
+                    radius: radius,
                     stroke: new Stroke({
                         color: '#fff'
                     }),
@@ -358,26 +381,41 @@ var clusters = new VectorLayer({
 });
 
 
+
+
+
 map.addLayer(clusters);
 map.addLayer(arcs);
-
+map.addLayer(thumbnails);
 
 var select = new Select();
 map.addInteraction(select);
 select.on('select', function(e) {
     var selectedFeatures = select.getFeatures();
     arcs.getSource().clear();
+    if (thumbnails.getSource())
+        thumbnails.setSource();
     e.selected.filter(function(feature) {
         var selectedFeatures = feature.get('features');
         $.each(selectedFeatures, function(i, f) {
             if (f.hasOwnProperty('cone')) {
                 arcs.getSource().addFeature(f.cone);
-                console.log(f.fileName);
+
+                var t0Image = fetch(url+"images", {
+                    method: 'post',
+                    body: JSON.stringify({str: f.fileName})
+                });
+                var t1Image = t0Image.then(function (response) {
+                    return response.json();
+                });
+                t1Image.then(function(resultPost) {
+                    var b64String = resultPost.data[0].ThumbnailImage;
+                    var position = f.getGeometry()['flatCoordinates'];
+                    createNewImage(b64String, position);
+                });
             }
         });
     });
-
-
 });
 
 
@@ -391,6 +429,7 @@ $("#buttonDir").on("click", function(event) {
     var t1 = t0.then(function (response) {
         return response.json();
     });
+
 
     t1.then(function(resultPost) {
 
@@ -416,4 +455,6 @@ $("#buttonDir").on("click", function(event) {
 
         arcs.getSource().clear();
     });
+
+
 });

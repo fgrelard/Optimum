@@ -5,10 +5,10 @@ var bodyParser = require("body-parser");
 
 const app = express();
 
-function getExifToolData(file) {
+function getExifToolData(file, opts) {
     const ep = new exiftool.ExiftoolProcess(exifToolBin);
     var t0 = ep.open();
-    var t1 = t0.then(() => ep.readMetadata(file, ['-File:all', 'r']));
+    var t1 = t0.then(() => ep.readMetadata(file, opts));
     var t2 = t1.then(function(result){
         return result;
     }, console.error);
@@ -29,7 +29,16 @@ app.use(function(req, res, next) {
 app.post('/', function (req, res) {
     var postReq = JSON.parse(req.body);
     var content = postReq.str;
-    var promise = getExifToolData(content);
+    var promise = getExifToolData(content, ['-File:all', 'r']);
+    promise.then(function(result) {
+        res.send(result);
+    });
+});
+
+app.post('/images', function (req, res) {
+    var postReq = JSON.parse(req.body);
+    var content = postReq.str;
+    var promise = getExifToolData(content, ['-File:all', 'b -ThumbnailImage']);
     promise.then(function(result) {
         res.send(result);
     });
