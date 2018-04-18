@@ -29,9 +29,20 @@ import Select from 'ol/interaction/select';
 import OSMXML from 'ol/format/osmxml';
 import loadingstrategy from 'ol/loadingstrategy';
 
+import Arc from './lib/arc';
+import IsoVist from './lib/isovistsectors2d';
 import $ from 'jquery';
 
 var map;
+var featuresArc=[];
+var features=[];
+var featuresLine =[];
+var alpha = 270;
+var omega = 360;
+var radius = 150;
+var position = [739885.8194006054, 5905880.253554305 ];
+var arc = new Arc(position, radius, alpha, omega);
+arc.computeGeometry();
 
 var styles = {
     'amenity': {
@@ -95,76 +106,6 @@ var styles = {
     }
 };
 
-function getRandomArbitrary(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
-function objArc(center, radius, alpha, omega, segments, flag)
-{
-    var pointList=[];
-    if(flag)
-        pointList.push([center[0], center[1]]);
-
-    var dAngle= segments+1;
-    for(var i=0;i<dAngle;i++)
-    {
-        var Angle = alpha - (alpha-omega)*i/(dAngle-1);
-        var x = center[0] + radius*Math.cos(Angle*Math.PI/180);
-        var y = center[1] + radius*Math.sin(Angle*Math.PI/180);
-
-        var point = [x, y];
-        pointList.push(point);
-    }
-    if(flag)
-        pointList.push([center[0], center[1]]);
-
-    var ftArc    = new Polygon([pointList]);
-    if(flag)
-    {
-        var ftArcPt0 = new Point(pointList[1]);
-        var ftArcPt1 = new Point(pointList[pointList.length-2]);
-        var ftArcSehne = new LineString([pointList[1], pointList[pointList.length-2]]);
-        var arrArc = [ftArc, ftArcPt0, ftArcPt1, ftArcSehne];
-    }
-    else
-        var arrArc = [ftArc];
-    return(arrArc);
-}
-
-var featuresArc=[];
-var features=[];
-var featuresLine =[];
-var alpha = 270;
-var omega = 360;
-var radius = 150;
-
-function addRandomFeatures(extent, count) {
-    for (var i = 0; i < count; i++) {
-        var extx = extent[2] - extent[0];
-        var exty = extent[3] - extent[1];
-        var middlex = extent[0]+extx/2;
-        var middley = extent[1]+exty/2;
-        var factorx = extx / 3;
-        var factory = exty / 3;
-        var coordinates = [getRandomArbitrary(middlex-factorx, middlex+factorx), getRandomArbitrary(middley-factory, middley+factory)];
-        coordinates = [739885.8194006054, 5905880.253554305 ];
-
-        var obj = {x: coordinates[0],
-                   y: coordinates[1],
-                   radius: radius,
-                   alpha: alpha,
-                   omega: omega,
-                   segments:100,
-                   flag: true};
-        var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
-        var featureArc = new Feature({ geometry: arc[0] });
-        featureArc.position = coordinates;
-        featuresArc.push(featureArc);
-        //    vectorLayerArc.addFeatures(arc);
-        features.push(new Feature(new Point(coordinates)));
-    }
-
-}
 
 
 function getStyleVisible() {
@@ -181,327 +122,6 @@ function getStyleVisible() {
     return style;
 }
 
-function segmentsIntersect(s1, s2) {
-    var pS1F = s1.getFirstCoordinate();
-    var pS1L = s1.getLastCoordinate();
-    var pS2F = s2.getFirstCoordinate();
-    var pS2L = s2.getLastCoordinate();
-    var intersection = segment_intersection(pS1F[0], pS1F[1],
-                                            pS1L[0], pS1L[1],
-                                            pS2F[0], pS2F[1],
-                                            pS2L[0], pS2L[1]);
-    return intersection;
-
-}
-
-function arraysEqual(a, b) {
-  if (a === b) return true;
-  if (a == null || b == null) return false;
-  if (a.length != b.length) return false;
-
-  // If you don't care about the order of the elements inside
-  // the array, you should sort both arrays here.
-
-  for (var i = 0; i < a.length; ++i) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-}
-
-var eps = 0;
-function between(a, b, c) {
-    return a-eps <= b && b <= c+eps;
-}
-function segment_intersection(x1,y1,x2,y2, x3,y3,x4,y4) {
-    var x=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4)) /
-            ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
-    var y=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4)) /
-            ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
-    if (isNaN(x)||isNaN(y)) {
-        return false;
-    } else {
-        if (x1>=x2) {
-            if (!between(x2, x, x1)) {return false;}
-        } else {
-            if (!between(x1, x, x2)) {return false;}
-        }
-        if (y1>=y2) {
-            if (!between(y2, y, y1)) {return false;}
-        } else {
-            if (!between(y1, y, y2)) {return false;}
-        }
-        if (x3>=x4) {
-            if (!between(x4, x, x3)) {return false;}
-        } else {
-            if (!between(x3, x, x4)) {return false;}
-        }
-        if (y3>=y4) {
-            if (!between(y4, y, y3)) {return false;}
-        } else {
-            if (!between(y3, y, y4)) {return false;}
-        }
-    }
-    return {x: x, y: y};
-}
-
-function isNonBlocking(segment, position, segments) {
-    var p1 = segment.getFirstCoordinate();
-    var p2 = segment.getLastCoordinate();
-
-    // var poly = new Polygon([[position, s1,
-    //                          s1, s2,
-    //                          s2, position]]);
-    var s1 = new LineString([position, p1]);
-    var s2 = new LineString([position, p2]);
-    var toPush = false;
-    $.each(segments, function(i, s) {
-        var ps1 = s.getFirstCoordinate();
-        var ps2 = s.getLastCoordinate();
-        if (s === segment)
-            return true;
-        var i1 = segmentsIntersect(s1, s);
-        var i2 = segmentsIntersect(s2, s);
-
-        if (i1 || i2) {
-            toPush = true;
-        }
-    });
-    return toPush;
-}
-
-function visionBlockingArc(segment, position) {
-
-    var p1 = segment.getFirstCoordinate();
-    var p2 = segment.getLastCoordinate();
-
-    var v1 = [p1[0] - position[0],
-              p1[1] - position[1]];
-    var v2 = [p2[0] - position[0],
-              p2[1] - position[1]];
-
-    var dot1 = v1[0] * radius;
-    var dot2 = v2[0] * radius;
-
-    var norm1 = Math.sqrt(Math.pow(v1[0], 2) + Math.pow(v1[1], 2));
-    var norm2 = Math.sqrt(Math.pow(v2[0], 2) + Math.pow(v2[1], 2));
-
-    var alpha = Math.acos(dot1  / (norm1 * radius)) * 180 / Math.PI;
-    if (v1[1] < 0) alpha = 360-alpha;
-    var omega = Math.acos(dot2 / (norm2 * radius)) * 180 / Math.PI;
-
-    if (v2[1] < 0) omega = 360-omega ;
-    if (omega < alpha) {
-        var tmp = alpha;
-        alpha = omega;
-        omega = tmp;
-    }
-    var diffOA = omega - alpha;
-    var diffOA360 = 360+alpha-omega;
-    if (diffOA360 < diffOA) {
-        var tmp = alpha;
-        alpha = omega;
-        omega = tmp + 360;
-    }
-
-    return {alpha: alpha, omega:omega};
-}
-
-function trimArray(array) {
-    var trimmedArray = [];
-    array.sort(function(a,b) {
-        return a.alpha > b.alpha;
-    });
-    var alpha = 0;
-    var omega = 0;
-    for (var i = 0; i < array.length - 1; i++) {
-        var current = array[i];
-        var next = array[i+1];
-        if (i === 0) {
-            alpha = current.alpha;
-        }
-        if (current.omega > omega)
-            omega = current.omega;
-
-        if (omega < next.alpha) {
-            trimmedArray.push({alpha: alpha, omega : omega});
-            alpha = next.alpha;
-        }
-        if (i === array.length - 2) {
-            trimmedArray.push({alpha: alpha, omega: next.omega});
-        }
-    }
-    return trimmedArray;
-
-}
-
-function freeAngles(blockedAngles, alpha, omega) {
-    var freeAngles = [];
-    var start = alpha;
-    var index = 0;
-    while (index < blockedAngles.length) {
-        var currentBlocked = blockedAngles[index];
-        if (start < currentBlocked.alpha) {
-            freeAngles.push({alpha: start, omega: currentBlocked.alpha});
-        } else if (index === blockedAngles.length - 1 && currentBlocked.omega < omega) {
-            freeAngles.push({alpha: currentBlocked.omega, omega: omega});
-        }
-        start = currentBlocked.omega;
-        index++;
-    }
-    return freeAngles;
-}
-
-function segmentPartVisible(intersection, segment, arc) {
-    var segStart = segment.getFirstCoordinate();
-    var segEnd = segment.getLastCoordinate();
-
-    var norm = distance(segStart, [intersection.x, intersection.y]);
-    var middle = [(intersection.x + (segStart[0] - intersection.x) / norm), (intersection.y + (segStart[1] - intersection.y) / norm) ];
-    var p;
-    if (arc[0].intersectsCoordinate(middle))
-        p = segStart;
-    else
-        p = segEnd;
-    var visibleSegment = new LineString([[intersection.x, intersection.y], p]);
-    return visibleSegment;
-
-}
-
-function distance(point1, point2) {
-    return Math.sqrt(Math.pow((point1[0]-point2[0]), 2) + Math.pow((point1[1]-point2[1]), 2));
-}
-
-function freeArcs(angles, position, segment) {
-    var visibleSegment = null;
-    segment.visibleSegments = [];
-    $.each(angles, function(i, angle) {
-        var obj = {x: position[0],
-                   y: position[1],
-                   radius: radius,
-                   alpha: angle.alpha,
-                   omega: angle.omega,
-                   segments:100,
-                   flag: true};
-        var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
-        // featuresArc.push(new Feature({geometry : arc[0]}));
-        // arcs.getSource().clear();
-        // arcs.getSource().addFeatures(featuresArc);
-
-        var p1 = arc[1].getFlatCoordinates();
-        var p2 = arc[2].getFlatCoordinates();
-        var s1 = new LineString([position, p1]);
-        var s2 = new LineString([position, p2]);
-        var i1 = segmentsIntersect(segment, s1);
-        var i2 = segmentsIntersect(segment, s2);
-        if (i1 || i2) {
-
-
-            if (i1 && i2) {
-                visibleSegment = new LineString([[i1.x, i1.y],
-                                                 [i2.x, i2.y]]);
-            }
-            else if (i1) {
-                visibleSegment = segmentPartVisible(i1, segment, arc);
-            }
-            else if (i2)
-                 visibleSegment = segmentPartVisible(i2, segment, arc);
-            segment.visibleSegments.push(visibleSegment);
-        }
-    });
-    return (segment.visibleSegments.length > 0) ? segment : null;
-
-}
-
-
-function computeBlockingSegments(segments, position) {
-    var blockingSegments = [];
-     $.each(segments, function(i, segment) {
-            var nonBlocking = isNonBlocking(segment, position,
-                                            segments);
-            if (!nonBlocking) {
-                blockingSegments.push(segment);
-            }
-     });
-    return  blockingSegments;
-}
-
-function computeFreeSegments(blockingSegments, position, segments) {
-    var blockingAngles = [];
-    var freeSegments = [];
-    $.each(blockingSegments, function(j, segment) {
-        var blockingAngle = visionBlockingArc(segment, position);
-        blockingAngles.push(blockingAngle);
-    });
-    var trimmedBlockingAngles = trimArray(blockingAngles);
-    var freeVisionAngles = freeAngles(trimmedBlockingAngles, alpha, omega);
-    $.each(segments, function(j, segment) {
-        if (blockingSegments.indexOf(segment) === -1) {
-            var visibleSegment = freeArcs(freeVisionAngles, position, segment);
-            if (visibleSegment)
-                freeSegments.push(visibleSegment);
-        }
-    });
-    return freeSegments;
-}
-
-
-
-function isoVist(featuresArc, features) {
-
-    $.each(featuresArc, function(a, arc) {
-        var extentArc = arc.getGeometry().getExtent();
-        var position = arc.position;
-        var segments = [];
-        var blockingSegments = [];
-        $.each(features, function(b, f) {
-
-            var geometryFeature = f.getGeometry();
-            if (arc.getGeometry().intersectsExtent(geometryFeature.getExtent()) &&
-                geometryFeature.intersectsExtent(extentArc)) {
-                var style = getStyleVisible();
-                f.setStyle(style);
-                if (geometryFeature.getType() === "Polygon") {
-                    var polygonVertices = geometryFeature.getCoordinates()[0];
-                    for (var i = 0; i < polygonVertices.length-1; i++) {
-                        var segment = new LineString([polygonVertices[i], polygonVertices[i+1]]);
-                        segments.push(segment);
-                    }
-                }
-            }
-        });
-
-        var BS = computeBlockingSegments(segments, position);
-        var FS = computeFreeSegments(BS, position, segments);
-        var previous = FS.length+1;
-        while (FS.length > 0) {
-            previous = FS.length;
-            FS.sort(function(a,b) {
-                return distance(position, a.getClosestPoint(position)) > distance(position, b.getClosestPoint(position));
-            });
-            BS.push(FS[0]);
-            FS = computeFreeSegments(BS, position, segments);
-        }
-        $.each(BS, function(i, segment) {
-            if (segment.hasOwnProperty('visibleSegments')) {
-                $.each(segment.visibleSegments, function(j, visSeg) {
-                    featuresLine.push(new Feature(visSeg));
-                });
-            }
-            else
-                featuresLine.push(new Feature(segment));
-        });
-
-
-    });
-    lines.getSource().clear();
-    lines.getSource().addFeatures(featuresLine);
-    // arcs.getSource().clear();
-    // $.each( polys, function(i, poly) {
-    //     featuresArc.push(new Feature({geometry:poly}));
-    // });
-    // arcs.getSource().addFeatures(featuresArc);
-}
-
 
 var vectorSource = new Vector({
     format: new OSMXML(),
@@ -515,7 +135,13 @@ var vectorSource = new Vector({
                 featureProjection: map.getView().getProjection()
             });
             vectorSource.addFeatures(features);
-            isoVist(featuresArc, features);
+            var isovist = new IsoVist(arc, features);
+            var visibleSegments = isovist.computeIsoVist();
+            $.each(visibleSegments, function(i, segment) {
+                featuresLine.push(new Feature(segment));
+            });
+            lines.getSource().clear();
+            lines.getSource().addFeatures(featuresLine);
         });
         var query = '(node(' +
             epsg4326Extent[1] + ',' + epsg4326Extent[0] + ',' +
@@ -562,7 +188,11 @@ map = new Map({
 
 var extent2 = map.getView().calculateExtent(map.getSize());
 
-addRandomFeatures(extent2, 1);
+var featureArc = new Feature({geometry: arc.geometry[0]});
+featureArc.position = position;
+featuresArc.push(featureArc);
+
+features.push(new Feature(new Point(position)));
 
 var source = new Vector({
     features : features
