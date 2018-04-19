@@ -1,6 +1,5 @@
 import Map from 'ol/map';
 import View from 'ol/view';
-import TileLayer from 'ol/layer/tile';
 import XYZ from 'ol/source/xyz';
 import OSM from 'ol/source/osm';
 import proj from 'ol/proj';
@@ -19,12 +18,8 @@ import Polygon from 'ol/geom/polygon';
 import CSV from 'papaparse';
 import transpose from 'transpose';
 
-import MultiLineString from 'ol/geom/multilinestring';
-import Tile from 'ol/layer/tile';
-import BingMaps from 'ol/source/bingmaps';
 import control from 'ol/control';
 import extent from 'ol/extent';
-import has from 'ol/has';
 import Select from 'ol/interaction/select';
 import OSMXML from 'ol/format/osmxml';
 import loadingstrategy from 'ol/loadingstrategy';
