@@ -33,8 +33,17 @@ export default class IsoVist {
         var segments = [];
         var polygonVertices = polygon.getCoordinates()[0];
         for (var i = 0; i < polygonVertices.length-1; i++) {
-            var segment = new LineString([polygonVertices[i], polygonVertices[i+1]]);
-            segments.push(segment);
+            var p1 = polygonVertices[i];
+            var p2 = polygonVertices[i+1];
+            var segment = new LineString([p1, p2]);
+            var partiallyVisible = this.partiallyVisibleSegments([this.arc], segment);
+            if (partiallyVisible) {
+                Array.prototype.push.apply(segments, partiallyVisible[1]);
+            } else if (this.arc.geometry.intersectsCoordinate(p1) ||
+                       this.arc.geometry.intersectsCoordinate(p2))
+            {
+                segments.push(segment);
+            }
         }
         return segments;
     }

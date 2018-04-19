@@ -35,7 +35,6 @@ import IsoVist from './lib/isovistsectors2d';
 import Picture from './lib/picture';
 
 var count = 200;
-//var features = [];
 var featuresArc = new Array(count);
 var stEtienneLonLat = [4.392569444444445, 45.42289722222222];
 var stEtienneLonLatConv = proj.fromLonLat(stEtienneLonLat);
@@ -46,9 +45,9 @@ var latConv = stEtienneLonLatConv[1];
 var url = "http://localhost:8080/";
 var projection = proj.get();
 var thumbnails = new Image();
-var positions = [];
 var pictures = [];
-//Begin openlayers display functions
+var featuresLine =[];
+
 var canvas = document.createElement('canvas');
 var context = canvas.getContext('2d');
 var radius = 20;
@@ -57,7 +56,6 @@ function lonLatToDecimal(deg, min, sec) {
     return deg + min / 60 + sec / 3600;
 }
 
-//Loading an exiftool file
 function loadExifToolMetadata(filename) {
     var f = fetch(filename);
     var t1 = f.then(function(response) {
@@ -124,13 +122,11 @@ function gradient(arc, resolution) {
         x2 = width;
         y2 = height - y1;
     }
-    // var grad = context.createLinearGradient(0, 0,
-    //                                         extent.getWidth(extent2) / resolution * pixelRatio , extent.getHeight(extent2) / resolution * pixelRatio);
     var grad = context.createLinearGradient(x1, y1,
                                             x2, y2);
 
     grad.addColorStop(0, 'transparent');
-    grad.addColorStop(0.5, 'orange');
+    grad.addColorStop(0.9, 'orange');
     return grad;
 }
 
@@ -313,7 +309,19 @@ var vectorSource = new Vector({
             var features = new OSMXML().readFeatures(client.responseText, {
                 featureProjection: map.getView().getProjection()
             });
-            vectorSource.addFeatures(features);
+            var limitedFeatures = [];
+            $.each(features, function(i, f) {
+                var node = f.getProperties();
+                if (node.hasOwnProperty("building") ||
+                    node.hasOwnProperty("amenity")  ||
+                    node.hasOwnProperty("natural")
+                   ) {
+                    limitedFeatures.push(f);
+                }
+            });
+            features = [];
+            console.log(limitedFeatures.length + " " + features.length);
+            vectorSource.addFeatures(limitedFeatures);
         });
         var query = '(node(' +
             epsg4326Extent[1] + ',' + epsg4326Extent[0] + ',' +
@@ -344,9 +352,9 @@ var vector = new VectorLayer({
 
 var map = new Map({
     layers: [
-        new TileLayer({
-            source: new OSM()
-        })
+        // new TileLayer({
+        //     source: new OSM()
+        // })
     ],
     target: 'map',
     view: new View({
@@ -411,31 +419,50 @@ var clusters = new VectorLayer({
     }
 });
 
+var lineSource = new Vector({
+    features: featuresLine
+});
+
+var lines = new VectorLayer({
+    source: lineSource,
+    style: new Style({
+        stroke : new Stroke({
+            color: '#FFFF00'
+        })
+    })
+});
+
+
 map.addLayer(vector);
 map.addLayer(clusters);
 map.addLayer(arcs);
 map.addLayer(thumbnails);
+map.addLayer(lines);
 
 var select = new Select();
 map.addInteraction(select);
 select.on('select', function(e) {
     var selectedFeatures = select.getFeatures();
+
     arcs.getSource().clear();
     if (thumbnails.getSource())
         thumbnails.setSource();
+    featuresLine = [];
+
     e.selected.filter(function(feature) {
+        console.log(feature.getProperties());
         var selectedFeatures = feature.get('features');
         $.each(selectedFeatures, function(i, f) {
-            // var isovist = new IsoVist(arc, features);
-            // var visibleSegments = isovist.computeIsoVist();
-            // $.each(visibleSegments, function(i, segment) {
-            //     featuresLine.push(new Feature(segment));
-            // });
-            // lines.getSource().clear();
-            // lines.getSource().addFeatures(featuresLine);
             var arc = f.getProperties().arc;
             arc.computeGeometry();
             arcs.getSource().addFeature(new Feature(arc));
+
+            var isovist = new IsoVist(arc, vectorSource.getFeatures());
+            var visibleSegments = isovist.computeIsoVist();
+            $.each(visibleSegments, function(i, segment) {
+                featuresLine.push(new Feature(segment));
+            });
+
 
             var t0Image = fetch(url+"images", {
                 method: 'post',
@@ -451,6 +478,8 @@ select.on('select', function(e) {
             });
         });
     });
+    lines.getSource().clear();
+    lines.getSource().addFeatures(featuresLine);
 });
 
 
@@ -479,7 +508,6 @@ $("#buttonDir").on("click", function(event) {
                     var picture = new Picture(fileName, position, cone);
                     var feature = new Feature(picture);
                     pictures.push(feature);
-//                    positions.push(new Feature(new Point(position)));
                 }
             }
         });
