@@ -36,14 +36,8 @@ export default class IsoVist {
             var p1 = polygonVertices[i];
             var p2 = polygonVertices[i+1];
             var segment = new LineString([p1, p2]);
-            var partiallyVisible = this.partiallyVisibleSegments([this.arc], segment);
-            if (partiallyVisible) {
-                Array.prototype.push.apply(segments, partiallyVisible[1]);
-            } else if (this.arc.geometry.intersectsCoordinate(p1) ||
-                       this.arc.geometry.intersectsCoordinate(p2))
-            {
-                segments.push(segment);
-            }
+
+            segments.push(segment);
         }
         return segments;
     }
@@ -300,6 +294,26 @@ export default class IsoVist {
         return freeSegments;
     }
 
+    computeVisibleBlockingSegments(blockingSegments) {
+        var that  = this;
+        var visibleSegments = [];
+        $.each(blockingSegments, function(i, segment) {
+            var p1 = segment.getFirstCoordinate();
+            var p2 = segment.getLastCoordinate();
+            var partiallyVisible = that.partiallyVisibleSegments([that.arc], segment);
+            if (partiallyVisible) {
+                Array.prototype.push.apply(visibleSegments, partiallyVisible[1]);
+            } else if (that.arc.geometry.intersectsCoordinate(p1) ||
+                       that.arc.geometry.intersectsCoordinate(p2))
+            {
+                Array.prototype.push.apply(visibleSegments, segment);
+            }
+        });
+        return visibleSegments;
+    }
+
+
+
 
     /**
      * Main function
@@ -310,6 +324,7 @@ export default class IsoVist {
         var segments = this.segmentsIntersectingFOV();
         var position = this.arc.center;
         var blockingSegments = this.computeBlockingSegments(segments);
+        // var visibleBlockingSegments = this.computeVisibleBlockingSegments(blockingSegments);
 
         Array.prototype.push.apply(visibleSegments, blockingSegments);
 
@@ -325,6 +340,8 @@ export default class IsoVist {
             partiallyVisible.push(freeSegments[0][1]);
             freeSegments = this.computeFreeSegments(blockingSegments, segments);
         }
+
+
         $.each(partiallyVisible, function(i, segments) {
             Array.prototype.push.apply(visibleSegments, segments);
         });

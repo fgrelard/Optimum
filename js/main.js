@@ -297,39 +297,45 @@ var styles = {
 };
 
 
-
 var vectorSource = new Vector({
     format: new OSMXML(),
     loader: function(extent2, resolution, projection) {
-        var epsg4326Extent =
-            proj.transformExtent(extent2, projection, 'EPSG:4326');
-        var client = new XMLHttpRequest();
-        client.open('POST', 'https://overpass-api.de/api/interpreter');
-        client.addEventListener('load', function() {
-            var features = new OSMXML().readFeatures(client.responseText, {
-                featureProjection: map.getView().getProjection()
+        if (resolution < 2) {
+            var epsg4326Extent =
+                    proj.transformExtent(extent2, projection, 'EPSG:4326');
+            var client = new XMLHttpRequest();
+            client.open('POST', 'https://overpass-api.de/api/interpreter');
+            client.addEventListener('load', function() {
+                var features = new OSMXML().readFeatures(client.responseText, {
+                    featureProjection: map.getView().getProjection()
+                });
+                var limitedFeatures = [];
+                $.each(features, function(i, f) {
+                    var node = f.getProperties();
+                    if (node.hasOwnProperty("building") ||
+                        node.hasOwnProperty("amenity")  ||
+                        node.hasOwnProperty("natural")
+                       ) {
+                        limitedFeatures.push(f);
+                    }
+                });
+                features = [];
+                vectorSource.addFeatures(limitedFeatures);
             });
-            var limitedFeatures = [];
-            $.each(features, function(i, f) {
-                var node = f.getProperties();
-                if (node.hasOwnProperty("building") ||
-                    node.hasOwnProperty("amenity")  ||
-                    node.hasOwnProperty("natural")
-                   ) {
-                    limitedFeatures.push(f);
-                }
-            });
-            features = [];
-            console.log(limitedFeatures.length + " " + features.length);
-            vectorSource.addFeatures(limitedFeatures);
-        });
-        var query = '(node(' +
-            epsg4326Extent[1] + ',' + epsg4326Extent[0] + ',' +
-            epsg4326Extent[3] + ',' + epsg4326Extent[2] +
-            ');rel(bn)->.foo;way(bn);node(w)->.foo;rel(bw););out meta;';
-        client.send(query);
+            var query = '(node(' +
+                    epsg4326Extent[1] + ',' + epsg4326Extent[0] + ',' +
+                    epsg4326Extent[3] + ',' + epsg4326Extent[2] +
+                    ');rel(bn)->.foo;way(bn);node(w)->.foo;rel(bw););out meta;';
+            client.send(query);
+        }
+        this.resolution = resolution;
     },
-    strategy: loadingstrategy.bbox
+    strategy: function(extent, resolution) {
+        if(this.resolution && this.resolution != resolution){
+            this.loadedExtentsRtree_.clear();
+        }
+        return [extent];
+    }
 });
 
 var vector = new VectorLayer({
@@ -352,9 +358,9 @@ var vector = new VectorLayer({
 
 var map = new Map({
     layers: [
-        // new TileLayer({
-        //     source: new OSM()
-        // })
+        new TileLayer({
+            source: new OSM()
+        })
     ],
     target: 'map',
     view: new View({
