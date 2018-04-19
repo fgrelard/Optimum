@@ -45,7 +45,7 @@ export default class IsoVist {
      */
     segmentsIntersectingFOV() {
         var segments = [];
-        var geometryArc = this.arc.geometry[0];
+        var geometryArc = this.arc.geometry;
         var extentArc = geometryArc.getExtent();
         var that = this;
         $.each(this.segments, function(b, f) {
@@ -201,7 +201,7 @@ export default class IsoVist {
         var norm = euclideanDistance(segStart, [intersection.x, intersection.y]);
         var middle = [(intersection.x + (segStart[0] - intersection.x) / norm), (intersection.y + (segStart[1] - intersection.y) / norm) ];
         var p;
-        if (arc.geometry[0].intersectsCoordinate(middle))
+        if (arc.geometry.intersectsCoordinate(middle))
             p = segStart;
         else
             p = segEnd;
@@ -223,8 +223,8 @@ export default class IsoVist {
         $.each(angles, function(i, angle) {
             var arc = new Arc(that.arc.center, that.arc.radius, angle.alpha, angle.omega);
             arc.computeGeometry();
-            var p1 = arc.geometry[1].getFlatCoordinates();
-            var p2 = arc.geometry[2].getFlatCoordinates();
+            var p1 = arc.fullGeometry[1].getFlatCoordinates();
+            var p2 = arc.fullGeometry[2].getFlatCoordinates();
             var s1 = new LineString([position, p1]);
             var s2 = new LineString([position, p2]);
             var i1 = segmentsIntersect(segment, s1);

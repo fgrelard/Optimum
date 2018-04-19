@@ -26,6 +26,14 @@ import Image from 'ol/layer/image';
 import ImageStatic from 'ol/source/imagestatic';
 import Projection from 'ol/proj/projection';
 
+import control from 'ol/control';
+import OSMXML from 'ol/format/osmxml';
+import loadingstrategy from 'ol/loadingstrategy';
+
+import Arc from './lib/arc';
+import IsoVist from './lib/isovistsectors2d';
+import Picture from './lib/picture';
+
 var count = 200;
 //var features = [];
 var featuresArc = new Array(count);
@@ -39,16 +47,11 @@ var url = "http://localhost:8080/";
 var projection = proj.get();
 var thumbnails = new Image();
 var positions = [];
-var cones = [];
+var pictures = [];
 //Begin openlayers display functions
 var canvas = document.createElement('canvas');
 var context = canvas.getContext('2d');
 var radius = 20;
-
-
-function getRandomArbitrary(min, max) {
-    return Math.random() * (max - min) + min;
-}
 
 function lonLatToDecimal(deg, min, sec) {
     return deg + min / 60 + sec / 3600;
@@ -76,83 +79,8 @@ function loadExifToolMetadata(filename) {
 }
 
 
-// /**
-//  * Function: objArc
-//  * creates an arc (a linestring with n segments)
-//  *
-//  * Parameters:
-//  * center   - center point
-//  * radius   - radius of the arc
-//  * alpha    - starting angle (in Grad)
-//  * omega    - ending angle   (in Grad)
-//  * segments - number of segments for drawing the arc
-//  * flag     - true  : create arc feature from center to start- to endpoint to center
-//  *            false : create arc feature from start- to endpoint
-//  *
-//  * Returns: an array with four features, if flag=true
-//  *          arc feature     (from Linestring)
-//  *          the startpoint  (from Point)
-//  *          the endpoint    (from Point)
-//  *          the chord       (from LineString)
-//  */
-function objArc(center, radius, alpha, omega, segments, flag)
-{
-    var pointList=[];
-    if(flag)
-        pointList.push([center[0], center[1]]);
-
-    var dAngle= segments+1;
-    for(var i=0;i<dAngle;i++)
-    {
-        var Angle = alpha - (alpha-omega)*i/(dAngle-1);
-        var x = center[0] + radius*Math.cos(Angle*Math.PI/180);
-        var y = center[1] + radius*Math.sin(Angle*Math.PI/180);
-
-        var point = [x, y];
-        pointList.push(point);
-    }
-    if(flag)
-        pointList.push([center[0], center[1]]);
-
-    var ftArc    = new Polygon([pointList]);
-    if(flag)
-    {
-        var ftArcPt0 = new Vector(pointList[1]);
-        var ftArcPt1 = new Vector(pointList[pointList.length-2]);
-        var ftArcSehne = new Vector(new LineString([pointList[1], pointList[pointList.length-2]]));
-        var arrArc = [ftArc, ftArcPt0, ftArcPt1, ftArcSehne];
-    }
-    else
-        var arrArc = [ftArc];
-    return(arrArc);
-}
-
-function addRandomFeatures(extent, count) {
-    for (var i = 0; i < count; ++i) {
-        var extx = extent[2] - extent[0];
-        var exty = extent[3] - extent[1];
-        var middlex = extent[0]+extx/2;
-        var middley = extent[1]+exty/2;
-        var factorx = extx / 10;
-        var factory = exty / 10;
-        var coordinates = [getRandomArbitrary(middlex-factorx, middlex+factorx), getRandomArbitrary(middley-factory, middley+factory)];
-        var obj = {x: coordinates[0],
-                   y: coordinates[1],
-                   radius: 150,
-                   alpha: 10,
-                   omega: 20,
-                   segments:100,
-                   flag: true};
-        var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
-        featuresArc[i] = new Feature({ geometry: arc[0] });
-        //    vectorLayerArc.addFeatures(arc);
-        //features[i] = new Feature(new Point(coordinates));
-    }
-
-}
-
-function gradient(feature, resolution) {
-    var extent2 = feature.getGeometry().getExtent();
+function gradient(arc, resolution) {
+    var extent2 = arc.getGeometry().getExtent();
 
     var pixelRatio = has.DEVICE_PIXEL_RATIO;
     // Gradient starts on the left edge of each feature, and ends on the right.
@@ -164,7 +92,7 @@ function gradient(feature, resolution) {
     var height = extent.getHeight(extent2) / resolution * pixelRatio;
     var width = extent.getWidth(extent2) / resolution * pixelRatio;
 
-    var angle = feature.get('angle');
+    var angle = (arc.getProperties().alpha + arc.getProperties().omega - 180) / 2;
     var angleRad = angle * Math.PI / 180 + Math.PI / 2;
     var rotateDegrees = Math.round((Math.PI - angleRad) * 360 / (2*Math.PI));
     if (rotateDegrees < 0)
@@ -238,7 +166,7 @@ function createPositionArray(positionString) {
     return arrayPos;
 }
 
-function displayPosition(mapMetadata) {
+function getPosition(mapMetadata) {
     if (mapMetadata.hasOwnProperty('GPSPosition')) {
         var positionString = mapMetadata.GPSPosition;
         var positionSplit = positionString.split(",");
@@ -251,7 +179,7 @@ function displayPosition(mapMetadata) {
             var sPosDec = lonLatToDecimal(sPosDMS[0], sPosDMS[1], sPosDMS[2]);
             var lonLat = [sPosDec, fPosDec];
             var projLonLat = proj.fromLonLat(lonLat);
-            return new Feature(new Point(projLonLat));
+            return projLonLat;
         }
     }
     return null;
@@ -264,7 +192,7 @@ function computeAlphaOmegaFromDir(direction, fov) {
     return [alpha, omega];
 }
 
-function displayOrientation(mapMetadata, position) {
+function getOrientation(mapMetadata, position) {
     if (mapMetadata.hasOwnProperty('GPSImgDirection') &&
         mapMetadata.hasOwnProperty('Orientation') &&
         mapMetadata.hasOwnProperty('FOV')) {
@@ -279,16 +207,17 @@ function displayOrientation(mapMetadata, position) {
                    omega: angles[1],
                    segments:100,
                    flag: true};
-        var arc = objArc([obj.x, obj.y], obj.radius, obj.alpha, obj.omega, obj.segments, obj.flag);
-        return new Feature({ geometry: arc[0], angle: dir });
+        var arc = new Arc([position[0], position[1]], 150, angles[0], angles[1]);
+        arc.computeGeometry();
+        return arc;
     }
     return null;
 }
 
 
 
-function setStyle(feature, resolution) {
-    fill.setColor(gradient(feature, resolution));
+function setStyle(arc, resolution) {
+    fill.setColor(gradient(arc, resolution));
     return style;
 }
 
@@ -299,7 +228,6 @@ function createNewImage(base64String, position) {
     var imageStatic = new ImageStatic({
         url: '',
         imageLoadFunction : function(image){
-            console.log(image.getImage().width);
             image.getImage().src = uri;
         },
         projection: projection,
@@ -308,6 +236,110 @@ function createNewImage(base64String, position) {
     thumbnails.setSource(imageStatic);
 }
 // var metadata = loadExifToolMetadata("file:///home/fgrelard/Code/Optimum/0W2A0931.txt");
+
+
+var styles = {
+    'amenity': {
+        'parking': new Style({
+            stroke: new Stroke({
+                color: 'rgba(170, 170, 170, 1.0)',
+                width: 1
+            }),
+            fill: new Fill({
+                color: 'rgba(170, 170, 170, 0.3)'
+            })
+        })
+    },
+    'building': {
+        '.*': new Style({
+            zIndex: 100,
+            stroke: new Stroke({
+                color: 'rgba(246, 99, 79, 1.0)',
+                width: 1
+            }),
+            fill: new Fill({
+                color: 'rgba(246, 99, 79, 0.3)'
+            })
+        })
+    },
+    'highway': {
+        'service': new Style({
+            stroke: new Stroke({
+                color: 'rgba(255, 255, 255, 1.0)',
+                width: 2
+            })
+        }),
+        '.*': new Style({
+            stroke: new Stroke({
+                color: 'rgba(255, 255, 255, 1.0)',
+                width: 3
+            })
+        })
+    },
+    'landuse': {
+        'forest|grass|allotments': new Style({
+            stroke: new Stroke({
+                color: 'rgba(140, 208, 95, 1.0)',
+                width: 1
+            }),
+            fill: new Fill({
+                color: 'rgba(140, 208, 95, 0.3)'
+            })
+        })
+    },
+    'natural': {
+        'tree': new Style({
+            image: new Circle({
+                radius: 2,
+                fill: new Fill({
+                    color: 'rgba(140, 208, 95, 1.0)'
+                }),
+                stroke: null
+            })
+        })
+    }
+};
+
+
+
+var vectorSource = new Vector({
+    format: new OSMXML(),
+    loader: function(extent2, resolution, projection) {
+        var epsg4326Extent =
+            proj.transformExtent(extent2, projection, 'EPSG:4326');
+        var client = new XMLHttpRequest();
+        client.open('POST', 'https://overpass-api.de/api/interpreter');
+        client.addEventListener('load', function() {
+            var features = new OSMXML().readFeatures(client.responseText, {
+                featureProjection: map.getView().getProjection()
+            });
+            vectorSource.addFeatures(features);
+        });
+        var query = '(node(' +
+            epsg4326Extent[1] + ',' + epsg4326Extent[0] + ',' +
+            epsg4326Extent[3] + ',' + epsg4326Extent[2] +
+            ');rel(bn)->.foo;way(bn);node(w)->.foo;rel(bw););out meta;';
+        client.send(query);
+    },
+    strategy: loadingstrategy.bbox
+});
+
+var vector = new VectorLayer({
+    source: vectorSource,
+    style: function(feature) {
+        for (var key in styles) {
+            var value = feature.get(key);
+            if (value !== undefined) {
+                for (var regexp in styles[key]) {
+                    if (new RegExp(regexp).test(value)) {
+                        return styles[key][regexp];
+                    }
+                }
+            }
+        }
+        return null;
+    }
+});
 
 
 var map = new Map({
@@ -324,7 +356,6 @@ var map = new Map({
 });
 
 var extent2 = map.getView().calculateExtent(map.getSize());
-//addRandomFeatures(extent, count);
 
 var source = new Vector();
 
@@ -380,10 +411,7 @@ var clusters = new VectorLayer({
     }
 });
 
-
-
-
-
+map.addLayer(vector);
 map.addLayer(clusters);
 map.addLayer(arcs);
 map.addLayer(thumbnails);
@@ -398,22 +426,29 @@ select.on('select', function(e) {
     e.selected.filter(function(feature) {
         var selectedFeatures = feature.get('features');
         $.each(selectedFeatures, function(i, f) {
-            if (f.hasOwnProperty('cone')) {
-                arcs.getSource().addFeature(f.cone);
+            // var isovist = new IsoVist(arc, features);
+            // var visibleSegments = isovist.computeIsoVist();
+            // $.each(visibleSegments, function(i, segment) {
+            //     featuresLine.push(new Feature(segment));
+            // });
+            // lines.getSource().clear();
+            // lines.getSource().addFeatures(featuresLine);
+            var arc = f.getProperties().arc;
+            arc.computeGeometry();
+            arcs.getSource().addFeature(new Feature(arc));
 
-                var t0Image = fetch(url+"images", {
-                    method: 'post',
-                    body: JSON.stringify({str: f.fileName})
-                });
-                var t1Image = t0Image.then(function (response) {
-                    return response.json();
-                });
-                t1Image.then(function(resultPost) {
-                    var b64String = resultPost.data[0].ThumbnailImage;
-                    var position = f.getGeometry()['flatCoordinates'];
-                    createNewImage(b64String, position);
-                });
-            }
+            var t0Image = fetch(url+"images", {
+                method: 'post',
+                body: JSON.stringify({str: f.getProperties().filename})
+            });
+            var t1Image = t0Image.then(function (response) {
+                return response.json();
+            });
+            t1Image.then(function(resultPost) {
+                var b64String = resultPost.data[0].ThumbnailImage;
+                var position = f.getGeometry()['flatCoordinates'];
+                createNewImage(b64String, position);
+            });
         });
     });
 });
@@ -437,21 +472,20 @@ $("#buttonDir").on("click", function(event) {
 
         $.each(metadataJSON, function(i, photo) {
             if (photo.hasOwnProperty('ImageWidth')) {
-                var feature = displayPosition(photo);
-                if (feature !== null) {
-                    feature.fileName = photo.SourceFile;
-                    positions.push(feature);
-
-                    var posArray = feature.getGeometry()['flatCoordinates'];
-                    var cone = displayOrientation(photo, posArray);
-                    if (cone !== null)
-                        feature.cone = cone;
+                var position = getPosition(photo);
+                if (position !== null) {
+                    var fileName = photo.SourceFile;
+                    var cone = getOrientation(photo, position);
+                    var picture = new Picture(fileName, position, cone);
+                    var feature = new Feature(picture);
+                    pictures.push(feature);
+//                    positions.push(new Feature(new Point(position)));
                 }
             }
         });
 
         clusters.getSource().getSource().clear();
-        clusters.getSource().getSource().addFeatures(positions);
+        clusters.getSource().getSource().addFeatures(pictures);
 
         arcs.getSource().clear();
     });

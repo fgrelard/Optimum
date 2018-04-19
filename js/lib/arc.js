@@ -25,12 +25,14 @@ export default class Arc {
         this.radius = radius;
         this.alpha = alpha;
         this.omega = omega;
+        this.fullGeometry = null;
         this.geometry = null;
     }
 
     /**
      * Computes the geometry and assigns it to the geometry attribute of this class
-     * this.geometry is an array with four features: arc (linestring), arc extremity 1 (point), arc extremity 2 (point), chord (linestring)
+     * this.fullGeometry is an array with four features: arc (linestring), arc extremity 1 (point), arc extremity 2 (point), chord (linestring)
+     * this.geometry is only the arc (for display purposes)
      */
     computeGeometry() {
         var pointList=[];
@@ -57,6 +59,7 @@ export default class Arc {
         var ftArcSehne = new LineString([pointList[1], pointList[pointList.length-2]]);
 
         arrArc = [ftArc, ftArcPt0, ftArcPt1, ftArcSehne];
-        this.geometry = arrArc;
+        this.fullGeometry = arrArc;
+        this.geometry = arrArc[0];
     }
 }
