@@ -4,16 +4,32 @@
     <meta charset="utf-8">
     <title> Optimum </title>
     <link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css" type="text/css">
-  </head>
-  <body>
-    <h1> Projet Optimum </h1>
-    <form>
-      <label for="dirMetadata">Path to directory to scan </label>
-      <input id="dirMetadata" id="path" value="/home/fgrelard/data/raw/">
-      <input type="button" id="buttonDir" value="Envoyer"/>
-    </form>
-    <div id="map" class="map">
+    <link rel="stylesheet" href="css/main.css" />
 
+  </head>
+  <body class="homepage">
+    <div id="page_wrapper">
+      <div id="header-wrapper">
+        <header id="header" class="container">
+          <div id="logo">
+            <h1>Optimum </h1>
+          </div>
+      </div>
+      </header>
+      <div id="banner-wrapper">
+		<div id="banner" class="box container">
+            
+          <div id="map" class="map">
+
+          </div>
+
+          <form>
+              <label for="dirMetadata">Path to directory to scan </label>
+              <input type="text" id="dirMetadata" id="path" value="/home/fgrelard/data/raw/">
+              <input type="button" id="buttonDir" value="Send"/>
+            </form>
+        </div>
+      </div>
     </div>
     <script src="bundle.js"></script>
   </body>

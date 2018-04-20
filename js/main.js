@@ -184,7 +184,7 @@ var map = new Map({
     target: 'map',
     view: new View({
         center: stEtienneLonLatConv,
-        zoom: 20
+        zoom: 16
     })
 });
 
