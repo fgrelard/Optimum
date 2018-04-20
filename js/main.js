@@ -38,6 +38,7 @@ var count = 200;
 var featuresArc = new Array(count);
 var stEtienneLonLat = [4.392569444444445, 45.42289722222222];
 var stEtienneLonLatConv = proj.fromLonLat(stEtienneLonLat);
+stEtienneLonLatConv = [487537.9340862985, 5693250.829916254];
 var lonConv = stEtienneLonLatConv[0];
 var latConv = stEtienneLonLatConv[1];
 
@@ -182,7 +183,8 @@ function getPosition(mapMetadata) {
 }
 
 function computeAlphaOmegaFromDir(direction, fov) {
-    var dirTrigRad = (direction + 90) % 360;
+    var dirTrigRad = (// 360 -
+                      direction + 90) % 360;
     var alpha = (dirTrigRad - fov / 2) % 360;
     var omega = (alpha + fov);
     return [alpha, omega];
@@ -365,7 +367,7 @@ var map = new Map({
     target: 'map',
     view: new View({
         center: stEtienneLonLatConv,
-        zoom: 15
+        zoom: 20
     })
 });
 
@@ -463,7 +465,7 @@ select.on('select', function(e) {
             arc.computeGeometry();
             arcs.getSource().addFeature(new Feature(arc));
 
-            var isovist = new IsoVist(arc, vectorSource.getFeatures());
+            var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
             var visibleSegments = isovist.computeIsoVist();
             $.each(visibleSegments, function(i, segment) {
                 featuresLine.push(new Feature(segment));

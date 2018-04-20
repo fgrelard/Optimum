@@ -75,3 +75,41 @@ export function segmentsIntersect(s1, s2) {
     return intersection;
 
 }
+
+
+export function onSegment(p, s) {
+    var p1 = s.getFirstCoordinate();
+    var p2 = s.getLastCoordinate();
+
+    var x1 = p1[0];
+    var x2 = p2[0];
+    var y1 = p1[1];
+    var y2 = p2[1];
+
+    var x = p[0];
+    var y = p[1];
+
+    if (x1 < x2) {
+        if (!between(x1, x, x2)) return false;
+    }
+    else {
+        if (!between(x2, x, x1)) return false;
+    }
+
+    if (y1 < y2) {
+        if (!between(y1, y, y2)) return false;
+    }
+    else {
+        if (!between(y2, y, y1)) return false;
+    }
+
+    return true;
+}
+
+
+export function segmentsEqual(s1, s2) {
+    return (s1.getFirstCoordinate()[0] === s2.getFirstCoordinate()[0] &&
+            s1.getFirstCoordinate()[1] === s2.getFirstCoordinate()[1] &&
+            s1.getLastCoordinate()[0] === s2.getLastCoordinate()[0] &&
+            s1.getLastCoordinate()[1] === s2.getLastCoordinate()[1]);
+}

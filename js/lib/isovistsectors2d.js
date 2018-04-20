@@ -7,7 +7,7 @@
  */
 
 import LineString from 'ol/geom/linestring';
-import {segmentsIntersect} from './lineintersection';
+import {segmentsIntersect, segmentsEqual} from './lineintersection';
 import {euclideanDistance} from './distance';
 import Arc from './arc';
 import $ from 'jquery';
@@ -18,10 +18,14 @@ export default class IsoVist {
      * Constructor
      * @param {Arc} arc the field of view
      * @param {Array.<ol.Feature>} segments segments in map
+     * @param {Boolean} isDisplayPartial if true display only partial visible segments, else display full visible segments
+     * @param {} epsilon tolerance for intersection
      */
-    constructor(arc, segments) {
+    constructor(arc, segments, isDisplayPartial = true, epsilon = 0.0001) {
         this.arc = arc;
         this.segments = segments;
+        this.isDisplayPartial = isDisplayPartial;
+        this.epsilon = epsilon;
     }
 
     /**
@@ -64,6 +68,8 @@ export default class IsoVist {
         return segments;
     }
 
+
+
     /**
      * Checks whether a segment is blocking, that is to say it is fully visible from the point of view
      * @param {ol.geom.LineString} segment
@@ -77,16 +83,25 @@ export default class IsoVist {
 
         var s1 = new LineString([position, p1]);
         var s2 = new LineString([position, p2]);
+
         var toPush = false;
+        var that = this;
         $.each(segments, function(i, s) {
-            var ps1 = s.getFirstCoordinate();
-            var ps2 = s.getLastCoordinate();
-            if (s === segment)
+            if (segmentsEqual(s, segment))
                 return true;
             var i1 = segmentsIntersect(s1, s);
             var i2 = segmentsIntersect(s2, s);
             if (i1 || i2) {
-                toPush = true;
+                if (i1) {
+                    if (euclideanDistance([i1.x, i1.y], p1) > that.epsilon &&
+                        euclideanDistance([i1.x, i1.y], p2) > that.epsilon)
+                        toPush = true;
+                }
+                if (i2) {
+                    if (euclideanDistance([i2.x , i2.y], p1) > that.epsilon &&
+                        euclideanDistance([i2.x , i2.y], p2) > that.epsilon)
+                        toPush = true;
+                }
             }
         });
         return toPush;
@@ -173,21 +188,23 @@ export default class IsoVist {
      * @returns {Array.<Arc>} free angles
      */
     freeAngles(blockedAngles) {
-        var freeAngles = [];
+        var freeA = [];
         var start = this.arc.alpha;
         var end = this.arc.omega;
+        var that = this;
         var index = 0;
         while (index < blockedAngles.length) {
             var currentBlocked = blockedAngles[index];
-            if (start < currentBlocked.alpha) {
-                freeAngles.push(new Arc(this.arc.center, this.arc.radius, start, currentBlocked.alpha));
-            } else if (index === blockedAngles.length - 1 && currentBlocked.omega < end) {
-                freeAngles.push(new Arc(this.arc.center, this.arc.radius, currentBlocked.omega, end));
+            if (start < currentBlocked.alpha && start < end) {
+                freeA.push(new Arc(this.arc.center, this.arc.radius, start, currentBlocked.alpha));
             }
-            start = currentBlocked.omega;
+            if (index === blockedAngles.length - 1 && currentBlocked.omega > that.arc.alpha && currentBlocked.omega < end) {
+                freeA.push(new Arc(this.arc.center, this.arc.radius, currentBlocked.omega, end));
+            }
+            start = (currentBlocked.omega >= start) ? currentBlocked.omega : start;
             index++;
         }
-        return freeAngles;
+        return freeA;
     }
 
     /**
@@ -232,6 +249,7 @@ export default class IsoVist {
             var s2 = new LineString([position, p2]);
             var i1 = segmentsIntersect(segment, s1);
             var i2 = segmentsIntersect(segment, s2);
+
             if (i1 || i2) {
                 if (i1 && i2) {
                     visibleSegment = new LineString([[i1.x, i1.y],
@@ -259,8 +277,10 @@ export default class IsoVist {
         var blockingSegments = [];
         var that = this;
         $.each(segments, function(i, segment) {
+            var arcSeg = that.visionBlockingArc(segment);
+
             var nonBlocking = that.isNonBlocking(segment,
-                                            segments);
+                                                 segments);
             if (!nonBlocking) {
                 blockingSegments.push(segment);
             }
@@ -294,6 +314,11 @@ export default class IsoVist {
         return freeSegments;
     }
 
+    /**
+     * Display visible parts of blocking segments
+     * @param {Array.<ol.geom.LineString>} blockingSegments
+     * @returns {Array.<ol.geom.LineString>} partially visible blocking segments
+     */
     computeVisibleBlockingSegments(blockingSegments) {
         var that  = this;
         var visibleSegments = [];
@@ -306,7 +331,7 @@ export default class IsoVist {
             } else if (that.arc.geometry.intersectsCoordinate(p1) ||
                        that.arc.geometry.intersectsCoordinate(p2))
             {
-                Array.prototype.push.apply(visibleSegments, segment);
+                Array.prototype.push.apply(visibleSegments, [segment]);
             }
         });
         return visibleSegments;
@@ -324,15 +349,15 @@ export default class IsoVist {
         var segments = this.segmentsIntersectingFOV();
         var position = this.arc.center;
         var blockingSegments = this.computeBlockingSegments(segments);
-        // var visibleBlockingSegments = this.computeVisibleBlockingSegments(blockingSegments);
 
-        Array.prototype.push.apply(visibleSegments, blockingSegments);
+        if (this.isDisplayPartial) {
+            var visibleBlockingSegments = this.computeVisibleBlockingSegments(blockingSegments);
+            Array.prototype.push.apply(visibleSegments, visibleBlockingSegments);
+        }
 
         var freeSegments = this.computeFreeSegments(blockingSegments, segments);
         var partiallyVisible = [];
-        var previous = freeSegments.length+1;
         while (freeSegments.length > 0) {
-            previous = freeSegments.length;
             freeSegments.sort(function(a,b) {
                 return euclideanDistance(position, a[0].getClosestPoint(position)) > euclideanDistance(position, b[0].getClosestPoint(position));
             });
@@ -341,10 +366,13 @@ export default class IsoVist {
             freeSegments = this.computeFreeSegments(blockingSegments, segments);
         }
 
-
-        $.each(partiallyVisible, function(i, segments) {
-            Array.prototype.push.apply(visibleSegments, segments);
-        });
+        // if (this.isDisplayPartial) {
+        //     $.each(partiallyVisible, function(i, segments) {
+        //         Array.prototype.push.apply(visibleSegments, segments);
+        //     });
+        // } else {
+        //     Array.prototype.push.apply(visibleSegments, blockingSegments);
+        // }
 
         return visibleSegments;
     }
