@@ -1,5 +1,5 @@
 /**
- * @fileOverview Isovist computation from Suleiman et al, A New Algorithm for 3D Isovists.
+ * @fileOverview Isovist computation inspired from Suleiman et al, A New Algorithm for 3D Isovists.
  * Space is delimited by a set of segments, and visibility can be determined by circular sectors associated with these segements
  * @name isovistsectors2d.js
  * @author Florent Grelard
@@ -7,7 +7,7 @@
  */
 
 import LineString from 'ol/geom/linestring';
-import {segmentsIntersect, segmentsEqual} from './lineintersection';
+import {segmentsIntersect, segmentsEqual, onSegment} from './lineintersection';
 import {euclideanDistance} from './distance';
 import Arc from './arc';
 import $ from 'jquery';
@@ -130,10 +130,17 @@ export default class IsoVist {
         var norm2 = Math.sqrt(Math.pow(v2[0], 2) + Math.pow(v2[1], 2));
 
         var alpha = Math.acos(dot1  / (norm1 * radius)) * 180 / Math.PI;
-        if (v1[1] < 0) alpha = 360-alpha;
         var omega = Math.acos(dot2 / (norm2 * radius)) * 180 / Math.PI;
 
-        if (v2[1] < 0) omega = 360-omega ;
+        if (v1[1] < 0)
+            alpha = 360-alpha;
+        else if (v1[1] > 0 && this.arc.omega > 360)
+            alpha += 360;
+
+        if (v2[1] < 0)
+            omega = 360-omega ;
+         else if (v2[1] > 0 && this.arc.omega > 360)
+            omega += 360;
         if (omega < alpha) {
             var tmp = alpha;
             alpha = omega;
@@ -218,10 +225,10 @@ export default class IsoVist {
         var segStart = segment.getFirstCoordinate();
         var segEnd = segment.getLastCoordinate();
 
-        var norm = euclideanDistance(segStart, [intersection.x, intersection.y]);
-        var middle = [(intersection.x + (segStart[0] - intersection.x) / norm), (intersection.y + (segStart[1] - intersection.y) / norm) ];
+        var norm = euclideanDistance(segStart, segEnd);
+        var middle = [(intersection.x + (segStart[0] - segEnd[0]) / norm), (intersection.y + (segStart[1] - segEnd[1]) / norm) ];
         var p;
-        if (arc.geometry.intersectsCoordinate(middle))
+        if (this.arc.geometry.intersectsCoordinate(segStart))
             p = segStart;
         else
             p = segEnd;
@@ -240,6 +247,8 @@ export default class IsoVist {
         var position = this.arc.center;
         var visibleSegments = [];
         var that = this;
+        var ps1 = segment.getFirstCoordinate();
+        var ps2 = segment.getLastCoordinate();
         $.each(angles, function(i, angle) {
             var arc = new Arc(that.arc.center, that.arc.radius, angle.alpha, angle.omega);
             arc.computeGeometry();
@@ -277,8 +286,6 @@ export default class IsoVist {
         var blockingSegments = [];
         var that = this;
         $.each(segments, function(i, segment) {
-            var arcSeg = that.visionBlockingArc(segment);
-
             var nonBlocking = that.isNonBlocking(segment,
                                                  segments);
             if (!nonBlocking) {
@@ -366,13 +373,13 @@ export default class IsoVist {
             freeSegments = this.computeFreeSegments(blockingSegments, segments);
         }
 
-        // if (this.isDisplayPartial) {
-        //     $.each(partiallyVisible, function(i, segments) {
-        //         Array.prototype.push.apply(visibleSegments, segments);
-        //     });
-        // } else {
-        //     Array.prototype.push.apply(visibleSegments, blockingSegments);
-        // }
+        if (this.isDisplayPartial) {
+            $.each(partiallyVisible, function(i, segments) {
+                Array.prototype.push.apply(visibleSegments, segments);
+            });
+        } else {
+            Array.prototype.push.apply(visibleSegments, blockingSegments);
+        }
 
         return visibleSegments;
     }

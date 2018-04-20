@@ -183,8 +183,7 @@ function getPosition(mapMetadata) {
 }
 
 function computeAlphaOmegaFromDir(direction, fov) {
-    var dirTrigRad = (// 360 -
-                      direction + 90) % 360;
+    var dirTrigRad = (360 - direction + 90) % 360;
     var alpha = (dirTrigRad - fov / 2) % 360;
     var omega = (alpha + fov);
     return [alpha, omega];
