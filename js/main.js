@@ -53,6 +53,88 @@ var canvas = document.createElement('canvas');
 var context = canvas.getContext('2d');
 var radius = 20;
 
+var select = new Select();
+select.on('select', function(e) {
+    var selectedFeatures = select.getFeatures();
+
+    arcs.getSource().clear();
+    if (thumbnails.getSource())
+        thumbnails.setSource();
+    featuresLine = [];
+
+    e.selected.filter(function(feature) {
+        console.log(feature.getProperties());
+        var selectedFeatures = feature.get('features');
+        $.each(selectedFeatures, function(i, f) {
+            var arc = f.getProperties().arc;
+            arc.computeGeometry();
+            arcs.getSource().addFeature(new Feature(arc));
+
+            var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
+            var visibleSegments = isovist.computeIsoVist();
+            $.each(visibleSegments, function(i, segment) {
+                featuresLine.push(new Feature(segment));
+            });
+
+
+            var t0Image = fetch(url+"images", {
+                method: 'post',
+                body: JSON.stringify({str: f.getProperties().filename})
+            });
+            var t1Image = t0Image.then(function (response) {
+                return response.json();
+            });
+            t1Image.then(function(resultPost) {
+                var b64String = resultPost.data[0].ThumbnailImage;
+                var position = f.getGeometry()['flatCoordinates'];
+                createNewImage(b64String, position);
+            });
+        });
+    });
+    lines.getSource().clear();
+    lines.getSource().addFeatures(featuresLine);
+});
+
+
+$("#buttonDir").on("click", function(event) {
+    var files = [];
+    var dir = $("#dirMetadata").val();
+    var t0 = fetch(url, {
+        method: 'post',
+        body: JSON.stringify({str: dir})
+    });
+    var t1 = t0.then(function (response) {
+        return response.json();
+    });
+
+
+    t1.then(function(resultPost) {
+
+        var metadataJSON = resultPost.data;
+
+        $.each(metadataJSON, function(i, photo) {
+            if (photo.hasOwnProperty('ImageWidth')) {
+                var position = getPosition(photo);
+                if (position !== null) {
+                    var fileName = photo.SourceFile;
+                    var cone = getOrientation(photo, position);
+                    var picture = new Picture(fileName, position, cone);
+                    var feature = new Feature(picture);
+                    pictures.push(feature);
+                }
+            }
+        });
+
+        clusters.getSource().getSource().clear();
+        clusters.getSource().getSource().addFeatures(pictures);
+
+        arcs.getSource().clear();
+    });
+
+
+});
+
+
 function lonLatToDecimal(deg, min, sec) {
     return deg + min / 60 + sec / 3600;
 }
@@ -232,7 +314,6 @@ function createNewImage(base64String, position) {
     });
     thumbnails.setSource(imageStatic);
 }
-// var metadata = loadExifToolMetadata("file:///home/fgrelard/Code/Optimum/0W2A0931.txt");
 
 
 var styles = {
@@ -446,84 +527,4 @@ map.addLayer(arcs);
 map.addLayer(thumbnails);
 map.addLayer(lines);
 
-var select = new Select();
 map.addInteraction(select);
-select.on('select', function(e) {
-    var selectedFeatures = select.getFeatures();
-
-    arcs.getSource().clear();
-    if (thumbnails.getSource())
-        thumbnails.setSource();
-    featuresLine = [];
-
-    e.selected.filter(function(feature) {
-        console.log(feature.getProperties());
-        var selectedFeatures = feature.get('features');
-        $.each(selectedFeatures, function(i, f) {
-            var arc = f.getProperties().arc;
-            arc.computeGeometry();
-            arcs.getSource().addFeature(new Feature(arc));
-
-            var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
-            var visibleSegments = isovist.computeIsoVist();
-            $.each(visibleSegments, function(i, segment) {
-                featuresLine.push(new Feature(segment));
-            });
-
-
-            var t0Image = fetch(url+"images", {
-                method: 'post',
-                body: JSON.stringify({str: f.getProperties().filename})
-            });
-            var t1Image = t0Image.then(function (response) {
-                return response.json();
-            });
-            t1Image.then(function(resultPost) {
-                var b64String = resultPost.data[0].ThumbnailImage;
-                var position = f.getGeometry()['flatCoordinates'];
-                createNewImage(b64String, position);
-            });
-        });
-    });
-    lines.getSource().clear();
-    lines.getSource().addFeatures(featuresLine);
-});
-
-
-$("#buttonDir").on("click", function(event) {
-    var files = [];
-    var dir = $("#dirMetadata").val();
-    var t0 = fetch(url, {
-        method: 'post',
-        body: JSON.stringify({str: dir})
-    });
-    var t1 = t0.then(function (response) {
-        return response.json();
-    });
-
-
-    t1.then(function(resultPost) {
-
-        var metadataJSON = resultPost.data;
-
-        $.each(metadataJSON, function(i, photo) {
-            if (photo.hasOwnProperty('ImageWidth')) {
-                var position = getPosition(photo);
-                if (position !== null) {
-                    var fileName = photo.SourceFile;
-                    var cone = getOrientation(photo, position);
-                    var picture = new Picture(fileName, position, cone);
-                    var feature = new Feature(picture);
-                    pictures.push(feature);
-                }
-            }
-        });
-
-        clusters.getSource().getSource().clear();
-        clusters.getSource().getSource().addFeatures(pictures);
-
-        arcs.getSource().clear();
-    });
-
-
-});

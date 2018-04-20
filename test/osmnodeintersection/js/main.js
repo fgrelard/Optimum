@@ -24,16 +24,16 @@ import Select from 'ol/interaction/select';
 import OSMXML from 'ol/format/osmxml';
 import loadingstrategy from 'ol/loadingstrategy';
 
-import Arc from './lib/arc';
-import IsoVist from './lib/isovistsectors2d';
+import Arc from '../../../js/lib/arc';
+import IsoVist from '../../../js/lib/isovistsectors2d';
 import $ from 'jquery';
 
 var map;
 var featuresArc=[];
 var features=[];
 var featuresLine =[];
-var alpha = 270;
-var omega = 360;
+var alpha = 271;
+var omega = 359;
 var radius = 150;
 var position = [739885.8194006054, 5905880.253554305 ];
 var arc = new Arc(position, radius, alpha, omega);
@@ -130,11 +130,12 @@ var vectorSource = new Vector({
                 featureProjection: map.getView().getProjection()
             });
             vectorSource.addFeatures(features);
-            var isovist = new IsoVist(arc, features);
+            var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
             var visibleSegments = isovist.computeIsoVist();
             $.each(visibleSegments, function(i, segment) {
-                featuresLine.push(new Feature(segment));
+                featuresLine.push(new Feature(new LineString([segment.getFirstCoordinate(), segment.getLastCoordinate()])));
             });
+
             lines.getSource().clear();
             lines.getSource().addFeatures(featuresLine);
         });
@@ -183,7 +184,7 @@ map = new Map({
 
 var extent2 = map.getView().calculateExtent(map.getSize());
 
-var featureArc = new Feature({geometry: arc.geometry[0]});
+var featureArc = new Feature({geometry: arc.geometry});
 featureArc.position = position;
 featuresArc.push(featureArc);
 
@@ -254,7 +255,7 @@ var lines = new VectorLayer({
     source: lineSource,
     style: new Style({
         stroke : new Stroke({
-            color: '#FF0000'
+            color: '#FFFF00'
         })
     })
 });

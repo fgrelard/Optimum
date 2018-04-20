@@ -228,7 +228,7 @@ export default class IsoVist {
         var norm = euclideanDistance(segStart, segEnd);
         var middle = [(intersection.x + (segStart[0] - segEnd[0]) / norm), (intersection.y + (segStart[1] - segEnd[1]) / norm) ];
         var p;
-        if (this.arc.geometry.intersectsCoordinate(segStart))
+        if (arc.geometry.intersectsCoordinate(middle))
             p = segStart;
         else
             p = segEnd;
