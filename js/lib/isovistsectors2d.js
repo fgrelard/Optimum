@@ -7,7 +7,7 @@
  */
 
 import LineString from 'ol/geom/linestring';
-import {segmentsIntersect, segmentsEqual, onSegment} from './lineintersection';
+import * as Intersection from './lineintersection';
 import {euclideanDistance} from './distance';
 import Arc from './arc';
 import $ from 'jquery';
@@ -87,10 +87,10 @@ export default class IsoVist {
         var toPush = false;
         var that = this;
         $.each(segments, function(i, s) {
-            if (segmentsEqual(s, segment))
+            if (Intersection.segmentsEqual(s, segment))
                 return true;
-            var i1 = segmentsIntersect(s1, s);
-            var i2 = segmentsIntersect(s2, s);
+            var i1 = Intersection.segmentsIntersect(s1, s);
+            var i2 = Intersection.segmentsIntersect(s2, s);
             if (i1 || i2) {
                 if (i1) {
                     if (euclideanDistance([i1.x, i1.y], p1) > that.epsilon &&
@@ -257,8 +257,8 @@ export default class IsoVist {
             var p2 = arc.fullGeometry[2].getFlatCoordinates();
             var s1 = new LineString([position, p1]);
             var s2 = new LineString([position, p2]);
-            var i1 = segmentsIntersect(segment, s1);
-            var i2 = segmentsIntersect(segment, s2);
+            var i1 = Intersection.segmentsIntersect(segment, s1);
+            var i2 = Intersection.segmentsIntersect(segment, s2);
             if (i1 || i2) {
                 if (i1 && i2) {
                     visibleSegment = new LineString([[i1.x, i1.y],

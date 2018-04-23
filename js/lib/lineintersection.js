@@ -1,5 +1,10 @@
 import bigdecimal from 'bigdecimal';
-var eps = 0.0001;
+
+export var epsilon = 0.000001;
+
+export function setEpsilon(eps) {
+    epsilon = eps;
+}
 
 /**
  * Checks if coordinates are on a line
@@ -9,7 +14,11 @@ var eps = 0.0001;
  * @returns {Boolean} Between coordinates
  */
 function between(a, b, c) {
-    return a-eps <= b && b <= c+eps;
+    return a-epsilon <= b && b <= c+epsilon;
+}
+
+function averageDiff(a, b, c) {
+    return (Math.abs(a - b) + Math.abs(c - b)) / 2;
 }
 
 
@@ -26,14 +35,14 @@ function between(a, b, c) {
  * @returns {} the intersection, if it exists
  */
 export function segmentIntersectionExact(x1,y1,x2,y2, x3,y3,x4,y4) {
-    var bx1 = bigdecimal.BigDecimal(x1.toString()).setScale(10);
-    var bx2 = bigdecimal.BigDecimal(x2.toString()).setScale(10);
-    var bx3 = bigdecimal.BigDecimal(x3.toString()).setScale(10);
-    var bx4 = bigdecimal.BigDecimal(x4.toString()).setScale(10);
-    var by1 = bigdecimal.BigDecimal(y1.toString()).setScale(10);
-    var by2 = bigdecimal.BigDecimal(y2.toString()).setScale(10);
-    var by3 = bigdecimal.BigDecimal(y3.toString()).setScale(10);
-    var by4 = bigdecimal.BigDecimal(y4.toString()).setScale(10);
+    var bx1 = bigdecimal.BigDecimal(x1.toString());
+    var bx2 = bigdecimal.BigDecimal(x2.toString());
+    var bx3 = bigdecimal.BigDecimal(x3.toString());
+    var bx4 = bigdecimal.BigDecimal(x4.toString());
+    var by1 = bigdecimal.BigDecimal(y1.toString());
+    var by2 = bigdecimal.BigDecimal(y2.toString());
+    var by3 = bigdecimal.BigDecimal(y3.toString());
+    var by4 = bigdecimal.BigDecimal(y4.toString());
 
     var x1y2 = bx1.multiply(by2);
     var y1x2 = by1.multiply(bx2);
@@ -127,7 +136,6 @@ export function segmentIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
             if (!between(y3, y, y4)) {return false;}
         }
     }
-
     return {x: x,y: y};
 }
 
