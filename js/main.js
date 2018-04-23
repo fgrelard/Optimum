@@ -131,6 +131,7 @@ $("#buttonDir").on("click", function(event) {
 var vectorSource = new Vector({
     format: new OSMXML(),
     loader: function(extent2, resolution, projection) {
+        console.log(resolution);
         if (resolution < 2) {
             var epsg4326Extent =
                     proj.transformExtent(extent2, projection, 'EPSG:4326');

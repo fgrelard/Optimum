@@ -16,7 +16,9 @@
         "rollup-watch": "^4.3.1"
     },
     "dependencies": {
+        "exact-segment-intersect": "^2.0.0",
         "jquery": "^3.3.1",
+        "jsts-es": "^1.5.4",
         "mathjs": "^4.1.1",
         "ol": "^4.0.1-beta.2"
     }

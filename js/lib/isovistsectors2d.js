@@ -249,6 +249,7 @@ export default class IsoVist {
         var that = this;
         var ps1 = segment.getFirstCoordinate();
         var ps2 = segment.getLastCoordinate();
+
         $.each(angles, function(i, angle) {
             var arc = new Arc(that.arc.center, that.arc.radius, angle.alpha, angle.omega);
             arc.computeGeometry();
@@ -258,7 +259,6 @@ export default class IsoVist {
             var s2 = new LineString([position, p2]);
             var i1 = segmentsIntersect(segment, s1);
             var i2 = segmentsIntersect(segment, s2);
-
             if (i1 || i2) {
                 if (i1 && i2) {
                     visibleSegment = new LineString([[i1.x, i1.y],

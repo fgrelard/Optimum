@@ -27,17 +27,20 @@ import loadingstrategy from 'ol/loadingstrategy';
 import Arc from '../../../js/lib/arc';
 import IsoVist from '../../../js/lib/isovistsectors2d';
 import $ from 'jquery';
+import {segmentIntersection} from '../../../js/lib/lineintersection';
 
 var map;
 var featuresArc=[];
 var features=[];
 var featuresLine =[];
-var alpha = 271;
-var omega = 359;
+var alpha = 270;
+var omega = 360;
 var radius = 150;
 var position = [739885.8194006054, 5905880.253554305 ];
 var arc = new Arc(position, radius, alpha, omega);
 arc.computeGeometry();
+
+// console.log(segmentIntersection(739885.8194006054, 5905880.253554305, 739885.8194006054, 5905730.253554305 , 739869.5666760689, 5905838.1341363415, 739897.5412641052, 5905829.974136281));
 
 var styles = {
     'amenity': {
@@ -264,7 +267,6 @@ var lines = new VectorLayer({
 map.addLayer(clusters);
 map.addLayer(arcs);
 map.addLayer(lines);
-
 
 var select = new Select();
 map.addInteraction(select);
