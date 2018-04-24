@@ -7,7 +7,7 @@ import proj from 'ol/proj';
 import Vector from 'ol/source/vector';
 import VectorLayer from 'ol/layer/vector';
 import Point from 'ol/geom/point';
-import Cluster from 'ol/source/cluster';
+import OLCluster from 'ol/source/cluster';
 import Feature from 'ol/feature';
 import LineString from 'ol/geom/linestring';
 import Polygon from 'ol/geom/polygon';
@@ -22,7 +22,9 @@ import loadingstrategy from 'ol/loadingstrategy';
 import $ from 'jquery';
 import Muuri from 'muuri';
 
+import {euclideanDistance} from './lib/distance';
 import Arc from './lib/arc';
+import Cluster from './lib/cluster';
 import IsoVist from './lib/isovistsectors2d';
 import Picture from './lib/picture';
 import {getPosition, getOrientation} from './lib/exiftool-util';
@@ -42,8 +44,10 @@ var url = "http://localhost:8080/";
 var grid;
 var thumbnails = new OLImage();
 var pictures = [];
+var clusters = [];
 var featuresLine = [];
 var select = new Select();
+
 
 
 function getThumbnail(f) {
@@ -75,7 +79,7 @@ function getIsovist(f) {
 }
 
 function getImageLayout(f) {
-    var t0Image = fetch(url+"previews", {
+    var t0Image = fetch(url+"images", {
         method: 'post',
         body: JSON.stringify({str: f.getProperties().filename})
     });
@@ -83,32 +87,59 @@ function getImageLayout(f) {
         return response.json();
     });
     var t2Image = t1Image.then(function(resultPost) {
-        var b64String = resultPost.data[0].PreviewImage;
+        var b64String = resultPost.data[0].ThumbnailImage;
         var uri = b64String.replace("base64:", "data:image/jpeg;base64,");
         return uri;
     });
     return t2Image;
 }
 
-function getImage(base64, images, count, length) {
+function getLabelFromClusters(picture) {
+    for (var key in clusters) {
+        if (clusters[key].pictures.indexOf(picture) !== -1)
+            return clusters[key].label;
+    }
+    return -1;
+}
+
+function getValueFromClusters(picture) {
+    for (var key in clusters) {
+        var pictures = clusters[key].pictures;
+        for (var keyP in pictures) {
+            var filename = pictures[keyP].getProperties().filename;
+            if (filename === picture.filename)
+                return key;
+        }
+    }
+    return -1;
+}
+
+function filter() {
+    var filterFieldValue = $('.filter-field').val();
+    grid.filter(function (item) {
+        var element = item.getElement();
+        var isFilterMatch = !filterFieldValue ? true : (element.getAttribute('data-cluster') || '') === filterFieldValue;
+        return isFilterMatch;
+    });
+}
+
+function getImage(base64, images, label, count, length) {
     var i = new Image();
     i.addEventListener('dragstart', function (e) {
         e.preventDefault();
     }, false);
     i.onload = function(event) {
         var divItem = $("<div/>", {
-            class:"item"
+            class: "item",
+            "data-cluster": label
         });
         var divItemContent = $("<div/>", {
             class:"item-content"
         });
         divItemContent.append(i);
         divItem.append(divItemContent);
-        console.log(divItem.get(0));
-        console.log(i);
         images.push(divItem.get(0));
         count.number++;
-        console.log(count.number);
         if (count.number >= length) {
             grid.add(images, {layout:true});
             grid.refreshItems().layout();
@@ -119,7 +150,7 @@ function getImage(base64, images, count, length) {
 
 }
 
-function generateGrid(images) {
+function generateGrid() {
     grid = new Muuri('.grid', {
         items: '.item',
         layout: {
@@ -129,6 +160,34 @@ function generateGrid(images) {
     });
 }
 
+
+
+function clustersFromDistance(pictures) {
+    var indexes = [];
+    var clusters = [];
+    for (var i = 0; i < pictures.length; i++) {
+        if (indexes.indexOf(i) !== -1) continue;
+        var pic1 = pictures[i];
+        var pos1 = pic1.getProperties().position;
+        var r1 = pic1.getProperties().arc.radius;
+        var cluster = [];
+        for (var j = i+1; j < pictures.length; j++) {
+            if (indexes.indexOf(j) !== -1) continue;
+            var pic2 = pictures[j];
+            var pos2 = pic2.getProperties().position;
+            if (euclideanDistance(pos1, pos2) < r1) {
+                indexes.push(j);
+                cluster.push(pic2);
+            }
+        }
+        cluster.push(pic1);
+        clusters.push(new Cluster(cluster, pic1.getProperties().filename));
+    }
+    return clusters;
+}
+
+generateGrid();
+$('.filter-field').change(filter);
 select.on('select', function(e) {
     var selectedFeatures = select.getFeatures();
 
@@ -141,15 +200,12 @@ select.on('select', function(e) {
         console.log(feature.getProperties());
         var selectedFeatures = feature.get('features');
         var images = [];
-        generateGrid(images);
+
 
         var count = {number:0};
         $.each(selectedFeatures, function(i, f) {
             getIsovist(f);
             getThumbnail(f);
-            getImageLayout(f).then(function(uri) {
-                getImage(uri, images, count, selectedFeatures.length);
-            });
         });
     });
 
@@ -187,14 +243,30 @@ $("#buttonDir").on("click", function(event) {
                 }
             }
         });
+        clusters = clustersFromDistance(pictures);
 
-        clusters.getSource().getSource().clear();
-        clusters.getSource().getSource().addFeatures(pictures);
+        var images = [];
+        var count = {number:0};
+        $.each(pictures, function(i, feature) {
+            var label = getValueFromClusters(feature.getProperties());
+            getImageLayout(feature).then(function(uri) {
+                getImage(uri, images, label, count, pictures.length);
+            });
+        });
+
+
+        for (var i = 0; i < clusters.length; i++) {
+            $('#selectPosition').append($('<option>', {
+                value: i,
+                text: clusters[i].label
+            }));
+        }
+
+        olClusters.getSource().getSource().clear();
+        olClusters.getSource().getSource().addFeatures(pictures);
 
         arcs.getSource().clear();
     });
-
-
 });
 
 
@@ -204,7 +276,7 @@ var vectorSource = new Vector({
     loader: function(extent2, resolution, projection) {
         if (resolution < 2) {
             var epsg4326Extent =
-                    proj.transformExtent(extent2, projection, 'EPSG:4326');
+                proj.transformExtent(extent2, projection, 'EPSG:4326');
             var client = new XMLHttpRequest();
             client.open('POST', 'https://overpass-api.de/api/interpreter');
             client.addEventListener('load', function() {
@@ -225,9 +297,9 @@ var vectorSource = new Vector({
                 vectorSource.addFeatures(limitedFeatures);
             });
             var query = '(node(' +
-                    epsg4326Extent[1] + ',' + epsg4326Extent[0] + ',' +
-                    epsg4326Extent[3] + ',' + epsg4326Extent[2] +
-                    ');rel(bn)->.foo;way(bn);node(w)->.foo;rel(bw););out meta;';
+                epsg4326Extent[1] + ',' + epsg4326Extent[0] + ',' +
+                epsg4326Extent[3] + ',' + epsg4326Extent[2] +
+                ');rel(bn)->.foo;way(bn);node(w)->.foo;rel(bw););out meta;';
             client.send(query);
         }
         this.resolution = resolution;
@@ -263,7 +335,7 @@ var extent2 = map.getView().calculateExtent(map.getSize());
 
 var source = new Vector();
 
-var clusterSource = new Cluster({
+var clusterSource = new OLCluster({
     source: source
 });
 
@@ -276,7 +348,7 @@ var arcs = new VectorLayer({
 
 
 var styleCache2 = {};
-var clusters = new VectorLayer({
+var olClusters = new VectorLayer({
     source: clusterSource,
     style: styles.setStyleClusters
 });
@@ -292,7 +364,7 @@ var lines = new VectorLayer({
 
 
 map.addLayer(vector);
-map.addLayer(clusters);
+map.addLayer(olClusters);
 map.addLayer(arcs);
 map.addLayer(thumbnails);
 map.addLayer(lines);
