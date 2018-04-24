@@ -44,6 +44,15 @@ app.post('/images', function (req, res) {
     });
 });
 
+app.post('/previews', function (req, res) {
+    var postReq = JSON.parse(req.body);
+    var content = postReq.str;
+    var promise = getExifToolData(content, ['-File:all', 'b -PreviewImage']);
+    promise.then(function(result) {
+        res.send(result);
+    });
+});
+
 app.get('/', function (req, res) {
     res.send("ExifToolData");
 });

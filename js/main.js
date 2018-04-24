@@ -11,22 +11,23 @@ import Cluster from 'ol/source/cluster';
 import Feature from 'ol/feature';
 import LineString from 'ol/geom/linestring';
 import Polygon from 'ol/geom/polygon';
-
 import extent from 'ol/extent';
 import Select from 'ol/interaction/select';
-import $ from 'jquery';
-import Image from 'ol/layer/image';
+import OLImage from 'ol/layer/image';
 import Projection from 'ol/proj/projection';
-
 import control from 'ol/control';
 import OSMXML from 'ol/format/osmxml';
 import loadingstrategy from 'ol/loadingstrategy';
+
+import $ from 'jquery';
+import Muuri from 'muuri';
 
 import Arc from './lib/arc';
 import IsoVist from './lib/isovistsectors2d';
 import Picture from './lib/picture';
 import {getPosition, getOrientation} from './lib/exiftool-util';
 import * as styles from './lib/styles';
+
 
 var count = 200;
 var featuresArc = new Array(count);
@@ -38,12 +39,96 @@ var latConv = stEtienneLonLatConv[1];
 
 
 var url = "http://localhost:8080/";
-
-var thumbnails = new Image();
+var grid;
+var thumbnails = new OLImage();
 var pictures = [];
 var featuresLine = [];
-
 var select = new Select();
+
+
+function getThumbnail(f) {
+    var t0Image = fetch(url+"images", {
+        method: 'post',
+        body: JSON.stringify({str: f.getProperties().filename})
+    });
+    var t1Image = t0Image.then(function (response) {
+        return response.json();
+    });
+    t1Image.then(function(resultPost) {
+        var b64String = resultPost.data[0].ThumbnailImage;
+        var position = f.getGeometry()['flatCoordinates'];
+        var imageStatic = styles.createNewImage(b64String, position, proj.get());
+        thumbnails.setSource(imageStatic);
+    });
+}
+
+function getIsovist(f) {
+    var arc = f.getProperties().arc;
+    arc.computeGeometry();
+    arcs.getSource().addFeature(new Feature(arc));
+
+    var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
+    var visibleSegments = isovist.computeIsoVist();
+    $.each(visibleSegments, function(i, segment) {
+        featuresLine.push(new Feature(segment));
+    });
+}
+
+function getImageLayout(f) {
+    var t0Image = fetch(url+"previews", {
+        method: 'post',
+        body: JSON.stringify({str: f.getProperties().filename})
+    });
+    var t1Image = t0Image.then(function (response) {
+        return response.json();
+    });
+    var t2Image = t1Image.then(function(resultPost) {
+        var b64String = resultPost.data[0].PreviewImage;
+        var uri = b64String.replace("base64:", "data:image/jpeg;base64,");
+        return uri;
+    });
+    return t2Image;
+}
+
+function getImage(base64, images, count, length) {
+    var i = new Image();
+    i.addEventListener('dragstart', function (e) {
+        e.preventDefault();
+    }, false);
+    i.onload = function(event) {
+        var divItem = $("<div/>", {
+            class:"item"
+        });
+        var divItemContent = $("<div/>", {
+            class:"item-content"
+        });
+        divItemContent.append(i);
+        divItem.append(divItemContent);
+        console.log(divItem.get(0));
+        console.log(i);
+        images.push(divItem.get(0));
+        count.number++;
+        console.log(count.number);
+        if (count.number >= length) {
+            grid.add(images, {layout:true});
+            grid.refreshItems().layout();
+            document.body.className = 'images-loaded';
+        }
+    };
+    i.src = base64;
+
+}
+
+function generateGrid(images) {
+    grid = new Muuri('.grid', {
+        items: '.item',
+        layout: {
+            fillGaps: true
+        },
+        dragEnabled: true
+    });
+}
+
 select.on('select', function(e) {
     var selectedFeatures = select.getFeatures();
 
@@ -55,33 +140,19 @@ select.on('select', function(e) {
     e.selected.filter(function(feature) {
         console.log(feature.getProperties());
         var selectedFeatures = feature.get('features');
+        var images = [];
+        generateGrid(images);
+
+        var count = {number:0};
         $.each(selectedFeatures, function(i, f) {
-            var arc = f.getProperties().arc;
-            arc.computeGeometry();
-            arcs.getSource().addFeature(new Feature(arc));
-
-            var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
-            var visibleSegments = isovist.computeIsoVist();
-            $.each(visibleSegments, function(i, segment) {
-                featuresLine.push(new Feature(segment));
-            });
-
-
-            var t0Image = fetch(url+"images", {
-                method: 'post',
-                body: JSON.stringify({str: f.getProperties().filename})
-            });
-            var t1Image = t0Image.then(function (response) {
-                return response.json();
-            });
-            t1Image.then(function(resultPost) {
-                var b64String = resultPost.data[0].ThumbnailImage;
-                var position = f.getGeometry()['flatCoordinates'];
-                var imageStatic = styles.createNewImage(b64String, position, proj.get());
-                thumbnails.setSource(imageStatic);
+            getIsovist(f);
+            getThumbnail(f);
+            getImageLayout(f).then(function(uri) {
+                getImage(uri, images, count, selectedFeatures.length);
             });
         });
     });
+
     lines.getSource().clear();
     lines.getSource().addFeatures(featuresLine);
 });

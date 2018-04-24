@@ -17,17 +17,30 @@
       </div>
       </header>
       <div id="banner-wrapper">
-		<div id="banner" class="box container">
-            
-          <div id="map" class="map">
+		<div id="banner">
 
+          <div class="box container">
+            
+            <div id="map" class="map">
+
+            </div>
+
+            <form>
+              <label for="dirMetadata">Chemin du répertoire</label>
+              <input type="text" id="dirMetadata" id="path" value="/home/fgrelard/data/raw/">
+              <input type="button" id="buttonDir" value="OK"/>
+            </form>
           </div>
 
-          <form>
-              <label for="dirMetadata">Path to directory to scan </label>
-              <input type="text" id="dirMetadata" id="path" value="/home/fgrelard/data/raw/">
-              <input type="button" id="buttonDir" value="Send"/>
-            </form>
+          <div class="box container">
+            <h3> Grappes </h3>
+            <div class="loading">
+              <p> En attente de données... </p>
+            </div>
+            <div class="grid">
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

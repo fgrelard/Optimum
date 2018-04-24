@@ -192,7 +192,7 @@ export function gradient(arc, resolution) {
 
 
 export function createNewImage(base64String, position, projection) {
-    var uri = base64String.replace("base64:", "data:image/png;base64,");
+    var uri = base64String.replace("base64:", "data:image/jpeg;base64,");
     var imageStatic = new ImageStatic({
         url: '',
         imageLoadFunction : function(image){
