@@ -1,4 +1,3 @@
-/* Imports */
 import Map from 'ol/map';
 import View from 'ol/view';
 import TileLayer from 'ol/layer/tile';
@@ -20,8 +19,8 @@ import OSMXML from 'ol/format/osmxml';
 import loadingstrategy from 'ol/loadingstrategy';
 
 import $ from 'jquery';
-//import Muuri from 'muuri';
-import gridstack from 'gridstack/dist/gridstack';
+import Muuri from 'muuri';
+
 import {euclideanDistance} from './lib/distance';
 import Arc from './lib/arc';
 import Cluster from './lib/cluster';
@@ -31,9 +30,6 @@ import {getPosition, getOrientation} from './lib/exiftool-util';
 import * as styles from './lib/styles';
 import DistanceStrategy from './lib/clustering/distancestrategy';
 
-
-
-/* Variables */
 var count = 200;
 var featuresArc = new Array(count);
 var stEtienneLonLat = [4.392569444444445, 45.42289722222222];
@@ -141,7 +137,7 @@ var lines = new VectorLayer({
     style: styles.setStyleLinesIsovist
 });
 
-/* Functions */
+
 function getThumbnail(f) {
     var t0Image = fetch(url+"images", {
         method: 'post',
@@ -205,23 +201,13 @@ function changeLayout() {
 }
 
 function generateGrid() {
-    // grid = new Muuri('.grid', {
-    //     items: '.item',
-    //     layout: {
-    //         fillGaps: true
-    //     },
-    //     dragEnabled: true,
-    // });
-    $('.grid-stack').gridstack({
-        width:4,
-        disableDrag:false,
-        disableResize: false
-
-        // resizable: {
-        //     handles: 'e, se, s, sw, w'
-        // }
+    grid = new Muuri('.grid', {
+        items: '.item',
+        layout: {
+            fillGaps: true
+        },
+        dragEnabled: true,
     });
-    grid = $('.grid-stack').data('gridstack');
 }
 
 function loadImageAndFillGrid(base64, images, label, count, length) {
@@ -238,31 +224,26 @@ function loadImageAndFillGrid(base64, images, label, count, length) {
 
 function fillGrid(image, images, label, count, length) {
     var divItem = $("<div/>", {
-        class: "grid-stack-item",
-        "data-cluster": label,
+        class: "item",
+        "data-cluster": label
     });
     var divItemContent = $("<div/>", {
-        class:"grid-stack-item-content",
+        class:"item-content"
     });
     divItemContent.append(image);
     divItem.append(divItemContent);
     images.push(divItem.get(0));
-    grid.addWidget(divItem.get(0),0,0,1,1,true);
-
-    var newHeight = Math.round((divItemContent[0].scrollHeight + grid.opts.verticalMargin) / (grid.cellHeight() + grid.opts.verticalMargin));
-    grid.resize(divItem,$(divItem).attr('data-gs-width'),newHeight);
     count.number++;
     if (count.number >= length) {
-        // grid.movable('.grid-stack-item', true);
-        // grid.resizable('.grid-stack-item', true);
-        // grid.add(images, {layout:true});
-        // grid.refreshItems().layout();
+        grid.add(images, {layout:true});
+        grid.refreshItems().layout();
         document.body.className = 'images-loaded';
     }
 }
 
-/* Main */
+
 generateGrid();
+
 $('.filter-field').change(filter);
 $('.layout-field').change(changeLayout);
 
