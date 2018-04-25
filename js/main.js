@@ -1,7 +1,6 @@
 import Map from 'ol/map';
 import View from 'ol/view';
 import TileLayer from 'ol/layer/tile';
-import XYZ from 'ol/source/xyz';
 import OSM from 'ol/source/osm';
 import proj from 'ol/proj';
 import Vector from 'ol/source/vector';
@@ -29,7 +28,7 @@ import IsoVist from './lib/isovistsectors2d';
 import Picture from './lib/picture';
 import {getPosition, getOrientation} from './lib/exiftool-util';
 import * as styles from './lib/styles';
-
+import DistanceStrategy from './lib/clustering/distancestrategy';
 
 var count = 200;
 var featuresArc = new Array(count);
@@ -39,7 +38,6 @@ stEtienneLonLatConv = [487537.9340862985, 5693250.829916254];
 var lonConv = stEtienneLonLatConv[0];
 var latConv = stEtienneLonLatConv[1];
 
-
 var url = "http://localhost:8080/";
 var grid;
 var thumbnails = new OLImage();
@@ -47,240 +45,6 @@ var pictures = [];
 var clusters = [];
 var featuresLine = [];
 var select = new Select();
-
-
-
-function getThumbnail(f) {
-    var t0Image = fetch(url+"images", {
-        method: 'post',
-        body: JSON.stringify({str: f.getProperties().filename})
-    });
-    var t1Image = t0Image.then(function (response) {
-        return response.json();
-    });
-    t1Image.then(function(resultPost) {
-        var b64String = resultPost.data[0].ThumbnailImage;
-        var position = f.getGeometry()['flatCoordinates'];
-        var imageStatic = styles.createNewImage(b64String, position, proj.get());
-        thumbnails.setSource(imageStatic);
-    });
-}
-
-function getIsovist(f) {
-    var arc = f.getProperties().arc;
-    arc.computeGeometry();
-    arcs.getSource().addFeature(new Feature(arc));
-
-    var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
-    var visibleSegments = isovist.computeIsoVist();
-    $.each(visibleSegments, function(i, segment) {
-        featuresLine.push(new Feature(segment));
-    });
-}
-
-function getImageLayout(f) {
-    var t0Image = fetch(url+"images", {
-        method: 'post',
-        body: JSON.stringify({str: f.getProperties().filename})
-    });
-    var t1Image = t0Image.then(function (response) {
-        return response.json();
-    });
-    var t2Image = t1Image.then(function(resultPost) {
-        var b64String = resultPost.data[0].ThumbnailImage;
-        var uri = b64String.replace("base64:", "data:image/jpeg;base64,");
-        return uri;
-    });
-    return t2Image;
-}
-
-function getLabelFromClusters(picture) {
-    for (var key in clusters) {
-        if (clusters[key].pictures.indexOf(picture) !== -1)
-            return clusters[key].label;
-    }
-    return -1;
-}
-
-function getValueFromClusters(picture) {
-    for (var key in clusters) {
-        var pictures = clusters[key].pictures;
-        for (var keyP in pictures) {
-            var filename = pictures[keyP].getProperties().filename;
-            if (filename === picture.filename)
-                return key;
-        }
-    }
-    return -1;
-}
-
-function filter() {
-    var filterFieldValue = $('.filter-field').val();
-    grid.filter(function (item) {
-        var element = item.getElement();
-        var isFilterMatch = !filterFieldValue ? true : (element.getAttribute('data-cluster') || '') === filterFieldValue;
-        return isFilterMatch;
-    });
-}
-
-function getImage(base64, images, label, count, length) {
-    var i = new Image();
-    i.addEventListener('dragstart', function (e) {
-        e.preventDefault();
-    }, false);
-    i.onload = function(event) {
-        var divItem = $("<div/>", {
-            class: "item",
-            "data-cluster": label
-        });
-        var divItemContent = $("<div/>", {
-            class:"item-content"
-        });
-        divItemContent.append(i);
-        divItem.append(divItemContent);
-        images.push(divItem.get(0));
-        count.number++;
-        if (count.number >= length) {
-            grid.add(images, {layout:true});
-            grid.refreshItems().layout();
-            document.body.className = 'images-loaded';
-        }
-    };
-    i.src = base64;
-
-}
-
-function generateGrid() {
-    grid = new Muuri('.grid', {
-        items: '.item',
-        layout: {
-            fillGaps: true
-        },
-        dragEnabled: true,
-    });
-}
-
- function changeLayout() {
-     var layoutFieldValue = $('.layout-field').val();
-     var elements = grid.getItems();
-     $.each(elements, function(i, item) {
-         item.getElement().className = "item" + layoutFieldValue;
-     });
-     grid.refreshItems().layout();
-}
-
-
-
-function clustersFromDistance(pictures) {
-    var indexes = [];
-    var clusters = [];
-    for (var i = 0; i < pictures.length; i++) {
-        if (indexes.indexOf(i) !== -1) continue;
-        var pic1 = pictures[i];
-        var pos1 = pic1.getProperties().position;
-        var r1 = pic1.getProperties().arc.radius;
-        var cluster = [];
-        for (var j = i+1; j < pictures.length; j++) {
-            if (indexes.indexOf(j) !== -1) continue;
-            var pic2 = pictures[j];
-            var pos2 = pic2.getProperties().position;
-            if (euclideanDistance(pos1, pos2) < r1) {
-                indexes.push(j);
-                cluster.push(pic2);
-            }
-        }
-        cluster.push(pic1);
-        clusters.push(new Cluster(cluster, pic1.getProperties().filename));
-    }
-    return clusters;
-}
-
-generateGrid();
-$('.filter-field').change(filter);
-$('.layout-field').change(changeLayout);
-
-select.on('select', function(e) {
-    var selectedFeatures = select.getFeatures();
-
-    arcs.getSource().clear();
-    if (thumbnails.getSource())
-        thumbnails.setSource();
-    featuresLine = [];
-
-    e.selected.filter(function(feature) {
-        console.log(feature.getProperties());
-        var selectedFeatures = feature.get('features');
-        var images = [];
-
-
-        var count = {number:0};
-        $.each(selectedFeatures, function(i, f) {
-            getIsovist(f);
-            getThumbnail(f);
-        });
-    });
-
-    lines.getSource().clear();
-    lines.getSource().addFeatures(featuresLine);
-});
-
-
-$("#buttonDir").on("click", function(event) {
-    var files = [];
-    var dir = $("#dirMetadata").val();
-    var t0 = fetch(url, {
-        method: 'post',
-        body: JSON.stringify({str: dir})
-    });
-    var t1 = t0.then(function (response) {
-        return response.json();
-    });
-
-
-    t1.then(function(resultPost) {
-
-        var metadataJSON = resultPost.data;
-
-        $.each(metadataJSON, function(i, photo) {
-            if (photo.hasOwnProperty('ImageWidth')) {
-                var position = getPosition(photo);
-                if (position !== null) {
-                    var positionProj = proj.fromLonLat(position);
-                    var fileName = photo.SourceFile;
-                    var cone = getOrientation(photo, positionProj);
-                    var picture = new Picture(fileName, positionProj, cone);
-                    var feature = new Feature(picture);
-                    pictures.push(feature);
-                }
-            }
-        });
-        clusters = clustersFromDistance(pictures);
-
-        var images = [];
-        var count = {number:0};
-        $.each(pictures, function(i, feature) {
-            var label = getValueFromClusters(feature.getProperties());
-            getImageLayout(feature).then(function(uri) {
-                getImage(uri, images, label, count, pictures.length);
-            });
-        });
-
-
-        for (var i = 0; i < clusters.length; i++) {
-            $('#selectPosition').append($('<option>', {
-                value: i,
-                text: clusters[i].label
-            }));
-        }
-
-        olClusters.getSource().getSource().clear();
-        olClusters.getSource().getSource().addFeatures(pictures);
-
-        arcs.getSource().clear();
-    });
-});
-
-
 
 var vectorSource = new Vector({
     format: new OSMXML(),
@@ -371,6 +135,202 @@ var lineSource = new Vector({
 var lines = new VectorLayer({
     source: lineSource,
     style: styles.setStyleLinesIsovist
+});
+
+
+function getThumbnail(f) {
+    var t0Image = fetch(url+"images", {
+        method: 'post',
+        body: JSON.stringify({str: f.getProperties().filename})
+    });
+    var t1Image = t0Image.then(function (response) {
+        return response.json();
+    });
+    t1Image.then(function(resultPost) {
+        var b64String = resultPost.data[0].ThumbnailImage;
+        var position = f.getGeometry()['flatCoordinates'];
+        var imageStatic = styles.createNewImage(b64String, position, proj.get());
+        thumbnails.setSource(imageStatic);
+    });
+}
+
+function getIsovist(f) {
+    var arc = f.getProperties().arc;
+    arc.computeGeometry();
+    arcs.getSource().addFeature(new Feature(arc));
+
+    var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
+    var visibleSegments = isovist.computeIsoVist();
+    $.each(visibleSegments, function(i, segment) {
+        featuresLine.push(new Feature(segment));
+    });
+}
+
+function getImageLayout(f) {
+    var t0Image = fetch(url+"images", {
+        method: 'post',
+        body: JSON.stringify({str: f.getProperties().filename})
+    });
+    var t1Image = t0Image.then(function (response) {
+        return response.json();
+    });
+    var t2Image = t1Image.then(function(resultPost) {
+        var b64String = resultPost.data[0].ThumbnailImage;
+        var uri = b64String.replace("base64:", "data:image/jpeg;base64,");
+        return uri;
+    });
+    return t2Image;
+}
+
+function filter() {
+    var filterFieldValue = $('.filter-field').val();
+    grid.filter(function (item) {
+        var element = item.getElement();
+        var isFilterMatch = !filterFieldValue ? true : (element.getAttribute('data-cluster') || '') === filterFieldValue;
+        return isFilterMatch;
+    });
+}
+
+function changeLayout() {
+    var layoutFieldValue = $('.layout-field').val();
+    var elements = grid.getItems();
+    $.each(elements, function(i, item) {
+        item.getElement().className = "item" + layoutFieldValue;
+    });
+    grid.refreshItems().layout();
+}
+
+function generateGrid() {
+    grid = new Muuri('.grid', {
+        items: '.item',
+        layout: {
+            fillGaps: true
+        },
+        dragEnabled: true,
+    });
+}
+
+function loadImageAndFillGrid(base64, images, label, count, length) {
+    var i = new Image();
+    i.addEventListener('dragstart', function (e) {
+        e.preventDefault();
+    }, false);
+    i.onload = function(event) {
+        fillGrid(i, images, label, count, length);
+    };
+    i.src = base64;
+
+}
+
+function fillGrid(image, images, label, count, length) {
+    var divItem = $("<div/>", {
+        class: "item",
+        "data-cluster": label
+    });
+    var divItemContent = $("<div/>", {
+        class:"item-content"
+    });
+    divItemContent.append(image);
+    divItem.append(divItemContent);
+    images.push(divItem.get(0));
+    count.number++;
+    if (count.number >= length) {
+        grid.add(images, {layout:true});
+        grid.refreshItems().layout();
+        document.body.className = 'images-loaded';
+    }
+}
+
+
+generateGrid();
+
+$('.filter-field').change(filter);
+$('.layout-field').change(changeLayout);
+
+select.on('select', function(e) {
+    var selectedFeatures = select.getFeatures();
+
+    arcs.getSource().clear();
+    if (thumbnails.getSource())
+        thumbnails.setSource();
+    featuresLine = [];
+
+    e.selected.filter(function(feature) {
+        console.log(feature.getProperties());
+        var selectedFeatures = feature.get('features');
+        var images = [];
+
+
+        var count = {number:0};
+        $.each(selectedFeatures, function(i, f) {
+            getIsovist(f);
+            getThumbnail(f);
+        });
+    });
+
+    lines.getSource().clear();
+    lines.getSource().addFeatures(featuresLine);
+});
+
+
+$("#buttonDir").on("click", function(event) {
+    var files = [];
+    var dir = $("#dirMetadata").val();
+    var t0 = fetch(url, {
+        method: 'post',
+        body: JSON.stringify({str: dir})
+    });
+    var t1 = t0.then(function (response) {
+        return response.json();
+    });
+
+
+    t1.then(function(resultPost) {
+
+        var metadataJSON = resultPost.data;
+
+        $.each(metadataJSON, function(i, photo) {
+            if (photo.hasOwnProperty('ImageWidth')) {
+                var position = getPosition(photo);
+                if (position !== null) {
+                    var positionProj = proj.fromLonLat(position);
+                    var fileName = photo.SourceFile;
+                    var cone = getOrientation(photo, positionProj);
+                    var picture = new Picture(fileName, positionProj, cone);
+                    var feature = new Feature(picture);
+                    pictures.push(feature);
+                }
+            }
+        });
+        var clusteringStrategy = new DistanceStrategy(pictures);
+        clusters = clusteringStrategy.computeClusters();
+
+        var images = [];
+        var count = {number:0};
+        $.each(pictures, function(i, feature) {
+            var label = -1;
+            for (var key in clusters) {
+                if (clusters[key].hasPicture(feature.getProperties()))
+                    label = key;
+            }
+            getImageLayout(feature).then(function(uri) {
+                loadImageAndFillGrid(uri, images, label, count, pictures.length);
+            });
+        });
+
+
+        for (var i = 0; i < clusters.length; i++) {
+            $('#selectPosition').append($('<option>', {
+                value: i,
+                text: clusters[i].label
+            }));
+        }
+
+        olClusters.getSource().getSource().clear();
+        olClusters.getSource().getSource().addFeatures(pictures);
+
+        arcs.getSource().clear();
+    });
 });
 
 
