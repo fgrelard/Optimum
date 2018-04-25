@@ -2693,12 +2693,29 @@ ol.default li {
 .images-loaded .grid {
   opacity: 1;
 }
+
+
 .item {
   position: absolute;
   margin: 5px;
   z-index: 1;
-  width:25%;
+  width:45%;
 }
+
+.item3col {
+    position: absolute;
+    margin: 5px;
+    z-index: 1;
+    width:30%;
+}
+
+.item4col {
+  position: absolute;
+  margin: 5px;
+  z-index: 1;
+  width:22%;
+}
+
 .item.muuri-item-hidden {
   z-index: 0;
 }
@@ -2718,6 +2735,7 @@ ol.default li {
   border-radius: 6px;
   width:100%;
   height:100%;
+  max-width: 400px;
 }
 
 .loading {

@@ -156,8 +156,17 @@ function generateGrid() {
         layout: {
             fillGaps: true
         },
-        dragEnabled: true
+        dragEnabled: true,
     });
+}
+
+ function changeLayout() {
+     var layoutFieldValue = $('.layout-field').val();
+     var elements = grid.getItems();
+     $.each(elements, function(i, item) {
+         item.getElement().className = "item" + layoutFieldValue;
+     });
+     grid.refreshItems().layout();
 }
 
 
@@ -188,6 +197,8 @@ function clustersFromDistance(pictures) {
 
 generateGrid();
 $('.filter-field').change(filter);
+$('.layout-field').change(changeLayout);
+
 select.on('select', function(e) {
     var selectedFeatures = select.getFeatures();
 
