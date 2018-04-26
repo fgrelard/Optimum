@@ -20,7 +20,7 @@ import loadingstrategy from 'ol/loadingstrategy';
 
 import $ from 'jquery';
 import Muuri from 'muuri';
-
+import interact from 'interactjs';
 import {euclideanDistance} from './lib/distance';
 import Arc from './lib/arc';
 import Cluster from './lib/cluster';
@@ -46,12 +46,51 @@ var clusters = [];
 var featuresLine = [];
 var select = new Select();
 
+interact('.muuri-item')
+    .resizable({
+        // resize from all edges and corners
+        edges: { left: true, right: true, bottom: true, top: true },
+        snapSize: {
+            targets: [
+                // snap the width and height to multiples of 100 when the element size
+                // is 25 pixels away from the target size
+                { width: 50, height: 50, range: 25 },
+            ]
+        },
+
+        // keep the edges inside the parent
+        restrictEdges: {
+            outer: 'parent',
+            endOnly: true,
+        },
+
+        // minimum size
+        restrictSize: {
+            min: { width: 100, height: 50 },
+        },
+        inertia: true
+    })
+    .on('resizemove', function (event) {
+        var target = event.target;
+        target.style.width  = event.rect.width + 'px';
+        target.style.height = event.rect.height + 'px';
+    })
+    .on('resizeend', function(event) {
+        grid.refreshItems().layout();
+        var target = event.target;
+        var divItem = $(event.currentTarget).children().children();
+        target.style.width  = divItem.width() + 2*7 + 'px';
+        target.style.height = divItem.height() + 2*7 + 'px';
+        grid.refreshItems().layout();
+    })
+    ;
+
 var vectorSource = new Vector({
     format: new OSMXML(),
     loader: function(extent2, resolution, projection) {
         if (resolution < 2) {
             var epsg4326Extent =
-                proj.transformExtent(extent2, projection, 'EPSG:4326');
+                    proj.transformExtent(extent2, projection, 'EPSG:4326');
             var client = new XMLHttpRequest();
             client.open('POST', 'https://overpass-api.de/api/interpreter');
             client.addEventListener('load', function() {
@@ -72,9 +111,9 @@ var vectorSource = new Vector({
                 vectorSource.addFeatures(limitedFeatures);
             });
             var query = '(node(' +
-                epsg4326Extent[1] + ',' + epsg4326Extent[0] + ',' +
-                epsg4326Extent[3] + ',' + epsg4326Extent[2] +
-                ');rel(bn)->.foo;way(bn);node(w)->.foo;rel(bw););out meta;';
+                    epsg4326Extent[1] + ',' + epsg4326Extent[0] + ',' +
+                    epsg4326Extent[3] + ',' + epsg4326Extent[2] +
+                    ');rel(bn)->.foo;way(bn);node(w)->.foo;rel(bw););out meta;';
             client.send(query);
         }
         this.resolution = resolution;
@@ -195,7 +234,7 @@ function changeLayout() {
     var layoutFieldValue = $('.layout-field').val();
     var elements = grid.getItems();
     $.each(elements, function(i, item) {
-        item.getElement().className = "item" + layoutFieldValue;
+        item.getElement().className = "item" + layoutFieldValue + " muuri-item";
     });
     grid.refreshItems().layout();
 }
@@ -207,6 +246,16 @@ function generateGrid() {
             fillGaps: true
         },
         dragEnabled: true,
+        dragStartPredicate: function(item, event) {
+            var elemWidth = $(item.getElement()).width();
+            var elemHeight = $(item.getElement()).height();
+            if (event.srcEvent.layerX < 10 ||
+                event.srcEvent.layerY < 10 ||
+                event.srcEvent.layerX > elemWidth ||
+                event.srcEvent.layerY > elemHeight)
+                return false;
+            return Muuri.ItemDrag.defaultStartPredicate(item, event);
+        }
     });
 }
 
@@ -230,6 +279,7 @@ function fillGrid(image, images, label, count, length) {
     var divItemContent = $("<div/>", {
         class:"item-content"
     });
+
     divItemContent.append(image);
     divItem.append(divItemContent);
     images.push(divItem.get(0));
@@ -243,6 +293,7 @@ function fillGrid(image, images, label, count, length) {
 
 
 generateGrid();
+
 
 $('.filter-field').change(filter);
 $('.layout-field').change(changeLayout);
