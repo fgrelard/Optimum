@@ -29,6 +29,7 @@ import Picture from './lib/picture';
 import {getPosition, getOrientation} from './lib/exiftool-util';
 import * as styles from './lib/styles';
 import DistanceStrategy from './lib/clustering/distancestrategy';
+import DendrogramStrategy from './lib/clustering/dendrogramstrategy';
 
 var count = 200;
 var featuresArc = new Array(count);
@@ -372,8 +373,10 @@ $("#buttonDir").on("click", function(event) {
                 }
             }
         });
-        var clusteringStrategy = new DistanceStrategy(pictures);
-        clusters = clusteringStrategy.computeClusters();
+        var clusteringStrategy = new DistanceStrategy(pictures);               clusters = clusteringStrategy.computeClusters();
+
+        var dendro = new DendrogramStrategy(pictures);
+        var cl = dendro.computeClusters();
 
         var images = [];
         var count = {number:0};
