@@ -6,7 +6,7 @@ var bodyParser = require("body-parser");
 const app = express();
 
 function getExifToolData(file, opts) {
-    const ep = new exiftool.ExiftoolProcess(exifToolBin);
+    const ep = new exiftool.ExiftoolProcess();
     var t0 = ep.open();
     var t1 = t0.then(() => ep.readMetadata(file, opts));
     var t2 = t1.then(function(result){
