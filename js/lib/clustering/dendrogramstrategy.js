@@ -17,19 +17,21 @@ export default class DistanceStrategy extends ClusteringStrategy {
             var pos1 = pic1.getProperties().position;
             var [minImage, minDistance, index] = this.getClosestImage(pos1);
             var pics = [];
-            if (indexes.indexOf(i) === -1) {
-                indexes.push(i);
-                pics.push(pic1);
-            }
-            if (indexes.indexOf(index) === -1) {
-                indexes.push(index);
-                pics.push(minImage);
-            }
+            // if (indexes.indexOf(i) === -1) {
+            //     indexes.push(i);
+            //     pics.push(pic1);
+            // }
+            // if (indexes.indexOf(index) === -1) {
+            //     indexes.push(index);
+            //     pics.push(minImage);
+            // }
+            pics.push(pic1);
+            pics.push(minImage);
             var cluster = new Cluster(pics, minDistance);
             clusters.push(cluster);
         }
         clusters.sort(function(a,b) {
-            return a.label > b.label;
+            return a.label < b.label;
         });
         return clusters;
     }

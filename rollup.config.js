@@ -3,6 +3,9 @@ module.exports = {
     targets: [
         {dest: 'bundle.js', format: 'iife'}
     ],
+    globals: {
+		jquery: "jQuery"
+	},
     plugins: [
         require('rollup-plugin-node-resolve')(),
         require('rollup-plugin-commonjs')(),
