@@ -48,23 +48,16 @@ var select = new Select();
 
 interact('.muuri-item')
     .resizable({
-        // resize from all edges and corners
         edges: { left: true, right: true, bottom: true, top: true },
         snapSize: {
             targets: [
-                // snap the width and height to multiples of 100 when the element size
-                // is 25 pixels away from the target size
                 { width: 50, height: 50, range: 25 },
             ]
         },
-
-        // keep the edges inside the parent
         restrictEdges: {
             outer: 'parent',
             endOnly: true,
         },
-
-        // minimum size
         restrictSize: {
             min: { width: 100, height: 50 },
         },
@@ -195,8 +188,7 @@ function getThumbnail(f) {
 
 function getIsovist(f) {
     var arc = f.getProperties().arc;
-    arc.computeGeometry();
-    arcs.getSource().addFeature(new Feature(arc));
+    // arc.computeGeometry();
 
     var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
     var visibleSegments = isovist.computeIsoVist();
@@ -298,12 +290,35 @@ generateGrid();
 $('.filter-field').change(filter);
 $('.layout-field').change(changeLayout);
 
+map.getView().on('change:resolution', function(event)  {
+    arcs.getSource().clear();
+    var ext = map.getView().calculateExtent(map.getSize());
+    olClusters.getSource().getSource().forEachFeature(function(feature) {
+        var arc = feature.getProperties().arc;
+
+        var diameter = euclideanDistance([ext[0], ext[1]],
+                                         [ext[2], ext[3]]);
+        arc.radius = diameter/5;
+        arc.computeGeometry();
+        if (arc.selected) {
+            arcs.getSource().addFeature(new Feature(arc));
+        }
+    });
+});
+
 select.on('select', function(e) {
     var selectedFeatures = select.getFeatures();
 
-    arcs.getSource().clear();
-    if (thumbnails.getSource())
-        thumbnails.setSource();
+    //Reset
+    if (!e.mapBrowserEvent.originalEvent.ctrlKey) {
+        arcs.getSource().clear();
+        if (thumbnails.getSource())
+            thumbnails.setSource();
+        olClusters.getSource().getSource().forEachFeature(function(feature) {
+            feature.getProperties().arc.selected = false;
+        });
+    }
+
     featuresLine = [];
 
     e.selected.filter(function(feature) {
@@ -314,7 +329,11 @@ select.on('select', function(e) {
 
         var count = {number:0};
         $.each(selectedFeatures, function(i, f) {
-            getIsovist(f);
+            var arc = f.getProperties().arc;
+            arc.selected = true;
+            arcs.getSource().addFeature(new Feature(arc));
+            if (arc.radius < 1000)
+                getIsovist(f);
             getThumbnail(f);
         });
     });

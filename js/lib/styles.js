@@ -183,7 +183,7 @@ export function gradient(arc, resolution) {
                                             x2, y2);
 
     grad.addColorStop(0, 'transparent');
-    grad.addColorStop(0.9, 'orange');
+    grad.addColorStop(0.9, '#ffaa0077');
     return grad;
 }
 

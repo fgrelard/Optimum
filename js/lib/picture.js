@@ -6,5 +6,6 @@ export default class Picture {
         this.position = position;
         this.arc = arc;
         this.geometry = new Point(position);
+        this.selected = false;
     }
 }
