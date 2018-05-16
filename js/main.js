@@ -21,7 +21,6 @@ import loadingstrategy from 'ol/loadingstrategy';
 import $ from 'jquery';
 import Muuri from 'muuri';
 import interact from 'interactjs';
-
 import {euclideanDistance} from './lib/distance';
 import Arc from './lib/arc';
 import Cluster from './lib/cluster';
@@ -45,7 +44,6 @@ var grid;
 var thumbnails = new OLImage();
 var pictures = [];
 var clusters = [];
-var dendrogram = [];
 var featuresLine = [];
 var select = new Select();
 
@@ -172,23 +170,6 @@ var lines = new VectorLayer({
     style: styles.setStyleLinesIsovist
 });
 
-function computeRangeSlider(clusters) {
-    var min = Number.MAX_VALUE;
-    var max = 0;
-    for (var i = 0; i < clusters.length; i++) {
-        var cluster = clusters[i];
-        var distance = cluster.label;
-        if (distance < min) {
-            min = distance;
-        }
-        if (distance > max) {
-            max = distance;
-        }
-    }
-    document.getElementById("myRange").min = min;
-    document.getElementById("myRange").max = max;
-}
-
 
 function getThumbnail(f) {
     var t0Image = fetch(url+"images", {
@@ -237,7 +218,7 @@ function filter() {
     var filterFieldValue = $('.filter-field').val();
     grid.filter(function (item) {
         var element = item.getElement();
-        var isFilterMatch = !filterFieldValue ? true : (element.getAttribute('label') || '') === filterFieldValue;
+        var isFilterMatch = !filterFieldValue ? true : (element.getAttribute('data-cluster') || '') === filterFieldValue;
         return isFilterMatch;
     });
 }
@@ -286,8 +267,7 @@ function loadImageAndFillGrid(base64, images, label, count, length) {
 function fillGrid(image, images, label, count, length) {
     var divItem = $("<div/>", {
         class: "item",
-        "label": label.label,
-        "distance": label.distance
+        "data-cluster": label
     });
     var divItemContent = $("<div/>", {
         class:"item-content"
@@ -311,17 +291,6 @@ generateGrid();
 $('.filter-field').change(filter);
 $('.layout-field').change(changeLayout);
 
-$("#myRange").on("change", function(event) {
-    var sliderValue = event.target.value;
-    var filterFieldValue = $('.filter-field').val();
-    grid.filter(function (item) {
-        var element = item.getElement();
-         var isFilterMatch = !filterFieldValue ? true : (element.getAttribute('label') || '') === filterFieldValue;
-        var isSliderMatch = !sliderValue ? true : (element.getAttribute('distance') || '') <= sliderValue;
-        return isFilterMatch && isSliderMatch;
-    });
-});
-
 map.getView().on('change:resolution', function(event)  {
     arcs.getSource().clear();
     var ext = map.getView().calculateExtent(map.getSize());
@@ -337,8 +306,6 @@ map.getView().on('change:resolution', function(event)  {
         }
     });
 });
-
-
 
 select.on('select', function(e) {
     var selectedFeatures = select.getFeatures();
@@ -409,25 +376,18 @@ $("#buttonDir").on("click", function(event) {
         var clusteringStrategy = new DistanceStrategy(pictures);               clusters = clusteringStrategy.computeClusters();
 
         var dendro = new DendrogramStrategy(pictures);
-        dendrogram = dendro.computeClusters();
-        computeRangeSlider(dendrogram);
+        var cl = dendro.computeClusters();
 
         var images = [];
         var count = {number:0};
         $.each(pictures, function(i, feature) {
             var label = -1;
-            var distance = -1;
             for (var key in clusters) {
                 if (clusters[key].hasPicture(feature.getProperties()))
                     label = key;
             }
-            for (var key2 in dendrogram) {
-                if (dendrogram[key2].hasPicture(feature.getProperties())) {
-                    distance = dendrogram[key2].label;
-                }
-            }
             getImageLayout(feature).then(function(uri) {
-                loadImageAndFillGrid(uri, images, {label:label, distance:distance}, count, pictures.length);
+                loadImageAndFillGrid(uri, images, label, count, pictures.length);
             });
         });
 
