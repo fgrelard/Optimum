@@ -198,7 +198,7 @@ function computeRangeSlider(clusters) {
         }
     }
     document.getElementById("myRange").min = min;
-    document.getElementById("myRange").max = max;
+    document.getElementById("myRange").max = max+1;
 }
 
 function getDocs(path, url2) {
