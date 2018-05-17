@@ -183,6 +183,7 @@ function extractFileTreeRecursive(data, object, parent) {
         data.push({ "id" : i, "parent": parent, "text":i, type: (folder) ? "default" : "child" });
     });
     return true;
+}
 
 function computeRangeSlider(clusters) {
     var min = Number.MAX_VALUE;
@@ -501,11 +502,9 @@ $("#buttonDir").on("click", function(event) {
     });
 });
 
-
 map.addLayer(vector);
 map.addLayer(olClusters);
 map.addLayer(arcs);
 map.addLayer(thumbnails);
 map.addLayer(lines);
-
 map.addInteraction(select);
