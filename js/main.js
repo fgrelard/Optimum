@@ -305,7 +305,7 @@ function loadImageAndFillGrid(url, images, label, count, length) {
 
 function fillGrid(image, images, label, count, length) {
     var divItem = $("<div/>", {
-        class: "item",
+        class: "item" + $('.layout-field').val(),
         "label": label.label,
         "distance": label.distance
     });
@@ -337,8 +337,8 @@ $("#myRange").on("change", function(event) {
     var filterFieldValue = $('.filter-field').val();
     grid.filter(function (item) {
         var element = item.getElement();
-         var isFilterMatch = !filterFieldValue ? true : (element.getAttribute('label') || '') === filterFieldValue;
-        var isSliderMatch = !sliderValue ? true : (element.getAttribute('distance') || '') <= sliderValue;
+        var isFilterMatch = !filterFieldValue ? true : (element.getAttribute('label') || '') === filterFieldValue;
+        var isSliderMatch = !sliderValue ? true : parseFloat(element.getAttribute('distance') || '') <= sliderValue;
         return isFilterMatch && isSliderMatch;
     });
 });
