@@ -19,6 +19,7 @@ import OSMXML from 'ol/format/osmxml';
 import loadingstrategy from 'ol/loadingstrategy';
 
 import $ from 'jquery';
+import jsTree from 'jstree';
 import Muuri from 'muuri';
 import interact from 'interactjs';
 import {euclideanDistance} from './lib/distance';
@@ -40,6 +41,8 @@ var lonConv = stEtienneLonLatConv[0];
 var latConv = stEtienneLonLatConv[1];
 
 var url = "http://localhost:8080/";
+var urlDB = "http://159.84.143.179:8080/";
+
 var grid;
 var thumbnails = new OLImage();
 var pictures = [];
@@ -77,7 +80,7 @@ interact('.muuri-item')
         target.style.height = divItem.height() + 2*7 + 'px';
         grid.refreshItems().layout();
     })
-    ;
+;
 
 var vectorSource = new Vector({
     format: new OSMXML(),
@@ -170,21 +173,52 @@ var lines = new VectorLayer({
     style: styles.setStyleLinesIsovist
 });
 
+function extractFileTreeRecursive(data, object, parent) {
+    if (object.hasOwnProperty('path')) return false;
+    $.each(object, function(i, obj) {
+        var folder = extractFileTreeRecursive(data, obj, i);
+        data.push({ "id" : i, "parent": parent, "text":i, type: (folder) ? "default" : "child" });
+    });
+    return true;
+}
 
-function getThumbnail(f) {
-    var t0Image = fetch(url+"images", {
+function getDocs(path, url2) {
+    var t0Image = fetch(urlDB + url2, {
         method: 'post',
-        body: JSON.stringify({str: f.getProperties().filename})
+        body: JSON.stringify(path)
     });
     var t1Image = t0Image.then(function (response) {
         return response.json();
     });
     t1Image.then(function(resultPost) {
-        var b64String = resultPost.data[0].ThumbnailImage;
+        return resultPost;
+    });
+    return t1Image;
+}
+
+
+function getThumbnail(f) {
+   getImageLayout(f).then(function(url) {
         var position = f.getGeometry()['flatCoordinates'];
-        var imageStatic = styles.createNewImage(b64String, position, proj.get());
+        var imageStatic = styles.createNewImage(url, position, proj.get());
         thumbnails.setSource(imageStatic);
     });
+}
+
+function getImageLayout(f) {
+    var t0Image = fetch(urlDB + "images", {
+        method: 'post',
+        body: JSON.stringify({str: f.getProperties().filename})
+    });
+    var t1Image = t0Image.then(function (response) {
+        return response.blob();
+    });
+    var t2Image = t1Image.then(function(resultPost) {
+        var urlCreator = window.URL || window.webkitURL;
+        var imageUrl = urlCreator.createObjectURL(resultPost);
+        return imageUrl;
+    });
+    return t2Image;
 }
 
 function getIsovist(f) {
@@ -198,21 +232,7 @@ function getIsovist(f) {
     });
 }
 
-function getImageLayout(f) {
-    var t0Image = fetch(url+"images", {
-        method: 'post',
-        body: JSON.stringify({str: f.getProperties().filename})
-    });
-    var t1Image = t0Image.then(function (response) {
-        return response.json();
-    });
-    var t2Image = t1Image.then(function(resultPost) {
-        var b64String = resultPost.data[0].ThumbnailImage;
-        var uri = b64String.replace("base64:", "data:image/jpeg;base64,");
-        return uri;
-    });
-    return t2Image;
-}
+
 
 function filter() {
     var filterFieldValue = $('.filter-field').val();
@@ -252,7 +272,7 @@ function generateGrid() {
     });
 }
 
-function loadImageAndFillGrid(base64, images, label, count, length) {
+function loadImageAndFillGrid(url, images, label, count, length) {
     var i = new Image();
     i.addEventListener('dragstart', function (e) {
         e.preventDefault();
@@ -260,7 +280,7 @@ function loadImageAndFillGrid(base64, images, label, count, length) {
     i.onload = function(event) {
         fillGrid(i, images, label, count, length);
     };
-    i.src = base64;
+    i.src = url;
 
 }
 
@@ -278,6 +298,7 @@ function fillGrid(image, images, label, count, length) {
     images.push(divItem.get(0));
     count.number++;
     if (count.number >= length) {
+        grid.remove(grid.getItems(), {removeElements: true});
         grid.add(images, {layout:true});
         grid.refreshItems().layout();
         document.body.className = 'images-loaded';
@@ -344,22 +365,19 @@ select.on('select', function(e) {
 });
 
 
-$("#buttonDir").on("click", function(event) {
-    var files = [];
-    var dir = $("#dirMetadata").val();
-    var t0 = fetch(url, {
-        method: 'post',
-        body: JSON.stringify({str: dir})
-    });
-    var t1 = t0.then(function (response) {
-        return response.json();
-    });
+$("#fileTree").on('changed.jstree', function (e, data) {
+    //Text reinitialization
+    document.body.className = '';
+    $("#clusterText").text("Chargement des photographies...");
 
-
-    t1.then(function(resultPost) {
-
-        var metadataJSON = resultPost.data;
-
+    //Selected fields in file tree
+    var i, j, r = [];
+    for(i = 0, j = data.selected.length; i < j; i++) {
+        r.push(data.instance.get_node(data.selected[i]).text);
+    }
+    //Query DB and generate objects
+    getDocs(r, "fullDocs").then(function(metadataJSON) {
+        pictures = [];
         $.each(metadataJSON, function(i, photo) {
             if (photo.hasOwnProperty('ImageWidth')) {
                 var position = getPosition(photo);
@@ -373,11 +391,18 @@ $("#buttonDir").on("click", function(event) {
                 }
             }
         });
-        var clusteringStrategy = new DistanceStrategy(pictures);               clusters = clusteringStrategy.computeClusters();
+        if (pictures.length === 0) {
+            grid.remove(grid.getItems(), {removeElements:true});
+            document.body.className = 'images-loaded';
+        }
 
+        //Clustering with cursor
+        var clusteringStrategy = new DistanceStrategy(pictures);
+        clusters = clusteringStrategy.computeClusters();
         var dendro = new DendrogramStrategy(pictures);
         var cl = dendro.computeClusters();
 
+        //Display grid of image clusters
         var images = [];
         var count = {number:0};
         $.each(pictures, function(i, feature) {
@@ -391,7 +416,7 @@ $("#buttonDir").on("click", function(event) {
             });
         });
 
-
+        //Put values into select fields
         for (var i = 0; i < clusters.length; i++) {
             $('#selectPosition').append($('<option>', {
                 value: i,
@@ -399,10 +424,40 @@ $("#buttonDir").on("click", function(event) {
             }));
         }
 
+        //Display clusters on map
         olClusters.getSource().getSource().clear();
         olClusters.getSource().getSource().addFeatures(pictures);
 
         arcs.getSource().clear();
+    });
+});
+
+$("#buttonDir").on("click", function(event) {
+
+    var t0Image = fetch(urlDB, {
+        method: 'post'
+    });
+    var t1Image = t0Image.then(function (response) {
+        return response.json();
+    });
+
+    t1Image.then(function(resultPost) {
+        var data = [];
+        extractFileTreeRecursive(data, resultPost, "#");
+        $("#fileTree").jstree(
+            { 'core' : {
+                'data' : data
+            },
+              'types' : {
+                  "child" : {
+                      "icon" : "glyphicon glyphicon-file"
+                  },
+                  "default" : {
+                      "icon" : "glyphicon glyphicon-folder-open"
+                  }
+              },
+              'plugins' : ["checkbox", "types", "sort"]});
+
     });
 });
 

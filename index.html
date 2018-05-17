@@ -5,6 +5,8 @@
     <title> Optimum </title>
     <link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css" type="text/css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+    <link href="css/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="css/main.css" />
 
   </head>
@@ -27,16 +29,17 @@
             </div>
 
             <form>
-              <label for="dirMetadata">Chemin du répertoire</label>
-              <input type="text" id="dirMetadata" id="path" value="/home/fgrelard/data/raw/">
-              <input type="button" id="buttonDir" value="OK"/>
+              <label for="buttonDir">Photographies</label>
+              <input type="button" id="buttonDir" value="Parcourir"/>
             </form>
+            <div id="fileTree">
+            </div>
           </div>
 
           <div class="box container">
             <h3> Grappes </h3>
             <div class="loading">
-              <p> En attente de données... </p>
+              <p id="clusterText"> En attente de données... </p>
             </div>
 
 

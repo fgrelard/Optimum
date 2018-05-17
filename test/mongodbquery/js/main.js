@@ -26,6 +26,21 @@ function getDocs(path, url2) {
     });
 }
 
+function getImage(path) {
+    var t0Image = fetch(url + "images", {
+        method: 'post',
+        body: JSON.stringify({str: path})
+    });
+    var t1Image = t0Image.then(function (response) {
+        return response.blob();
+    });
+    t1Image.then(function(resultPost) {
+        var urlCreator = window.URL || window.webkitURL;
+        var imageUrl = urlCreator.createObjectURL(resultPost);
+        $("#image").attr("src",  imageUrl);
+    });
+}
+
 var t0Image = fetch(url, {
         method: 'post'
     });
@@ -59,4 +74,5 @@ $("#fileTree").on('changed.jstree', function (e, data) {
         r.push(data.instance.get_node(data.selected[i]).text);
     }
     getDocs(r, "partialDocs");
+    getImage("/Users/fgrelard/Public/Optimum/Photos/4-JPEG d'après TIFF/Mars 2018/DSC_7829.jpg");
 });
