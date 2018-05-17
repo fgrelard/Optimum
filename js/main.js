@@ -41,7 +41,6 @@ stEtienneLonLatConv = [487537.9340862985, 5693250.829916254];
 var lonConv = stEtienneLonLatConv[0];
 var latConv = stEtienneLonLatConv[1];
 
-var url = "http://localhost:8080/";
 var urlDB = "http://159.84.143.179:8080/";
 
 var grid;
