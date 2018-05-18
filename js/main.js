@@ -351,7 +351,7 @@ map.getView().on('change:resolution', function(event)  {
 
         var diameter = euclideanDistance([ext[0], ext[1]],
                                          [ext[2], ext[3]]);
-        arc.radius = diameter/5;
+        arc.radius = diameter/2;
         arc.computeGeometry();
         if (arc.selected) {
             arcs.getSource().addFeature(new Feature(arc));

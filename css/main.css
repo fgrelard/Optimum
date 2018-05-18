@@ -2936,3 +2936,8 @@ controls {
     background: #0050AF;
     cursor: pointer;
 }
+
+#wrapTree {
+    max-height: 400px;
+    overflow: auto;
+}
