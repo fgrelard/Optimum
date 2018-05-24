@@ -127,14 +127,16 @@ var vectorSource = new Vector({
         var epsg4326Extent =
             proj.transformExtent(extent2, projection, 'EPSG:4326');
         var client = new XMLHttpRequest();
-        client.open('POST', 'https://overpass-api.de/api/interpreter');
+        client.open('POST', 'https://overpass.kumi.systems/api/interpreter');
         client.addEventListener('load', function() {
             var features = new OSMXML().readFeatures(client.responseText, {
                 featureProjection: map.getView().getProjection()
             });
             vectorSource.addFeatures(features);
             var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
-            var visibleSegments = isovist.computeIsoVist();
+            var visibleSegments = isovist.isovist();
+
+            //featuresLine.push(new Feature({geometry : visibleSegments}));
             $.each(visibleSegments, function(i, segment) {
                 featuresLine.push(new Feature(new LineString([segment.getFirstCoordinate(), segment.getLastCoordinate()])));
             });

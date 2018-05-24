@@ -245,7 +245,7 @@ function getIsovist(f) {
     // arc.computeGeometry();
 
     var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
-    var visibleSegments = isovist.computeIsoVist();
+    var visibleSegments = isovist.isovist();
     $.each(visibleSegments, function(i, segment) {
         featuresLine.push(new Feature(segment));
     });

@@ -7,10 +7,18 @@
  */
 
 import LineString from 'ol/geom/linestring';
+import Polygon from 'ol/geom/polygon';
 import * as Intersection from './lineintersection';
 import {euclideanDistance} from './distance';
 import Arc from './arc';
 import $ from 'jquery';
+
+class AngleToSegment {
+    constructor(angle, segment) {
+        this.angle = angle;
+        this.segment = segment;
+    }
+}
 
 
 export default class IsoVist {
@@ -33,7 +41,7 @@ export default class IsoVist {
      * @param {ol.geom.Polygon} polygon
      * @returns {Array} segments
      */
-    extractSegmentsFromPolygon(polygon) {
+    segmentsFromPolygon(polygon) {
         var segments = [];
         var polygonVertices = polygon.getCoordinates()[0];
         for (var i = 0; i < polygonVertices.length-1; i++) {
@@ -60,7 +68,7 @@ export default class IsoVist {
             if (geometryArc.intersectsExtent(geometryFeature.getExtent()) &&
                 geometryFeature.intersectsExtent(extentArc)) {
                 if (geometryFeature.getType() === "Polygon") {
-                    var segmentsPolygon = that.extractSegmentsFromPolygon(geometryFeature);
+                    var segmentsPolygon = that.segmentsFromPolygon(geometryFeature);
                     Array.prototype.push.apply(segments, segmentsPolygon);
                 }
             }
@@ -154,7 +162,7 @@ export default class IsoVist {
             omega = tmp + 360;
         }
 
-        return new Arc(position, radius, alpha, omega);
+        return new Arc(position, radius, +alpha.toFixed(4), +omega.toFixed(4));
     }
 
     /**
@@ -163,6 +171,7 @@ export default class IsoVist {
      * @returns {Array.<Arc>} simplified array
      */
     mergeOverlappingAngles(array) {
+        if (array.length === 1) return array;
         var trimmedArray = [];
         array.sort(function(a,b) {
             return a.alpha > b.alpha;
@@ -226,12 +235,20 @@ export default class IsoVist {
         var segEnd = segment.getLastCoordinate();
 
         var norm = euclideanDistance(segStart, segEnd);
+
+        var distStart = euclideanDistance(intersection, segStart);
+        var distEnd = euclideanDistance(intersection, segEnd);
+
         var middle = [(intersection.x + (segStart[0] - segEnd[0]) / norm), (intersection.y + (segStart[1] - segEnd[1]) / norm) ];
+        var middle2 = [(intersection.x + (segEnd[0] - segStart[0]) / norm), (intersection.y + (segEnd[1] - segStart[1]) / norm) ];
         var p;
         if (arc.geometry.intersectsCoordinate(middle))
             p = segStart;
-        else
+        else if (arc.geometry.intersectsCoordinate(middle2))
             p = segEnd;
+        else {
+            p = (distStart < distEnd) ? segStart: segEnd;
+        }
         var visibleSegment = new LineString([[intersection.x, intersection.y], p]);
         return visibleSegment;
     }
@@ -282,7 +299,7 @@ export default class IsoVist {
      * @param {Array.<ol.geom.LineString>} segments all segments from buildings
      * @returns {} fully visible segments
      */
-    computeBlockingSegments(segments) {
+    blockingSegments(segments) {
         var blockingSegments = [];
         var that = this;
         $.each(segments, function(i, segment) {
@@ -301,7 +318,7 @@ export default class IsoVist {
      * @param {} segments
      * @returns {} partially visible segments
      */
-    computeFreeSegments(blockingSegments, segments) {
+    freeSegments(blockingSegments, segments) {
         var blockingAngles = [];
         var freeSegments = [];
         var that = this;
@@ -326,22 +343,88 @@ export default class IsoVist {
      * @param {Array.<ol.geom.LineString>} blockingSegments
      * @returns {Array.<ol.geom.LineString>} partially visible blocking segments
      */
-    computeVisibleBlockingSegments(blockingSegments) {
+    visibleBlockingSegments(blockingSegments) {
         var that  = this;
         var visibleSegments = [];
-        $.each(blockingSegments, function(i, segment) {
+        var position = this.arc.center;
+
+        //Computing blocking segments hidden by other segments
+        blockingSegments.sort(function(a,b) {
+            return euclideanDistance(a.getClosestPoint(position), position) - euclideanDistance(b.getClosestPoint(position), position);
+        });
+        var blockingAngles = [];
+        var freeSegments = [];
+        var freeVisionAngles = [this.arc];
+        $.each(blockingSegments, function(j, segment) {
+            var blockingAngle = that.visionBlockingArc(segment);
+            var partial = false;
+            $.each(freeVisionAngles, function(i, angle) {
+                if ((blockingAngle.alpha < angle.alpha && blockingAngle.omega < angle.omega && blockingAngle.omega > angle.alpha) ||
+                    (blockingAngle.omega > angle.omega && blockingAngle.alpha > angle.alpha && blockingAngle.alpha < angle.omega)) {
+                    var visibleSegment = that.partiallyVisibleSegments(freeVisionAngles, segment);
+                    // console.log("free");
+                    // console.log(blockingAngle);
+                    // console.log(angle);
+                    // console.log(visibleSegment);
+                    if (visibleSegment)
+                        Array.prototype.push.apply(visibleSegments, visibleSegment[1]);
+                    partial = true;
+                }
+            });
             var p1 = segment.getFirstCoordinate();
             var p2 = segment.getLastCoordinate();
-            var partiallyVisible = that.partiallyVisibleSegments([that.arc], segment);
-            if (partiallyVisible) {
-                Array.prototype.push.apply(visibleSegments, partiallyVisible[1]);
-            } else if (that.arc.geometry.intersectsCoordinate(p1) ||
-                       that.arc.geometry.intersectsCoordinate(p2))
+            if (!partial)
             {
                 Array.prototype.push.apply(visibleSegments, [segment]);
             }
+
+            blockingAngles.push(blockingAngle);
+            var trimmedBlockingAngles = that.mergeOverlappingAngles(blockingAngles);
+            freeVisionAngles = that.freeAngles(trimmedBlockingAngles);
+            // console.log(freeVisionAngles);
         });
+
         return visibleSegments;
+    }
+
+    visibilityPolygon(blockingSegments) {
+        var polygon = [];
+        var that = this;
+        blockingSegments.sort(function(a,b) {
+            return a.alpha > b.alpha;
+        });
+        var anglesToSegments = [];
+        var blockingAngles = [];
+        $.each(blockingSegments, function(i, segment) {
+            var blockingAngle = that.visionBlockingArc(segment);
+            var angleToSegment = new AngleToSegment(blockingAngle, segment);
+            blockingAngles.push(blockingAngle);
+            anglesToSegments.push(angleToSegment);
+        });
+        var trimmedBlockingAngles = this.mergeOverlappingAngles(blockingAngles);
+        var freeVisionAngles = this.freeAngles(trimmedBlockingAngles);
+        $.each(freeVisionAngles, function(i, angle) {
+            angle.computeGeometry();
+            var freeSegment = new LineString([angle.fullGeometry[1].getFlatCoordinates(),
+                                              angle.fullGeometry[2].getFlatCoordinates()]);
+            var angleToSegment = new AngleToSegment(angle, freeSegment);
+            anglesToSegments.push(angleToSegment);
+        });
+
+        anglesToSegments.sort(function(a,b) {
+            return a.angle.alpha > b.angle.alpha;
+        });
+        console.log(anglesToSegments);
+        polygon.push(this.arc.center);
+        polygon.push(anglesToSegments[0].segment.getFirstCoordinate());
+        $.each(anglesToSegments, function(i, angleToSegment) {
+            polygon.push(angleToSegment.segment.getFirstCoordinate());
+            polygon.push(angleToSegment.segment.getLastCoordinate());
+        });
+        polygon.push(anglesToSegments[anglesToSegments.length-1].segment.getLastCoordinate());
+        polygon.push(this.arc.center);
+        console.log(polygon);
+        return new Polygon([polygon]);
     }
 
 
@@ -351,36 +434,37 @@ export default class IsoVist {
      * Main function
      * @returns {} isovist as the segments from buildings visible from the point of view
      */
-    computeIsoVist() {
+    isovist() {
         var visibleSegments = [];
         var segments = this.segmentsIntersectingFOV();
         var position = this.arc.center;
-        var blockingSegments = this.computeBlockingSegments(segments);
+        var blockingSegments = this.blockingSegments(segments);
 
         if (this.isDisplayPartial) {
-            var visibleBlockingSegments = this.computeVisibleBlockingSegments(blockingSegments);
+            var visibleBlockingSegments = this.visibleBlockingSegments(blockingSegments);
             Array.prototype.push.apply(visibleSegments, visibleBlockingSegments);
         }
 
-        var freeSegments = this.computeFreeSegments(blockingSegments, segments);
+        var freeSegments = this.freeSegments(blockingSegments, segments);
         var partiallyVisible = [];
         while (freeSegments.length > 0) {
             freeSegments.sort(function(a,b) {
-                return euclideanDistance(position, a[0].getClosestPoint(position)) > euclideanDistance(position, b[0].getClosestPoint(position));
+                return euclideanDistance(position, a[0].getClosestPoint(position)) - euclideanDistance(position, b[0].getClosestPoint(position));
             });
             blockingSegments.push(freeSegments[0][0]);
             partiallyVisible.push(freeSegments[0][1]);
-            freeSegments = this.computeFreeSegments(blockingSegments, segments);
+            freeSegments = this.freeSegments(blockingSegments, segments);
         }
 
-        if (this.isDisplayPartial) {
-            $.each(partiallyVisible, function(i, segments) {
-                Array.prototype.push.apply(visibleSegments, segments);
-            });
-        } else {
-            Array.prototype.push.apply(visibleSegments, blockingSegments);
-        }
-
+        // if (this.isDisplayPartial) {
+        //     $.each(partiallyVisible, function(i, segments) {
+        //         Array.prototype.push.apply(visibleSegments, segments);
+        //     });
+        // } else {
+        //     Array.prototype.push.apply(visibleSegments, blockingSegments);
+        // }
+//        var polygon = this.visibilityPolygon(visibleSegments);
+       // return polygon;
         return visibleSegments;
     }
 }
