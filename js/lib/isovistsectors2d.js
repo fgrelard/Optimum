@@ -41,15 +41,16 @@ export default class IsoVist {
      * @param {ol.geom.Polygon} polygon
      * @returns {Array} segments
      */
-    segmentsFromPolygon(polygon) {
+    segmentsFromPolygon(polygon, arc) {
         var segments = [];
         var polygonVertices = polygon.getCoordinates()[0];
         for (var i = 0; i < polygonVertices.length-1; i++) {
             var p1 = polygonVertices[i];
             var p2 = polygonVertices[i+1];
             var segment = new LineString([p1, p2]);
-
-            segments.push(segment);
+            if (arc.intersectsCoordinate(segment.getFirstCoordinate()) ||
+                arc.intersectsCoordinate(segment.getLastCoordinate()))
+                segments.push(segment);
         }
         return segments;
     }
@@ -68,7 +69,7 @@ export default class IsoVist {
             if (geometryArc.intersectsExtent(geometryFeature.getExtent()) &&
                 geometryFeature.intersectsExtent(extentArc)) {
                 if (geometryFeature.getType() === "Polygon") {
-                    var segmentsPolygon = that.segmentsFromPolygon(geometryFeature);
+                    var segmentsPolygon = that.segmentsFromPolygon(geometryFeature, geometryArc);
                     Array.prototype.push.apply(segments, segmentsPolygon);
                 }
             }
@@ -131,24 +132,31 @@ export default class IsoVist {
         var v2 = [p2[0] - position[0],
                   p2[1] - position[1]];
 
-        var dot1 = v1[0] * radius;
-        var dot2 = v2[0] * radius;
+        var dot1 = v1[0];
+        var dot2 = v2[0];
 
         var norm1 = Math.sqrt(Math.pow(v1[0], 2) + Math.pow(v1[1], 2));
         var norm2 = Math.sqrt(Math.pow(v2[0], 2) + Math.pow(v2[1], 2));
 
-        var alpha = Math.acos(dot1  / (norm1 * radius)) * 180 / Math.PI;
-        var omega = Math.acos(dot2 / (norm2 * radius)) * 180 / Math.PI;
+        var alpha = Math.atan2(v1[1], v1[0]) * 360 / (2*Math.PI);
+        var omega = Math.atan2(v2[1], v2[0]) * 360 / (2*Math.PI);
 
-        if (v1[1] < 0)
-            alpha = 360-alpha;
-        else if (v1[1] > 0 && this.arc.omega > 360)
+        if (alpha < 0)
             alpha += 360;
-
-        if (v2[1] < 0)
-            omega = 360-omega ;
-         else if (v2[1] > 0 && this.arc.omega > 360)
+        if (omega < 0)
             omega += 360;
+        // var alpha = Math.acos(dot1 / norm1) * 180 / Math.PI;
+        // var omega = Math.acos(dot2 / norm2) * 180 / Math.PI;
+
+        // if (v1[1] < 0)
+        //     alpha = 360-alpha;
+        // else if (v1[1] > 0 && this.arc.omega > 360)
+        //     alpha += 360;
+
+        // if (v2[1] < 0)
+        //     omega = 360-omega ;
+        //  else if (v2[1] > 0 && this.arc.omega > 360)
+        //     omega += 360;
         if (omega < alpha) {
             var tmp = alpha;
             alpha = omega;
@@ -158,8 +166,8 @@ export default class IsoVist {
         var diffOA360 = 360+alpha-omega;
         if (diffOA360 < diffOA) {
             var tmp = alpha;
-            alpha = omega;
-            omega = tmp + 360;
+            alpha = omega-360;
+            omega = tmp;
         }
 
         return new Arc(position, radius, +alpha.toFixed(4), +omega.toFixed(4));
@@ -247,7 +255,7 @@ export default class IsoVist {
         else if (arc.geometry.intersectsCoordinate(middle2))
             p = segEnd;
         else {
-            p = (distStart < distEnd) ? segStart: segEnd;
+            p = [intersection.x, intersection.y];
         }
         var visibleSegment = new LineString([[intersection.x, intersection.y], p]);
         return visibleSegment;
@@ -327,6 +335,7 @@ export default class IsoVist {
             blockingAngles.push(blockingAngle);
         });
         var trimmedBlockingAngles = this.mergeOverlappingAngles(blockingAngles);
+        console.log(trimmedBlockingAngles);
         var freeVisionAngles = this.freeAngles(trimmedBlockingAngles);
         $.each(segments, function(j, segment) {
             if (blockingSegments.indexOf(segment) === -1) {
@@ -359,13 +368,13 @@ export default class IsoVist {
             var blockingAngle = that.visionBlockingArc(segment);
             var partial = false;
             $.each(freeVisionAngles, function(i, angle) {
-                if ((blockingAngle.alpha < angle.alpha && blockingAngle.omega < angle.omega && blockingAngle.omega > angle.alpha) ||
-                    (blockingAngle.omega > angle.omega && blockingAngle.alpha > angle.alpha && blockingAngle.alpha < angle.omega)) {
+                angle.computeGeometry();
+                if (// !(angle.geometry.intersectsCoordinate(segment.getFirstCoordinate()) &&
+                    //   angle.geometry.intersectsCoordinate(segment.getLastCoordinate()))
+                    (blockingAngle.alpha < angle.alpha && blockingAngle.omega < angle.omega && blockingAngle.omega > angle.alpha) ||
+                    (blockingAngle.omega > angle.omega && blockingAngle.alpha > angle.alpha && blockingAngle.alpha < angle.omega)
+                   ) {
                     var visibleSegment = that.partiallyVisibleSegments(freeVisionAngles, segment);
-                    // console.log("free");
-                    // console.log(blockingAngle);
-                    // console.log(angle);
-                    // console.log(visibleSegment);
                     if (visibleSegment)
                         Array.prototype.push.apply(visibleSegments, visibleSegment[1]);
                     partial = true;
@@ -381,7 +390,6 @@ export default class IsoVist {
             blockingAngles.push(blockingAngle);
             var trimmedBlockingAngles = that.mergeOverlappingAngles(blockingAngles);
             freeVisionAngles = that.freeAngles(trimmedBlockingAngles);
-            // console.log(freeVisionAngles);
         });
 
         return visibleSegments;
@@ -463,7 +471,8 @@ export default class IsoVist {
         // } else {
         //     Array.prototype.push.apply(visibleSegments, blockingSegments);
         // }
-//        var polygon = this.visibilityPolygon(visibleSegments);
+
+       // var polygon = this.visibilityPolygon(visibleSegments);
        // return polygon;
         return visibleSegments;
     }

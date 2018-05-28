@@ -33,8 +33,8 @@ var map;
 var featuresArc=[];
 var features=[];
 var featuresLine =[];
-var alpha = 270;
-var omega = 360;
+var alpha = 180;
+var omega = 270;
 var radius = 150;
 var position = [739885.8194006054, 5905880.253554305 ];
 var arc = new Arc(position, radius, alpha, omega);
@@ -127,7 +127,7 @@ var vectorSource = new Vector({
         var epsg4326Extent =
             proj.transformExtent(extent2, projection, 'EPSG:4326');
         var client = new XMLHttpRequest();
-        client.open('POST', 'https://overpass.kumi.systems/api/interpreter');
+        client.open('POST', 'https://overpass-api.de/api/interpreter');
         client.addEventListener('load', function() {
             var features = new OSMXML().readFeatures(client.responseText, {
                 featureProjection: map.getView().getProjection()
