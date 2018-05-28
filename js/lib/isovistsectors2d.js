@@ -145,6 +145,7 @@ export default class IsoVist {
             alpha += 360;
         if (omega < 0)
             omega += 360;
+
         // var alpha = Math.acos(dot1 / norm1) * 180 / Math.PI;
         // var omega = Math.acos(dot2 / norm2) * 180 / Math.PI;
 
@@ -182,6 +183,8 @@ export default class IsoVist {
         if (array.length === 1) return array;
         var trimmedArray = [];
         array.sort(function(a,b) {
+            if (a.alpha === b.alpha)
+                return a.omega - b.omega;
             return a.alpha > b.alpha;
         });
         var alpha = 0;
@@ -335,8 +338,8 @@ export default class IsoVist {
             blockingAngles.push(blockingAngle);
         });
         var trimmedBlockingAngles = this.mergeOverlappingAngles(blockingAngles);
-        console.log(trimmedBlockingAngles);
         var freeVisionAngles = this.freeAngles(trimmedBlockingAngles);
+
         $.each(segments, function(j, segment) {
             if (blockingSegments.indexOf(segment) === -1) {
                 var visibleSegment = that.partiallyVisibleSegments(freeVisionAngles, segment);
@@ -464,13 +467,13 @@ export default class IsoVist {
             freeSegments = this.freeSegments(blockingSegments, segments);
         }
 
-        // if (this.isDisplayPartial) {
-        //     $.each(partiallyVisible, function(i, segments) {
-        //         Array.prototype.push.apply(visibleSegments, segments);
-        //     });
-        // } else {
-        //     Array.prototype.push.apply(visibleSegments, blockingSegments);
-        // }
+        if (this.isDisplayPartial) {
+            $.each(partiallyVisible, function(i, segments) {
+                Array.prototype.push.apply(visibleSegments, segments);
+            });
+        } else {
+            Array.prototype.push.apply(visibleSegments, blockingSegments);
+        }
 
        // var polygon = this.visibilityPolygon(visibleSegments);
        // return polygon;
