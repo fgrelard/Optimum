@@ -438,15 +438,17 @@ export default class IsoVist {
                 return a.angle.omega - b.angle.omega;
             return a.angle.alpha - b.angle.alpha;
         });
-        polygon.push(this.arc.center);
-        polygon.push(anglesToSegments[0].segment.getFirstCoordinate());
-        for (var i = 0; i < anglesToSegments.length; i++) {
-            var fc = anglesToSegments[i].segment.getFirstCoordinate();
-            var lc = anglesToSegments[i].segment.getLastCoordinate();
-            polygon.push(fc);
-            polygon.push(lc);
+        if (anglesToSegments.length > 0) {
+            polygon.push(this.arc.center);
+            polygon.push(anglesToSegments[0].segment.getFirstCoordinate());
+            for (var i = 0; i < anglesToSegments.length; i++) {
+                var fc = anglesToSegments[i].segment.getFirstCoordinate();
+                var lc = anglesToSegments[i].segment.getLastCoordinate();
+                polygon.push(fc);
+                polygon.push(lc);
+            }
+            polygon.push(this.arc.center);
         }
-        polygon.push(this.arc.center);
 
         return new Polygon([polygon]);
     }
@@ -475,11 +477,6 @@ export default class IsoVist {
             freeSegments.sort(function(a,b) {
                 return euclideanDistance(position, a[0].getClosestPoint(position)) - euclideanDistance(position, b[0].getClosestPoint(position));
             });
-            console.log("start");
-            $.each(freeSegments, function(i, segment) {
-                console.log(segment[0].getFlatCoordinates());
-            });
-
             blockingSegments.push(freeSegments[0][0]);
             partiallyVisible.push(freeSegments[0][1]);
             freeSegments = this.freeSegments(blockingSegments, segments);

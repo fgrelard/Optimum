@@ -17,6 +17,8 @@ import Projection from 'ol/proj/projection';
 import control from 'ol/control';
 import OSMXML from 'ol/format/osmxml';
 import loadingstrategy from 'ol/loadingstrategy';
+import DragBox from 'ol/interaction/dragbox';
+import condition from 'ol/events/condition';
 
 import $ from 'jquery';
 import jsTree from 'jstree';
@@ -49,6 +51,7 @@ var pictures = [];
 var clusters = [];
 var dendrogram = [];
 var featuresLine = [];
+var inputFeatures = [];
 var select = new Select();
 
 interact('.muuri-item')
@@ -174,6 +177,19 @@ var lines = new VectorLayer({
     style: styles.setStyleLinesIsovist
 });
 
+var inputLineSource = new Vector({
+    features : inputFeatures
+});
+
+var inputLines = new VectorLayer({
+    source: inputLineSource,
+    style : styles.setStyleInput
+});
+
+var dragBox = new DragBox({
+    condition: condition.shiftKeyOnly
+});
+
 
 function extractFileTreeRecursive(data, object, parent) {
     if (object.hasOwnProperty('path')) return false;
@@ -248,11 +264,11 @@ function getIsovist(f) {
     var visibleSegments = isovist.isovist();
     featuresLine.push(new Feature({geometry : visibleSegments}));
 
+
     // $.each(visibleSegments, function(i, segment) {
     //     featuresLine.push(new Feature(segment));
     // });
 }
-
 
 
 function filter() {
@@ -361,6 +377,32 @@ map.getView().on('change:resolution', function(event)  {
     });
 });
 
+dragBox.on('boxend', function() {
+    // features that intersect the box are added to the collection of
+    // selected features
+    var extentDrag = dragBox.getGeometry().getExtent();
+    vectorSource.forEachFeatureIntersectingExtent(extentDrag, function(feature) {
+        var coordinates = feature.getGeometry().getFlatCoordinates();
+        for (var i = 0; i < coordinates.length - 3; i++) {
+            var f = [coordinates[i], coordinates[i+1]];
+            var l = [coordinates[i+2], coordinates[i+3]];
+            var segment = new LineString([f,l]);
+            if (dragBox.getGeometry().intersectsCoordinate(f) ||
+                dragBox.getGeometry().intersectsCoordinate(l)) {
+                inputFeatures.push(new Feature(segment));
+            }
+        }
+
+    });
+    inputLines.getSource().clear();
+    inputLines.getSource().addFeatures(inputFeatures);
+});
+
+// clear selection when drawing a new box and when clicking on the map
+dragBox.on('boxstart', function() {
+    inputFeatures = [];
+});
+
 
 
 select.on('select', function(e) {
@@ -377,7 +419,6 @@ select.on('select', function(e) {
     }
 
     featuresLine = [];
-
     e.selected.filter(function(feature) {
         console.log(feature.getProperties());
         var selectedFeatures = feature.get('features');
@@ -390,15 +431,19 @@ select.on('select', function(e) {
             console.log(arc);
             arc.selected = true;
             arcs.getSource().addFeature(new Feature(arc));
-            if (arc.radius < 1000)
+            if (arc.radius < 1000) {
                 getIsovist(f);
+            }
             getThumbnail(f);
         });
     });
-
     lines.getSource().clear();
     lines.getSource().addFeatures(featuresLine);
+
+
 });
+
+
 
 
 $("#fileTree").on('changed.jstree', function (e, data) {
@@ -509,4 +554,6 @@ map.addLayer(olClusters);
 map.addLayer(arcs);
 map.addLayer(thumbnails);
 map.addLayer(lines);
+map.addLayer(inputLines);
 map.addInteraction(select);
+map.addInteraction(dragBox);

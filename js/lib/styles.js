@@ -91,7 +91,16 @@ export function setStyleLinesIsovist() {
             color: '#FFFF00'
         }),
         fill: new Fill({
-            color: 'rgba(140, 208, 95, 1.0)'
+            color: 'rgba(140, 208, 95, 0.5)'
+        }),
+    });
+}
+
+export function setStyleInput() {
+    return new Style({
+         stroke : new Stroke({
+             color: '#0000FF',
+             width: 5
         }),
     });
 }
