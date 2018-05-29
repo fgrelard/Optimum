@@ -159,7 +159,6 @@ export function segmentsIntersect(s1, s2) {
     return intersection;
 }
 
-
 export function onSegment(p, s) {
     var p1 = s.getFirstCoordinate();
     var p2 = s.getLastCoordinate();

@@ -232,8 +232,6 @@ export default class IsoVist {
      * @returns {ol.geom.LineString} visible segment
      */
     segmentPartVisible(intersection, segment, arc) {
-        if (!arc.geometry)
-            arc.computeGeometry();
         var segStart = segment.getFirstCoordinate();
         var segEnd = segment.getLastCoordinate();
 
@@ -271,6 +269,8 @@ export default class IsoVist {
         var ps2 = segment.getLastCoordinate();
 
         $.each(angles, function(i, angle) {
+            if (!angle.geometry)
+                angle.computeGeometry();
             var r = that.arc.radius;
             var alphaRad = angle.alpha * Math.PI / 180;
             var omegaRad = angle.omega * Math.PI / 180;
@@ -282,6 +282,7 @@ export default class IsoVist {
             var s2 = new LineString([position, p2]);
             var i1 = Intersection.segmentsIntersect(segment, s1);
             var i2 = Intersection.segmentsIntersect(segment, s2);
+
             if (i1 || i2) {
                 if (i1 && i2) {
                     visibleSegment = new LineString([[i1.x, i1.y],
@@ -294,6 +295,13 @@ export default class IsoVist {
                     visibleSegment = that.segmentPartVisible(i2, segment, angle);
                 }
                 visibleSegments.push(visibleSegment);
+            }
+            else {
+                var i3 = angle.geometry.intersectsCoordinate(ps1);
+                var i4 = angle.geometry.intersectsCoordinate(ps2);
+                if (i3 || i4) {
+                    visibleSegments.push(segment);
+                }
             }
         });
         return (visibleSegments.length > 0) ? [segment, visibleSegments] : null;
@@ -334,7 +342,6 @@ export default class IsoVist {
         });
         var trimmedBlockingAngles = this.mergeOverlappingAngles(blockingAngles);
         var freeVisionAngles = this.freeAngles(trimmedBlockingAngles);
-
         $.each(segments, function(j, segment) {
             if (blockingSegments.indexOf(segment) === -1) {
                 var visibleSegment = that.partiallyVisibleSegments(freeVisionAngles, segment);
@@ -440,7 +447,7 @@ export default class IsoVist {
             polygon.push(lc);
         }
         polygon.push(this.arc.center);
-        console.log(polygon);
+
         return new Polygon([polygon]);
     }
 
@@ -468,6 +475,11 @@ export default class IsoVist {
             freeSegments.sort(function(a,b) {
                 return euclideanDistance(position, a[0].getClosestPoint(position)) - euclideanDistance(position, b[0].getClosestPoint(position));
             });
+            console.log("start");
+            $.each(freeSegments, function(i, segment) {
+                console.log(segment[0].getFlatCoordinates());
+            });
+
             blockingSegments.push(freeSegments[0][0]);
             partiallyVisible.push(freeSegments[0][1]);
             freeSegments = this.freeSegments(blockingSegments, segments);
@@ -481,9 +493,10 @@ export default class IsoVist {
             Array.prototype.push.apply(visibleSegments, blockingSegments);
         }
 
-        if (this.isDisplayPolygon)
+        if (this.isDisplayPolygon) {
             var polygon = this.visibilityPolygon(visibleSegments);
             return polygon;
+        }
         return visibleSegments;
     }
 }

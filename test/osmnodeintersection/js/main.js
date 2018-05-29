@@ -134,13 +134,14 @@ var vectorSource = new Vector({
                 featureProjection: map.getView().getProjection()
             });
             vectorSource.addFeatures(features);
-            var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
+            var isovist = new IsoVist(arc, vectorSource.getFeatures(), true, false);
             var visibleSegments = isovist.isovist();
 
-            featuresLine.push(new Feature({geometry : visibleSegments}));
-            // $.each(visibleSegments, function(i, segment) {
-            //     featuresLine.push(new Feature(new LineString([segment.getFirstCoordinate(), segment.getLastCoordinate()])));
-            // });
+            // featuresLine.push(new Feature({geometry : visibleSegments}));
+            console.log(visibleSegments);
+            $.each(visibleSegments, function(i, segment) {
+                featuresLine.push(new Feature(new LineString([segment.getFirstCoordinate(), segment.getLastCoordinate()])));
+            });
 
             lines.getSource().clear();
             lines.getSource().addFeatures(featuresLine);
@@ -262,10 +263,10 @@ var lines = new VectorLayer({
     style: new Style({
         stroke : new Stroke({
             color: '#FFFF00'
-        }),
-        fill : new Fill({
-            color: "#33CC9977"
-        })
+        })// ,
+        // fill : new Fill({
+        //     color: "#33CC9977"
+        // })
     })
 });
 
