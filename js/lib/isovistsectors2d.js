@@ -232,6 +232,8 @@ export default class IsoVist {
      * @returns {ol.geom.LineString} visible segment
      */
     segmentPartVisible(intersection, segment, arc) {
+        if (!arc.geometry)
+            arc.computeGeometry();
         var segStart = segment.getFirstCoordinate();
         var segEnd = segment.getLastCoordinate();
 
@@ -269,10 +271,13 @@ export default class IsoVist {
         var ps2 = segment.getLastCoordinate();
 
         $.each(angles, function(i, angle) {
-            var arc = new Arc(that.arc.center, that.arc.radius, angle.alpha, angle.omega);
-            arc.computeGeometry();
-            var p1 = arc.fullGeometry[1].getFlatCoordinates();
-            var p2 = arc.fullGeometry[2].getFlatCoordinates();
+            var r = that.arc.radius;
+            var alphaRad = angle.alpha * Math.PI / 180;
+            var omegaRad = angle.omega * Math.PI / 180;
+            var p1 = [position[0] + r * Math.cos(alphaRad),
+                      position[1] + r * Math.sin(alphaRad)];
+            var p2 = [position[0] + r * Math.cos(omegaRad),
+                      position[1] + r * Math.sin(omegaRad)];
             var s1 = new LineString([position, p1]);
             var s2 = new LineString([position, p2]);
             var i1 = Intersection.segmentsIntersect(segment, s1);
@@ -283,10 +288,10 @@ export default class IsoVist {
                                                      [i2.x, i2.y]]);
                 }
                 else if (i1) {
-                    visibleSegment = that.segmentPartVisible(i1, segment, arc);
+                    visibleSegment = that.segmentPartVisible(i1, segment, angle);
                 }
                 else if (i2) {
-                    visibleSegment = that.segmentPartVisible(i2, segment, arc);
+                    visibleSegment = that.segmentPartVisible(i2, segment, angle);
                 }
                 visibleSegments.push(visibleSegment);
             }
@@ -361,7 +366,6 @@ export default class IsoVist {
             var blockingAngle = that.visionBlockingArc(segment);
             var partial = false;
             $.each(freeVisionAngles, function(i, angle) {
-                angle.computeGeometry();
                 if ((blockingAngle.alpha < angle.alpha && blockingAngle.omega <= angle.omega && blockingAngle.omega > angle.alpha) ||
                     (blockingAngle.omega > angle.omega && blockingAngle.alpha >= angle.alpha && blockingAngle.alpha < angle.omega)) {
                     var visibleSegment = that.partiallyVisibleSegments(freeVisionAngles, segment);
