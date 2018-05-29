@@ -89,7 +89,10 @@ export function setStyleLinesIsovist() {
     return new Style({
         stroke : new Stroke({
             color: '#FFFF00'
-        })
+        }),
+        fill: new Fill({
+            color: 'rgba(140, 208, 95, 1.0)'
+        }),
     });
 }
 

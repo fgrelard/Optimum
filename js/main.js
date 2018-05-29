@@ -246,9 +246,11 @@ function getIsovist(f) {
 
     var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
     var visibleSegments = isovist.isovist();
-    $.each(visibleSegments, function(i, segment) {
-        featuresLine.push(new Feature(segment));
-    });
+    featuresLine.push(new Feature({geometry : visibleSegments}));
+
+    // $.each(visibleSegments, function(i, segment) {
+    //     featuresLine.push(new Feature(segment));
+    // });
 }
 
 
@@ -385,6 +387,7 @@ select.on('select', function(e) {
         var count = {number:0};
         $.each(selectedFeatures, function(i, f) {
             var arc = f.getProperties().arc;
+            console.log(arc);
             arc.selected = true;
             arcs.getSource().addFeature(new Feature(arc));
             if (arc.radius < 1000)

@@ -33,10 +33,11 @@ var map;
 var featuresArc=[];
 var features=[];
 var featuresLine =[];
-var alpha = 180;
-var omega = 360;
+var alpha = 320;
+var omega = 380;
 var radius = 150;
 var position = [739885.8194006054, 5905880.253554305 ];
+position = [739800.8194006054, 5906000.253554305];
 var arc = new Arc(position, radius, alpha, omega);
 arc.computeGeometry();
 
@@ -136,10 +137,10 @@ var vectorSource = new Vector({
             var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
             var visibleSegments = isovist.isovist();
 
-            //featuresLine.push(new Feature({geometry : visibleSegments}));
-            $.each(visibleSegments, function(i, segment) {
-                featuresLine.push(new Feature(new LineString([segment.getFirstCoordinate(), segment.getLastCoordinate()])));
-            });
+            featuresLine.push(new Feature({geometry : visibleSegments}));
+            // $.each(visibleSegments, function(i, segment) {
+            //     featuresLine.push(new Feature(new LineString([segment.getFirstCoordinate(), segment.getLastCoordinate()])));
+            // });
 
             lines.getSource().clear();
             lines.getSource().addFeatures(featuresLine);
@@ -261,6 +262,9 @@ var lines = new VectorLayer({
     style: new Style({
         stroke : new Stroke({
             color: '#FFFF00'
+        }),
+        fill : new Fill({
+            color: "#33CC9977"
         })
     })
 });
