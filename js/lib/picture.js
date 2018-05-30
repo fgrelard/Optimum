@@ -1,5 +1,5 @@
 import Point from 'ol/geom/point';
-
+import IsoVist from './isovistsectors2d';
 export default class Picture {
     constructor(filename, position, arc) {
         this.filename = filename;
@@ -7,5 +7,6 @@ export default class Picture {
         this.arc = arc;
         this.geometry = new Point(position);
         this.selected = false;
+        this.isovist = null;
     }
 }

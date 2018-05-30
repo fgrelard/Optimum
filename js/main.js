@@ -52,6 +52,7 @@ var clusters = [];
 var dendrogram = [];
 var featuresLine = [];
 var inputFeatures = [];
+var segments = [];
 var select = new Select();
 
 interact('.muuri-item')
@@ -86,36 +87,18 @@ interact('.muuri-item')
     })
 ;
 
+
+
 var vectorSource = new Vector({
     format: new OSMXML(),
     loader: function(extent2, resolution, projection) {
         if (resolution < 2) {
-            var epsg4326Extent =
-                    proj.transformExtent(extent2, projection, 'EPSG:4326');
-            var client = new XMLHttpRequest();
-            client.open('POST', 'https://overpass-api.de/api/interpreter');
-            client.addEventListener('load', function() {
-                var features = new OSMXML().readFeatures(client.responseText, {
-                    featureProjection: map.getView().getProjection()
-                });
-                var limitedFeatures = [];
-                $.each(features, function(i, f) {
-                    var node = f.getProperties();
-                    if (node.hasOwnProperty("building") ||
-                        node.hasOwnProperty("amenity")  ||
-                        node.hasOwnProperty("natural")
-                       ) {
-                        limitedFeatures.push(f);
-                    }
-                });
-                features = [];
-                vectorSource.addFeatures(limitedFeatures);
+            vectorSource.clear();
+            var client = getBuildingSegments(extent2, projection);
+            client.addEventListener('load', function(e) {
+                var features = clientLoadListener(client);
+                vectorSource.addFeatures(features);
             });
-            var query = '(node(' +
-                    epsg4326Extent[1] + ',' + epsg4326Extent[0] + ',' +
-                    epsg4326Extent[3] + ',' + epsg4326Extent[2] +
-                    ');rel(bn)->.foo;way(bn);node(w)->.foo;rel(bw););out meta;';
-            client.send(query);
         }
         this.resolution = resolution;
     },
@@ -240,6 +223,58 @@ function getThumbnail(f) {
     });
 }
 
+function clientLoadListener(client) {
+    var features = new OSMXML().readFeatures(client.responseText, {
+        featureProjection: map.getView().getProjection()
+    });
+    var limitedFeatures = [];
+    $.each(features, function(i, f) {
+        var node = f.getProperties();
+        if (node.hasOwnProperty("building") ||
+            node.hasOwnProperty("amenity")  ||
+            node.hasOwnProperty("natural")
+           ) {
+            limitedFeatures.push(f);
+        }
+    });
+    return limitedFeatures;
+}
+
+function getBuildingSegments(extent2, projection) {
+    var client = new XMLHttpRequest();
+    client.open('POST', 'https://overpass-api.de/api/interpreter');
+
+    var epsg4326Extent =
+            proj.transformExtent(extent2, projection, 'EPSG:4326');
+    var query = '(node(' +
+            epsg4326Extent[1] + ',' + epsg4326Extent[0] + ',' +
+            epsg4326Extent[3] + ',' + epsg4326Extent[2] +
+            ');rel(bn)->.foo;way(bn);node(w)->.foo;rel(bw););out meta;';
+    client.send(query);
+    return client;
+}
+
+function computeIsovistForPicture(feature) {
+    var projection = proj.get("EPSG:3857");
+    var picture = feature.getProperties();
+    var cx = picture.position[0];
+    var cy = picture.position[1];
+    var r = 500;
+    var extent2 = [cx-r, cy-r,
+                   cx+r, cy+r];
+    var client = getBuildingSegments(extent2, projection);
+    client.addEventListener('load', function(e) {
+        var segments = clientLoadListener(client);
+        var isovistComputer = new IsoVist(picture.arc, segments, true);
+        var isovist = isovistComputer.isovist();
+        var index = pictures.findIndex(function(e) {
+            return e.getProperties().position[0] === picture.position[0] &&
+                e.getProperties().position[1] === picture.position[1];
+        });
+        pictures[index].set("isovist", isovist);
+    });
+}
+
 function getImageLayout(f) {
     var t0Image = fetch(urlDB + "images", {
         method: 'post',
@@ -257,17 +292,21 @@ function getImageLayout(f) {
 }
 
 function getIsovist(f) {
-    var arc = f.getProperties().arc;
-    // arc.computeGeometry();
+    return new Promise(function(resolve, reject) {
+        var picture = f.getProperties();
+        var arc = picture.arc;
+        // arc.computeGeometry();
+        if (!picture.isovist) {
+            var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
+            picture.isovist = isovist.isovist();
+        }
+        featuresLine.push(new Feature({geometry : picture.isovist}));
 
-    var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
-    var visibleSegments = isovist.isovist();
-    featuresLine.push(new Feature({geometry : visibleSegments}));
-
-
-    // $.each(visibleSegments, function(i, segment) {
-    //     featuresLine.push(new Feature(segment));
-    // });
+        // $.each(visibleSegments, function(i, segment) {
+        //     featuresLine.push(new Feature(segment));
+        // });
+        resolve();
+    });
 }
 
 
@@ -361,6 +400,9 @@ $("#myRange").on("change", function(event) {
     });
 });
 
+
+
+
 map.getView().on('change:resolution', function(event)  {
     arcs.getSource().clear();
     var ext = map.getView().calculateExtent(map.getSize());
@@ -419,6 +461,8 @@ select.on('select', function(e) {
     }
 
     featuresLine = [];
+    var promises = [];
+
     e.selected.filter(function(feature) {
         console.log(feature.getProperties());
         var selectedFeatures = feature.get('features');
@@ -428,17 +472,19 @@ select.on('select', function(e) {
         var count = {number:0};
         $.each(selectedFeatures, function(i, f) {
             var arc = f.getProperties().arc;
-            console.log(arc);
             arc.selected = true;
             arcs.getSource().addFeature(new Feature(arc));
             if (arc.radius < 1000) {
-                getIsovist(f);
+                var promise = getIsovist(f);
+                promises.push(promise);
             }
             getThumbnail(f);
         });
     });
-    lines.getSource().clear();
-    lines.getSource().addFeatures(featuresLine);
+    Promise.all(promises).then(function(values) {
+        lines.getSource().clear();
+        lines.getSource().addFeatures(featuresLine);
+    });
 
 
 });
@@ -499,10 +545,13 @@ $("#fileTree").on('changed.jstree', function (e, data) {
                     distance = dendrogram[key2].label;
                 }
             }
+
+            computeIsovistForPicture(feature);
             getImageLayout(feature).then(function(uri) {
                 loadImageAndFillGrid(uri, images, {label:label, distance:distance}, count, pictures.length);
             });
         });
+
 
         //Put values into select fields
         for (var i = 0; i < clusters.length; i++) {
