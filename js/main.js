@@ -24,8 +24,6 @@ import $ from 'jquery';
 import jsTree from 'jstree';
 import Muuri from 'muuri';
 import interact from 'interactjs';
-import threadify from 'threadify';
-import cycle from 'json-cycle';
 
 import {euclideanDistance} from './lib/distance';
 import Arc from './lib/arc';
@@ -258,19 +256,19 @@ function getImageLayout(f) {
     return t2Image;
 }
 
-var getIsovist = threadify(function(arc, features) {
-    // var arc = f.getProperties().arc;
-    console.log(arc);
-    console.log(features);
+function getIsovist(f) {
+    var arc = f.getProperties().arc;
+    // arc.computeGeometry();
+
     var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
     var visibleSegments = isovist.isovist();
     featuresLine.push(new Feature({geometry : visibleSegments}));
-    return 1;
+
 
     // $.each(visibleSegments, function(i, segment) {
     //     featuresLine.push(new Feature(segment));
     // });
-});
+}
 
 
 function filter() {
@@ -430,15 +428,11 @@ select.on('select', function(e) {
         var count = {number:0};
         $.each(selectedFeatures, function(i, f) {
             var arc = f.getProperties().arc;
+            console.log(arc);
             arc.selected = true;
             arcs.getSource().addFeature(new Feature(arc));
             if (arc.radius < 1000) {
-                var job = getIsovist(JSON.parse(JSON.stringify(cycle.decycle(f.getProperties().arc))),
-                                     JSON.parse(JSON.stringify(cycle.decycle(vectorSource.getFeatures()))));
-                console.log(job);
-                job.done = function(result) {
-                    console.log("done");
-                };
+                getIsovist(f);
             }
             getThumbnail(f);
         });
