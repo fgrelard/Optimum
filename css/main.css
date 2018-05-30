@@ -2906,7 +2906,7 @@ controls {
   z-index: 1;
 }
 
-
+/*Slider*/
 .slider {
     -webkit-appearance: none;
     width: 50%;
@@ -2937,7 +2937,103 @@ controls {
     cursor: pointer;
 }
 
+/*FileTree*/
 #wrapTree {
     max-height: 400px;
     overflow: auto;
+}
+
+/*Overlay circles cluster */
+.circleOut {
+    position: relative;
+    margin: 0 auto;
+    padding: 0;
+    width: 0;
+    height: 0;
+}
+.circleOut:before {
+    position: relative;
+    top: -.8em;
+    left: -1em;
+    display: block;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    margin: 0 auto;
+    width: 2em;
+    height: 2em;
+    border: 0.5em solid #FA8258;              
+    border-radius: 100%;
+    content: "";
+    -webkit-transform-origin: center;
+    -ms-transform-origin: center;
+    transform-origin: center;
+    -webkit-animation-name: fadeOut;
+    animation-name: fadeOut;
+    -webkit-animation-duration: 1s;
+    animation-duration: 1s;
+    -webkit-animation-timing-function: ease-in-out;
+    animation-timing-function: ease-in-out;
+    -webkit-animation-delay: -1s;
+    animation-delay: -1s;
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    -webkit-animation-direction: forwards;
+    animation-direction: forwards;
+}
+.circleOut:after {
+    position: absolute;
+    top: -.8em;
+    left: -1em;
+    display: block;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    margin: 0 auto;
+    width: 2em;
+    height: 2em;
+    border: 0.2em solid #FA8258;
+    border-radius: 100%;
+    content: "";
+    -webkit-transform-origin: center;
+    -ms-transform-origin: center;
+    transform-origin: center;
+    -webkit-animation-name: fadeOut;
+    animation-name: fadeOut;
+    -webkit-animation-duration: 1s;
+    animation-duration: 1s;
+    -webkit-animation-timing-function: ease;
+    animation-timing-function: ease;
+    -webkit-animation-delay: -.5s;
+    animation-delay: -.5s;
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    -webkit-animation-direction: forwards;
+    animation-direction: forwards;
+}
+@-webkit-keyframes fadeOut {
+    0% {
+        -webkit-transform: scale(0);
+        transform: scale(0);
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+@keyframes fadeOut {
+    0% {
+        -webkit-transform: scale(0);
+        transform: scale(0);
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+        opacity: 0;
+    }
 }

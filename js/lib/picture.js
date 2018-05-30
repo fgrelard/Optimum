@@ -8,5 +8,6 @@ export default class Picture {
         this.geometry = new Point(position);
         this.selected = false;
         this.isovist = null;
+        this.visualizesInput = false;
     }
 }

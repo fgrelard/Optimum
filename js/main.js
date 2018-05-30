@@ -19,6 +19,7 @@ import OSMXML from 'ol/format/osmxml';
 import loadingstrategy from 'ol/loadingstrategy';
 import DragBox from 'ol/interaction/dragbox';
 import condition from 'ol/events/condition';
+import Overlay from 'ol/overlay';
 
 import $ from 'jquery';
 import jsTree from 'jstree';
@@ -54,6 +55,9 @@ var featuresLine = [];
 var inputFeatures = [];
 var segments = [];
 var select = new Select();
+var overlay = new Overlay({
+  element: document.getElementById('none')
+});
 
 interact('.muuri-item')
     .resizable({
@@ -259,7 +263,7 @@ function computeIsovistForPicture(feature) {
     var picture = feature.getProperties();
     var cx = picture.position[0];
     var cy = picture.position[1];
-    var r = 500;
+    var r = 300;
     var extent2 = [cx-r, cy-r,
                    cx+r, cy+r];
     var client = getBuildingSegments(extent2, projection);
@@ -267,11 +271,7 @@ function computeIsovistForPicture(feature) {
         var segments = clientLoadListener(client);
         var isovistComputer = new IsoVist(picture.arc, segments, true);
         var isovist = isovistComputer.isovist();
-        var index = pictures.findIndex(function(e) {
-            return e.getProperties().position[0] === picture.position[0] &&
-                e.getProperties().position[1] === picture.position[1];
-        });
-        pictures[index].set("isovist", isovist);
+        feature.set("isovist", isovist);
     });
 }
 
@@ -296,10 +296,10 @@ function getIsovist(f) {
         var picture = f.getProperties();
         var arc = picture.arc;
         // arc.computeGeometry();
-        if (!picture.isovist) {
-            var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
-            picture.isovist = isovist.isovist();
-        }
+        // if (!picture.isovist) {
+        //     var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
+        //     picture.isovist = isovist.isovist();
+        // }
         featuresLine.push(new Feature({geometry : picture.isovist}));
 
         // $.each(visibleSegments, function(i, segment) {
@@ -407,7 +407,8 @@ map.getView().on('change:resolution', function(event)  {
     arcs.getSource().clear();
     var ext = map.getView().calculateExtent(map.getSize());
     olClusters.getSource().getSource().forEachFeature(function(feature) {
-        var arc = feature.getProperties().arc;
+        var previousArc = feature.getProperties().arc;
+        var arc = new Arc(previousArc.center, previousArc.radius, previousArc.alpha, previousArc.omega);
 
         var diameter = euclideanDistance([ext[0], ext[1]],
                                          [ext[2], ext[3]]);
@@ -420,6 +421,13 @@ map.getView().on('change:resolution', function(event)  {
 });
 
 dragBox.on('boxend', function() {
+
+    var images = [];
+    var count = {number:0};
+    var picturesVisualizing = [];
+    //Clear highlighted photographies visualizing point
+    map.getOverlays().clear();
+
     // features that intersect the box are added to the collection of
     // selected features
     var extentDrag = dragBox.getGeometry().getExtent();
@@ -434,8 +442,25 @@ dragBox.on('boxend', function() {
                 inputFeatures.push(new Feature(segment));
             }
         }
-
     });
+    $.each(pictures, function(i, feature) {
+        var picture = feature.getProperties();
+        var isovist = picture.isovist;
+        if (isovist && isovist.intersectsExtent(extentDrag)) {
+            count.number++;
+            picturesVisualizing.push(feature);
+            var overlay = styles.createCircleOutOverlay(picture.position);
+            map.addOverlay(overlay);
+
+        }
+    });
+
+    $.each(picturesVisualizing, function(i, feature) {
+        getImageLayout(feature).then(function(uri) {
+            loadImageAndFillGrid(uri, images, {}, count, picturesVisualizing.length);
+        });
+    });
+
     inputLines.getSource().clear();
     inputLines.getSource().addFeatures(inputFeatures);
 });
@@ -505,7 +530,8 @@ $("#fileTree").on('changed.jstree', function (e, data) {
     //Query DB and generate objects
     getDocs(r, "fullDocs").then(function(metadataJSON) {
         pictures = [];
-        $.each(metadataJSON, function(i, photo) {
+        for (var i = 0; i < metadataJSON.length; i++) {
+            var photo = metadataJSON[i];
             if (photo.hasOwnProperty('ImageWidth')) {
                 var position = getPosition(photo);
                 if (position !== null) {
@@ -517,7 +543,7 @@ $("#fileTree").on('changed.jstree', function (e, data) {
                     pictures.push(feature);
                 }
             }
-        });
+        }
         if (pictures.length === 0) {
             grid.remove(grid.getItems(), {removeElements:true});
             document.body.className = 'images-loaded';
@@ -606,3 +632,5 @@ map.addLayer(lines);
 map.addLayer(inputLines);
 map.addInteraction(select);
 map.addInteraction(dragBox);
+
+map.addOverlay(overlay);

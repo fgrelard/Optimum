@@ -6,6 +6,7 @@ import Circle  from 'ol/style/circle';
 import has from 'ol/has';
 import extent from 'ol/extent';
 import ImageStatic from 'ol/source/imagestatic';
+import Overlay from 'ol/overlay';
 
 export var pointRadius = 20;
 
@@ -130,6 +131,17 @@ export function setStyleClusters(feature) {
         styleCache[size] = style;
     }
     return style;
+}
+
+export function  createCircleOutOverlay(position) {
+    var elem = document.createElement('div');
+    elem.setAttribute('class', 'circleOut');
+
+    return new Overlay({
+        element: elem,
+        position: position,
+        positioning: 'center-center'
+    });
 }
 
 export function setStyleArcs(arc, resolution) {
