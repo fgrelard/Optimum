@@ -74,6 +74,7 @@ export default class IsoVist {
         var that = this;
         $.each(this.segments, function(b, f) {
             var geometryFeature = f.getGeometry();
+            if (euclideanDistance(geometryFeature.getFirstCoordinate(), that.arc.center) > 2 * that.arc.radius) return;
             if (geometryArc.intersectsExtent(geometryFeature.getExtent()) &&
                 geometryFeature.intersectsExtent(extentArc)) {
                 if (geometryFeature.getType() === "Polygon") {

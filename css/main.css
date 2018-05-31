@@ -2953,14 +2953,14 @@ controls {
 }
 .circleOut:before {
     position: relative;
-    top: -.8em;
-    left: -1em;
+    top: -1.5em;
+    left: -1.5em;
     display: block;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     margin: 0 auto;
-    width: 2em;
-    height: 2em;
+    width: 3em;
+    height: 3em;
     border: 0.5em solid #FA8258;              
     border-radius: 100%;
     content: "";
@@ -2982,14 +2982,14 @@ controls {
 }
 .circleOut:after {
     position: absolute;
-    top: -.8em;
-    left: -1em;
+    top: -1.5em;
+    left: -1.5em;
     display: block;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     margin: 0 auto;
-    width: 2em;
-    height: 2em;
+    width: 3em;
+    height: 3em;
     border: 0.2em solid #FA8258;
     border-radius: 100%;
     content: "";
