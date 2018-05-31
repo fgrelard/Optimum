@@ -93,8 +93,8 @@ export function getOrientation(mapMetadata, position) {
         var orientation = mapMetadata.Orientation;
         var fov = Number(mapMetadata.FOV.match(/[0-9.]+/g));
         var angles = computeAlphaOmegaFromDir(dir, fov);
-        var radius = 150;
-        var arc = new Arc([position[0], position[1]], 300, angles[0], angles[1]);
+        var radius = 300;
+        var arc = new Arc([position[0], position[1]], radius, angles[0], angles[1]);
         arc.computeGeometry();
         return arc;
     }

@@ -16,6 +16,7 @@ import OLImage from 'ol/layer/image';
 import Projection from 'ol/proj/projection';
 import control from 'ol/control';
 import OSMXML from 'ol/format/osmxml';
+import GeoJSON from 'ol/format/geojson';
 import loadingstrategy from 'ol/loadingstrategy';
 import DragBox from 'ol/interaction/dragbox';
 import condition from 'ol/events/condition';
@@ -53,66 +54,23 @@ var clusters = [];
 var dendrogram = [];
 var featuresLine = [];
 var inputFeatures = [];
-var segments = [];
 var select = new Select();
 var overlay = new Overlay({
   element: document.getElementById('none')
 });
 
-interact('.muuri-item')
-    .resizable({
-        edges: { left: true, right: true, bottom: true, top: true },
-        snapSize: {
-            targets: [
-                { width: 50, height: 50, range: 25 },
-            ]
-        },
-        restrictEdges: {
-            outer: 'parent',
-            endOnly: true,
-        },
-        restrictSize: {
-            min: { width: 100, height: 50 },
-        },
-        inertia: true
-    })
-    .on('resizemove', function (event) {
-        var target = event.target;
-        target.style.width  = event.rect.width + 'px';
-        target.style.height = event.rect.height + 'px';
-    })
-    .on('resizeend', function(event) {
-        grid.refreshItems().layout();
-        var target = event.target;
-        var divItem = $(event.currentTarget).children().children();
-        target.style.width  = divItem.width() + 2*7 + 'px';
-        target.style.height = divItem.height() + 2*7 + 'px';
-        grid.refreshItems().layout();
-    })
-;
 
-
-
-var vectorSource = new Vector({
-    format: new OSMXML(),
-    loader: function(extent2, resolution, projection) {
-        if (resolution < 2) {
-            vectorSource.clear();
-            var client = getBuildingSegments(extent2, projection);
-            client.addEventListener('load', function(e) {
-                var features = clientLoadListener(client);
-                vectorSource.addFeatures(features);
-            });
-        }
-        this.resolution = resolution;
-    },
-    strategy: function(extent, resolution) {
-        if(this.resolution && this.resolution != resolution){
-            this.loadedExtentsRtree_.clear();
-        }
-        return [extent];
-    }
+var geoFormat = new GeoJSON();
+var buildingSegments = [];
+$.getJSON("data/stetienne.geojson", function(json) {
+    buildingSegments = geoFormat.readFeatures(json, {
+        featureProjection : map.getView().getProjection()
+    });
 });
+
+
+var vectorSource = new Vector(sourceFromXML());
+
 
 var vector = new VectorLayer({
     source: vectorSource,
@@ -178,6 +136,30 @@ var dragBox = new DragBox({
 });
 
 
+
+function sourceFromXML() {
+    return {
+        format: new OSMXML(),
+        loader: function(extent2, resolution, projection) {
+            if (resolution < 2) {
+                vectorSource.clear();
+                var client = getBuildingSegments(extent2, projection);
+                client.addEventListener('load', function(e) {
+                    var features = segmentsFromXMLRequest(client);
+                    vectorSource.addFeatures(features);
+                });
+            }
+            this.resolution = resolution;
+        },
+        strategy: function(extent2, resolution) {
+            if(this.resolution && this.resolution != resolution){
+                this.loadedExtentsRtree_.clear();
+            }
+            return [extent2];
+        }
+    };
+}
+
 function extractFileTreeRecursive(data, object, parent) {
     if (object.hasOwnProperty('path')) return false;
     $.each(object, function(i, obj) {
@@ -227,12 +209,13 @@ function getThumbnail(f) {
     });
 }
 
-function clientLoadListener(client) {
+function segmentsFromXMLRequest(client, position = null) {
     var features = new OSMXML().readFeatures(client.responseText, {
-        featureProjection: map.getView().getProjection()
-    });
+        featureProjection: (position) ? new View({center:position}).getProjection() : map.getView().getProjection()
+     });
     var limitedFeatures = [];
-    $.each(features, function(i, f) {
+    for (var i = 0; i < features.length; i++) {
+        var f = features[i];
         var node = f.getProperties();
         if (node.hasOwnProperty("building") ||
             node.hasOwnProperty("amenity")  ||
@@ -240,7 +223,7 @@ function clientLoadListener(client) {
            ) {
             limitedFeatures.push(f);
         }
-    });
+    }
     return limitedFeatures;
 }
 
@@ -266,13 +249,10 @@ function computeIsovistForPicture(feature) {
     var r = 300;
     var extent2 = [cx-r, cy-r,
                    cx+r, cy+r];
-    var client = getBuildingSegments(extent2, projection);
-    client.addEventListener('load', function(e) {
-        var segments = clientLoadListener(client);
-        var isovistComputer = new IsoVist(picture.arc, segments, true);
-        var isovist = isovistComputer.isovist();
-        feature.set("isovist", isovist);
-    });
+    var isovistComputer = new IsoVist(picture.arc, buildingSegments, true);
+    var isovist = isovistComputer.isovist();
+    feature.set("isovist", isovist);
+
 }
 
 function getImageLayout(f) {
@@ -292,21 +272,15 @@ function getImageLayout(f) {
 }
 
 function getIsovist(f) {
-    return new Promise(function(resolve, reject) {
-        var picture = f.getProperties();
-        var arc = picture.arc;
-        // arc.computeGeometry();
-        // if (!picture.isovist) {
-        //     var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
-        //     picture.isovist = isovist.isovist();
-        // }
+    var picture = f.getProperties();
+    if (picture.isovist)
         featuresLine.push(new Feature({geometry : picture.isovist}));
 
-        // $.each(visibleSegments, function(i, segment) {
-        //     featuresLine.push(new Feature(segment));
-        // });
-        resolve();
-    });
+
+    // $.each(visibleSegments, function(i, segment) {
+    //     featuresLine.push(new Feature(segment));
+    // });
+
 }
 
 
@@ -382,6 +356,38 @@ function fillGrid(image, images, label, count, length) {
     }
 }
 
+interact('.muuri-item')
+    .resizable({
+        edges: { left: true, right: true, bottom: true, top: true },
+        snapSize: {
+            targets: [
+                { width: 50, height: 50, range: 25 },
+            ]
+        },
+        restrictEdges: {
+            outer: 'parent',
+            endOnly: true,
+        },
+        restrictSize: {
+            min: { width: 100, height: 50 },
+        },
+        inertia: true
+    })
+    .on('resizemove', function (event) {
+        var target = event.target;
+        target.style.width  = event.rect.width + 'px';
+        target.style.height = event.rect.height + 'px';
+    })
+    .on('resizeend', function(event) {
+        grid.refreshItems().layout();
+        var target = event.target;
+        var divItem = $(event.currentTarget).children().children();
+        target.style.width  = divItem.width() + 2*7 + 'px';
+        target.style.height = divItem.height() + 2*7 + 'px';
+        grid.refreshItems().layout();
+    })
+;
+
 
 generateGrid();
 
@@ -408,13 +414,16 @@ map.getView().on('change:resolution', function(event)  {
     var ext = map.getView().calculateExtent(map.getSize());
     olClusters.getSource().getSource().forEachFeature(function(feature) {
         var previousArc = feature.getProperties().arc;
+        var selected = previousArc.selected;
         var arc = new Arc(previousArc.center, previousArc.radius, previousArc.alpha, previousArc.omega);
 
         var diameter = euclideanDistance([ext[0], ext[1]],
                                          [ext[2], ext[3]]);
         arc.radius = diameter/2;
         arc.computeGeometry();
-        if (arc.selected) {
+        previousArc.geometry = arc.geometry;
+        previousArc.fullGeometry = arc.fullGeometry;
+        if (selected) {
             arcs.getSource().addFeature(new Feature(arc));
         }
     });
@@ -431,15 +440,17 @@ dragBox.on('boxend', function() {
     // features that intersect the box are added to the collection of
     // selected features
     var extentDrag = dragBox.getGeometry().getExtent();
-    vectorSource.forEachFeatureIntersectingExtent(extentDrag, function(feature) {
-        var coordinates = feature.getGeometry().getFlatCoordinates();
-        for (var i = 0; i < coordinates.length - 3; i++) {
-            var f = [coordinates[i], coordinates[i+1]];
-            var l = [coordinates[i+2], coordinates[i+3]];
-            var segment = new LineString([f,l]);
-            if (dragBox.getGeometry().intersectsCoordinate(f) ||
-                dragBox.getGeometry().intersectsCoordinate(l)) {
-                inputFeatures.push(new Feature(segment));
+    $.each(buildingSegments, function(i, feature) {
+        if (feature.getGeometry().intersectsExtent(extentDrag)) {
+            var coordinates = feature.getGeometry().getFlatCoordinates();
+            for (var i = 0; i < coordinates.length - 3; i++) {
+                var f = [coordinates[i], coordinates[i+1]];
+                var l = [coordinates[i+2], coordinates[i+3]];
+                var segment = new LineString([f,l]);
+                if (dragBox.getGeometry().intersectsCoordinate(f) ||
+                    dragBox.getGeometry().intersectsCoordinate(l)) {
+                    inputFeatures.push(new Feature(segment));
+                }
             }
         }
     });
@@ -473,7 +484,6 @@ dragBox.on('boxstart', function() {
 
 
 select.on('select', function(e) {
-    var selectedFeatures = select.getFeatures();
 
     //Reset
     if (!e.mapBrowserEvent.originalEvent.ctrlKey) {
@@ -486,10 +496,8 @@ select.on('select', function(e) {
     }
 
     featuresLine = [];
-    var promises = [];
 
     e.selected.filter(function(feature) {
-        console.log(feature.getProperties());
         var selectedFeatures = feature.get('features');
         var images = [];
 
@@ -499,18 +507,12 @@ select.on('select', function(e) {
             var arc = f.getProperties().arc;
             arc.selected = true;
             arcs.getSource().addFeature(new Feature(arc));
-            if (arc.radius < 1000) {
-                var promise = getIsovist(f);
-                promises.push(promise);
-            }
+            getIsovist(f);
             getThumbnail(f);
         });
     });
-    Promise.all(promises).then(function(values) {
-        lines.getSource().clear();
-        lines.getSource().addFeatures(featuresLine);
-    });
-
+    lines.getSource().clear();
+    lines.getSource().addFeatures(featuresLine);
 
 });
 
@@ -571,8 +573,9 @@ $("#fileTree").on('changed.jstree', function (e, data) {
                     distance = dendrogram[key2].label;
                 }
             }
-
-            computeIsovistForPicture(feature);
+            if (buildingSegments.length > 0) {
+//                computeIsovistForPicture(feature);
+            }
             getImageLayout(feature).then(function(uri) {
                 loadImageAndFillGrid(uri, images, {label:label, distance:distance}, count, pictures.length);
             });
