@@ -288,7 +288,7 @@ function filter() {
     var filterFieldValue = $('.filter-field').val();
     grid.filter(function (item) {
         var element = item.getElement();
-        var isFilterMatch = !filterFieldValue ? true : (element.getAttribute('label') || '') === filterFieldValue;
+        var isFilterMatch = !filterFieldValue ? true : (element.getAttribute('label') || filterFieldValue) === filterFieldValue;
         return isFilterMatch;
     });
 }
@@ -400,8 +400,8 @@ $("#myRange").on("change", function(event) {
     var filterFieldValue = $('.filter-field').val();
     grid.filter(function (item) {
         var element = item.getElement();
-        var isFilterMatch = !filterFieldValue ? true : (element.getAttribute('label') || '') === filterFieldValue;
-        var isSliderMatch = !sliderValue ? true : parseFloat(element.getAttribute('distance') || '') <= sliderValue;
+        var isFilterMatch = !filterFieldValue ? true : (element.getAttribute('label') || filterFieldValue) === filterFieldValue;
+        var isSliderMatch = !sliderValue ? true : parseFloat(element.getAttribute('distance') || sliderValue) <= sliderValue;
         return isFilterMatch && isSliderMatch;
     });
 });
@@ -504,7 +504,6 @@ select.on('select', function(e) {
         var count = {number:0};
         $.each(selectedFeatures, function(i, f) {
             var arc = f.getProperties().arc;
-            console.log(arc.center);
             arc.selected = true;
             arcs.getSource().addFeature(new Feature(arc));
             getIsovist(f);
