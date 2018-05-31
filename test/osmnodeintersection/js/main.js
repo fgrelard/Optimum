@@ -33,11 +33,12 @@ var map;
 var featuresArc=[];
 var features=[];
 var featuresLine =[];
-var alpha = 320;
-var omega = 380;
-var radius = 150;
+var alpha = 190;
+var omega = 240;
+var radius = 300;
 var position = [739885.8194006054, 5905880.253554305 ];
 position = [739800.8194006054, 5906000.253554305];
+position = [ 489298.32814487105, 5688013.78184738 ];
 var arc = new Arc(position, radius, alpha, omega);
 arc.computeGeometry();
 
@@ -133,7 +134,19 @@ var vectorSource = new Vector({
             var features = new OSMXML().readFeatures(client.responseText, {
                 featureProjection: map.getView().getProjection()
             });
-            vectorSource.addFeatures(features);
+            var limitedFeatures = [];
+            for (var i = 0; i < features.length; i++) {
+                var f = features[i];
+                var node = f.getProperties();
+                if (node.hasOwnProperty("building") ||
+                    node.hasOwnProperty("amenity")  ||
+                    node.hasOwnProperty("natural")
+                   ) {
+                    limitedFeatures.push(f);
+                }
+            }
+            vectorSource.addFeatures(limitedFeatures);
+
             var isovist = new IsoVist(arc, vectorSource.getFeatures(), true, false);
             var visibleSegments = isovist.isovist();
 
@@ -183,7 +196,7 @@ map = new Map({
         }
     }),
     view: new View({
-        center: [739218, 5906096],
+        center: position,
         maxZoom: 19,
         zoom: 17
     })

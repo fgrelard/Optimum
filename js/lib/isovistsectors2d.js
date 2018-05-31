@@ -37,6 +37,15 @@ export default class IsoVist {
         this.epsilon = epsilon;
     }
 
+    isInsideArc(segment) {
+        for (var i = 0; i < 1; i+=0.1) {
+            if (this.arc.geometry.intersectsCoordinate(segment.getCoordinateAt(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Extracts all segments constituting a polygon
      * @param {ol.geom.Polygon} polygon
@@ -261,6 +270,7 @@ export default class IsoVist {
      * @returns {Array.<ol.geom.LineString, Array.<ol.geom.LineString> >} if it is partially visible : first argument = full segment, second argument = array of visible segments ; else null
      */
     partiallyVisibleSegments(angles, segment) {
+
         var visibleSegment = null;
         var position = this.arc.center;
         var visibleSegments = [];
@@ -282,7 +292,6 @@ export default class IsoVist {
             var s2 = new LineString([position, p2]);
             var i1 = Intersection.segmentsIntersect(segment, s1);
             var i2 = Intersection.segmentsIntersect(segment, s2);
-
             if (i1 || i2) {
                 if (i1 && i2) {
                     visibleSegment = new LineString([[i1.x, i1.y],
@@ -299,11 +308,12 @@ export default class IsoVist {
             else {
                 var i3 = angle.geometry.intersectsCoordinate(ps1);
                 var i4 = angle.geometry.intersectsCoordinate(ps2);
-                if (i3 || i4) {
+                if (i3 && i4) {
                     visibleSegments.push(segment);
                 }
             }
         });
+
         return (visibleSegments.length > 0) ? [segment, visibleSegments] : null;
     }
 
@@ -345,7 +355,7 @@ export default class IsoVist {
         $.each(segments, function(j, segment) {
             if (blockingSegments.indexOf(segment) === -1) {
                 var visibleSegment = that.partiallyVisibleSegments(freeVisionAngles, segment);
-                if (visibleSegment)
+                if (visibleSegment && that.isInsideArc(visibleSegment[0]))
                     freeSegments.push(visibleSegment);
             }
         });
@@ -383,14 +393,9 @@ export default class IsoVist {
             });
             var p1 = segment.getFirstCoordinate();
             var p2 = segment.getLastCoordinate();
-            if (!partial)
+            if (!partial && that.isInsideArc(segment))
             {
-                for (var i = 0; i < 1; i+=0.1) {
-                    if (that.arc.geometry.intersectsCoordinate(segment.getCoordinateAt(i))) {
-                        Array.prototype.push.apply(visibleSegments, [segment]);
-                        break;
-                    }
-                }
+                Array.prototype.push.apply(visibleSegments, [segment]);
             }
 
             blockingAngles.push(blockingAngle);

@@ -434,6 +434,7 @@ dragBox.on('boxend', function() {
     var images = [];
     var count = {number:0};
     var picturesVisualizing = [];
+
     //Clear highlighted photographies visualizing point
     map.getOverlays().clear();
 
@@ -500,11 +501,10 @@ select.on('select', function(e) {
     e.selected.filter(function(feature) {
         var selectedFeatures = feature.get('features');
         var images = [];
-
-
         var count = {number:0};
         $.each(selectedFeatures, function(i, f) {
             var arc = f.getProperties().arc;
+            console.log(arc.center);
             arc.selected = true;
             arcs.getSource().addFeature(new Feature(arc));
             getIsovist(f);
@@ -574,7 +574,7 @@ $("#fileTree").on('changed.jstree', function (e, data) {
                 }
             }
             if (buildingSegments.length > 0) {
-//                computeIsovistForPicture(feature);
+                computeIsovistForPicture(feature);
             }
             getImageLayout(feature).then(function(uri) {
                 loadImageAndFillGrid(uri, images, {label:label, distance:distance}, count, pictures.length);
