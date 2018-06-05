@@ -46,6 +46,7 @@ var lonConv = stEtienneLonLatConv[0];
 var latConv = stEtienneLonLatConv[1];
 
 var urlDB = "http://159.84.143.179:8080/";
+var urlDB2 = "http://polymnie.univ-lyon2.fr:8080/";
 
 var grid;
 var thumbnails = new OLImage();
@@ -242,16 +243,26 @@ function getBuildingSegments(extent2, projection) {
 }
 
 function computeIsovistForPicture(feature) {
-    var projection = proj.get("EPSG:3857");
-    var picture = feature.getProperties();
-    var cx = picture.position[0];
-    var cy = picture.position[1];
-    var r = 300;
-    var extent2 = [cx-r, cy-r,
-                   cx+r, cy+r];
-    var isovistComputer = new IsoVist(picture.arc, buildingSegments, true);
-    var isovist = isovistComputer.isovist();
-    feature.set("isovist", isovist);
+    var previousArc = feature.getProperties().arc;
+    var arc = new Arc(previousArc.center, previousArc.radius, previousArc.alpha, previousArc.omega);
+     var t0Image = fetch(urlDB2 + "isovist", {
+        method: 'post',
+         body: JSON.stringify({arc: arc})
+    });
+    var t1Image = t0Image.then(function (response) {
+        return response.json();
+    });
+    t1Image.then(function(data) {
+        var arrayCoordinates = [];
+        for (var i = 0; i < data.flatCoordinates.length-1; i+=2)
+            arrayCoordinates.push([parseFloat(data.flatCoordinates[i]),
+                                   parseFloat(data.flatCoordinates[i+1])]);
+        var superArray = arrayCoordinates;
+        return superArray;
+    }).then(function(array) {
+        var polygon = new Polygon([array]);
+        feature.set("isovist", polygon);
+    });
 
 }
 
@@ -273,8 +284,9 @@ function getImageLayout(f) {
 
 function getIsovist(f) {
     var picture = f.getProperties();
-    if (picture.isovist)
-        featuresLine.push(new Feature({geometry : picture.isovist}));
+    if (picture.isovist) {
+        lines.getSource().addFeature(new Feature({geometry : picture.isovist}));
+    }
 
 
     // $.each(visibleSegments, function(i, segment) {
@@ -496,7 +508,7 @@ select.on('select', function(e) {
         });
     }
 
-    featuresLine = [];
+    lines.getSource().clear();
 
     e.selected.filter(function(feature) {
         var selectedFeatures = feature.get('features');
@@ -510,8 +522,6 @@ select.on('select', function(e) {
             getThumbnail(f);
         });
     });
-    lines.getSource().clear();
-    lines.getSource().addFeatures(featuresLine);
 
 });
 
@@ -522,6 +532,7 @@ $("#fileTree").on('changed.jstree', function (e, data) {
     //Text reinitialization
     document.body.className = '';
     $("#clusterText").text("Chargement des photographies...");
+
 
     //Selected fields in file tree
     var i, j, r = [];
@@ -572,9 +583,7 @@ $("#fileTree").on('changed.jstree', function (e, data) {
                     distance = dendrogram[key2].label;
                 }
             }
-            if (buildingSegments.length > 0) {
-                computeIsovistForPicture(feature);
-            }
+            computeIsovistForPicture(feature);
             getImageLayout(feature).then(function(uri) {
                 loadImageAndFillGrid(uri, images, {label:label, distance:distance}, count, pictures.length);
             });
@@ -590,7 +599,7 @@ $("#fileTree").on('changed.jstree', function (e, data) {
         }
 
         //Display clusters on map
-        olClusters.getSource().getSource().clear();
+         olClusters.getSource().getSource().clear();
         olClusters.getSource().getSource().addFeatures(pictures);
 
         arcs.getSource().clear();
@@ -626,7 +635,7 @@ $("#buttonDir").on("click", function(event) {
     });
 });
 
-map.addLayer(vector);
+//map.addLayer(vector);
 map.addLayer(olClusters);
 map.addLayer(arcs);
 map.addLayer(thumbnails);

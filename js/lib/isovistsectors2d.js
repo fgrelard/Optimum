@@ -181,17 +181,20 @@ export default class IsoVist {
      */
     mergeOverlappingAngles(array) {
         if (array.length === 1) return array;
+        var that = this;
         var trimmedArray = [];
         array.sort(function(a,b) {
             if (a.alpha === b.alpha)
                 return a.omega - b.omega;
-            return a.alpha > b.alpha;
+            return a.alpha - b.alpha;
         });
         var alpha = 0;
         var omega = 0;
+
         for (var i = 0; i < array.length - 1; i++) {
             var current = array[i];
             var next = array[i+1];
+
             if (i === 0) {
                 alpha = current.alpha;
             }
@@ -199,13 +202,13 @@ export default class IsoVist {
                 omega = current.omega;
             }
             if (omega < next.alpha) {
-                trimmedArray.push(new Arc(this.arc.center, this.arc.radius, alpha, omega));
+                trimmedArray.push(new Arc(that.arc.center, that.arc.radius, alpha, omega));
                 alpha = next.alpha;
             }
             if (i === array.length - 2) {
-                trimmedArray.push(new Arc(this.arc.center, this.arc.radius, alpha, next.omega));
+                trimmedArray.push(new Arc(that.arc.center, that.arc.radius, alpha, next.omega));
             }
-        }
+        };
         return trimmedArray;
     }
 
@@ -455,7 +458,6 @@ export default class IsoVist {
             }
             polygon.push(this.arc.center);
         }
-
         return new Polygon([polygon]);
     }
 
@@ -476,8 +478,8 @@ export default class IsoVist {
             var visibleBlockingSegments = this.visibleBlockingSegments(blockingSegments);
             Array.prototype.push.apply(visibleSegments, visibleBlockingSegments);
         }
-
         var freeSegments = this.freeSegments(blockingSegments, segments);
+
         var partiallyVisible = [];
         while (freeSegments.length > 0) {
             freeSegments.sort(function(a,b) {

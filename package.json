@@ -27,9 +27,10 @@
     "muuri": "^0.5.4",
     "node-exiftool": "^2.3.0",
     "npm": "^5.8.0",
-    "ol": "^4.0.1-beta.2",
+    "ol": "^4.6.5",
     "papaparse": "^4.3.7",
-    "threads": "^0.11.0",
+    "process": "^0.11.10",
+    "threadify": "^0.2.4",
     "transpose": "0.0.2",
     "util": "^0.10.3"
   }
