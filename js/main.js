@@ -61,17 +61,9 @@ var overlay = new Overlay({
 });
 
 
-var geoFormat = new GeoJSON();
 var buildingSegments = [];
-$.getJSON("data/stetienne.geojson", function(json) {
-    buildingSegments = geoFormat.readFeatures(json, {
-        featureProjection : map.getView().getProjection()
-    });
-});
-
 
 var vectorSource = new Vector(sourceFromXML());
-
 
 var vector = new VectorLayer({
     source: vectorSource,
@@ -632,6 +624,16 @@ $("#buttonDir").on("click", function(event) {
               },
               'plugins' : ["checkbox", "types", "sort"]});
 
+    });
+
+    fetch(urlDB2 + "buildingSegments", {
+        method: 'post'
+    }).then(function(response) {
+        return response.json();
+    }).then(function(json) {
+        buildingSegments =  new GeoJSON().readFeatures(json, {
+            featureProjection :  new View({center:[0,0]}).getProjection()
+        });
     });
 });
 
