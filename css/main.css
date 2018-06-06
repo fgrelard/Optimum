@@ -3038,3 +3038,28 @@ controls {
         opacity: 0;
     }
 }
+
+.loader {
+    position:relative;
+    border: 4px solid #e3e3e3; /* Light grey */
+    border-top: 4px solid #777777; /* Blue */
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+}
+
+#loaderIsovist {
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.line-separator{
+    height:1px;
+    background:#717171;
+    border-bottom:1px solid #313030;
+}

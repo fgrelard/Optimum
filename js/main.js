@@ -37,8 +37,6 @@ import * as styles from './lib/styles';
 import DistanceStrategy from './lib/clustering/distancestrategy';
 import DendrogramStrategy from './lib/clustering/dendrogramstrategy';
 
-var count = 200;
-var featuresArc = new Array(count);
 var stEtienneLonLat = [4.392569444444445, 45.42289722222222];
 var stEtienneLonLatConv = proj.fromLonLat(stEtienneLonLat);
 stEtienneLonLatConv = [487537.9340862985, 5693250.829916254];
@@ -60,9 +58,6 @@ var select = new Select();
 var overlay = new Overlay({
   element: document.getElementById('none')
 });
-
-
-var buildingSegments = [];
 
 var vectorSource = new Vector(sourceFromXML());
 
@@ -457,6 +452,9 @@ dragBox.on('boxend', function() {
     // features that intersect the box are added to the collection of
     // selected features
     var extentDrag = dragBox.getGeometry().getExtent();
+    var center = [(extentDrag[0] + extentDrag[2]) /2, (extentDrag[1] + extentDrag[3]) /2];
+    var client = getBuildingSegments(extentDrag, new View({center: center}).getProjection());
+    var buildingSegments = segmentsFromXMLRequest(client, center);
     $.each(buildingSegments, function(i, feature) {
         if (feature.getGeometry().intersectsExtent(extentDrag)) {
             var coordinates = feature.getGeometry().getFlatCoordinates();
@@ -536,6 +534,8 @@ $("#fileTree").on('changed.jstree', function (e, data) {
     //Text reinitialization
     document.body.className = '';
     $("#clusterText").text("Chargement des photographies...");
+    $("#loaderIsovist").addClass("loader");
+    $("#isovist").text("Calcul en cours");
 
     controller.abort();
     controller = new AbortController();
@@ -643,15 +643,6 @@ $("#buttonDir").on("click", function(event) {
               'plugins' : ["checkbox", "types", "sort"]});
     });
 
-    fetch(urlDB + "buildingSegments", {
-        method: 'post'
-    }).then(function(response) {
-        return response.json();
-    }).then(function(json) {
-        buildingSegments =  new GeoJSON().readFeatures(json, {
-            featureProjection :  new View({center:[0,0]}).getProjection()
-        });
-    });
 });
 
 //map.addLayer(vector);
