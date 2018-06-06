@@ -46,7 +46,8 @@ var lonConv = stEtienneLonLatConv[0];
 var latConv = stEtienneLonLatConv[1];
 
 var urlDB = "http://159.84.143.179:8080/";
-var urlDB2 = "http://polymnie.univ-lyon2.fr:8080/";
+// var urlDB2 = "http://polymnie.univ-lyon2.fr:8080/";
+var controller = new AbortController();
 
 var grid;
 var thumbnails = new OLImage();
@@ -153,13 +154,22 @@ function sourceFromXML() {
     };
 }
 
-function extractFileTreeRecursive(data, object, parent) {
-    if (object.hasOwnProperty('path')) return false;
-    $.each(object, function(i, obj) {
-        var folder = extractFileTreeRecursive(data, obj, i);
-        data.push({ "id" : i, "parent": parent, "text":i, type: (folder) ? "default" : "child" });
+
+function extractFileTree(json, firstString) {
+    var data = [];
+    data.push({ "id" : firstString, "parent": "#", "text": firstString, type: "default", state : {opened: true}});
+    $.each(json, function(i, photo) {
+        var year = photo.year;
+        var month = photo.month;
+        var ym = month.toString() + "/" + year.toString();
+        var dateExists = data.find(function(existingDate) {
+            return existingDate.id === ym;
+        });
+        if (!dateExists)
+            data.push({ "id" : ym, "parent": firstString, "text": ym, type: "default"});
+        data.push({ "id" : photo.filename, "parent": ym, "text": photo.filename, type: "child"});
     });
-    return true;
+    return data;
 }
 
 function computeRangeSlider(clusters) {
@@ -234,12 +244,13 @@ function getBuildingSegments(extent2, projection) {
     return client;
 }
 
-function computeIsovistForPicture(feature) {
+function computeIsovistForPicture(feature, signal) {
     var previousArc = feature.getProperties().arc;
     var arc = new Arc(previousArc.center, previousArc.radius, previousArc.alpha, previousArc.omega);
-     var t0Image = fetch(urlDB2 + "isovist", {
+     var t0Image = fetch(urlDB + "isovist", {
         method: 'post',
-         body: JSON.stringify({arc: arc})
+         body: JSON.stringify({arc: arc}),
+         signal
     });
     var t1Image = t0Image.then(function (response) {
         return response.json();
@@ -258,10 +269,11 @@ function computeIsovistForPicture(feature) {
 
 }
 
-function getImageLayout(f) {
+function getImageLayout(f, signal = null) {
     var t0Image = fetch(urlDB + "images", {
         method: 'post',
-        body: JSON.stringify({str: f.getProperties().filename})
+        body: JSON.stringify({str: f.getProperties().filename}),
+        signal
     });
     var t1Image = t0Image.then(function (response) {
         return response.blob();
@@ -525,6 +537,9 @@ $("#fileTree").on('changed.jstree', function (e, data) {
     document.body.className = '';
     $("#clusterText").text("Chargement des photographies...");
 
+    controller.abort();
+    controller = new AbortController();
+    const signal = controller.signal;
 
     //Selected fields in file tree
     var i, j, r = [];
@@ -575,10 +590,11 @@ $("#fileTree").on('changed.jstree', function (e, data) {
                     distance = dendrogram[key2].label;
                 }
             }
-            computeIsovistForPicture(feature);
-            getImageLayout(feature).then(function(uri) {
+            getImageLayout(feature, signal).then(function(uri) {
                 loadImageAndFillGrid(uri, images, {label:label, distance:distance}, count, pictures.length);
             });
+            computeIsovistForPicture(feature, signal);
+
         });
 
 
@@ -599,17 +615,19 @@ $("#fileTree").on('changed.jstree', function (e, data) {
 });
 
 $("#buttonDir").on("click", function(event) {
+    getDocs("/", "partialDocs").then(function(json) {
+        $.each(json, function(i, photo) {
+            var ymdString = photo.CreateDate.split(" ")[0];
+            var ymdArray = ymdString.split(":");
+            photo.year = parseInt(ymdArray[0]);
+            photo.month = parseInt(ymdArray[1]);
+            photo.day = parseInt(ymdArray[2]);
 
-    var t0Image = fetch(urlDB, {
-        method: 'post'
-    });
-    var t1Image = t0Image.then(function (response) {
-        return response.json();
-    });
+            var path = photo.SourceFile.split("/");
+            photo.filename = path[path.length-1];
+        });
 
-    t1Image.then(function(resultPost) {
-        var data = [];
-        extractFileTreeRecursive(data, resultPost, "#");
+        var data = extractFileTree(json, "Photographies de Guillaume Bonnel");
         $("#fileTree").jstree(
             { 'core' : {
                 'data' : data
@@ -623,10 +641,9 @@ $("#buttonDir").on("click", function(event) {
                   }
               },
               'plugins' : ["checkbox", "types", "sort"]});
-
     });
 
-    fetch(urlDB2 + "buildingSegments", {
+    fetch(urlDB + "buildingSegments", {
         method: 'post'
     }).then(function(response) {
         return response.json();
