@@ -454,20 +454,24 @@ dragBox.on('boxend', function() {
     var extentDrag = dragBox.getGeometry().getExtent();
     var center = [(extentDrag[0] + extentDrag[2]) /2, (extentDrag[1] + extentDrag[3]) /2];
     var client = getBuildingSegments(extentDrag, new View({center: center}).getProjection());
-    var buildingSegments = segmentsFromXMLRequest(client, center);
-    $.each(buildingSegments, function(i, feature) {
-        if (feature.getGeometry().intersectsExtent(extentDrag)) {
-            var coordinates = feature.getGeometry().getFlatCoordinates();
-            for (var i = 0; i < coordinates.length - 3; i++) {
-                var f = [coordinates[i], coordinates[i+1]];
-                var l = [coordinates[i+2], coordinates[i+3]];
-                var segment = new LineString([f,l]);
-                if (dragBox.getGeometry().intersectsCoordinate(f) ||
-                    dragBox.getGeometry().intersectsCoordinate(l)) {
-                    inputFeatures.push(new Feature(segment));
+    client.addEventListener('load', function(e) {
+        inputLines.getSource().clear();
+        var buildingSegments = segmentsFromXMLRequest(client, center);
+        $.each(buildingSegments, function(i, feature) {
+            if (feature.getGeometry().intersectsExtent(extentDrag)) {
+                var coordinates = feature.getGeometry().getFlatCoordinates();
+                for (var i = 0; i < coordinates.length - 3; i++) {
+                    var f = [coordinates[i], coordinates[i+1]];
+                    var l = [coordinates[i+2], coordinates[i+3]];
+                    var segment = new LineString([f,l]);
+                    if (dragBox.getGeometry().intersectsCoordinate(f) ||
+                        dragBox.getGeometry().intersectsCoordinate(l)) {
+                        inputLines.getSource().addFeature(new Feature(segment));
+
+                    }
                 }
             }
-        }
+        });
     });
     $.each(pictures, function(i, feature) {
         var picture = feature.getProperties();
@@ -487,8 +491,7 @@ dragBox.on('boxend', function() {
         });
     });
 
-    inputLines.getSource().clear();
-    inputLines.getSource().addFeatures(inputFeatures);
+
 });
 
 // clear selection when drawing a new box and when clicking on the map
