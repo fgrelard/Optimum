@@ -21,12 +21,14 @@ import loadingstrategy from 'ol/loadingstrategy';
 import DragBox from 'ol/interaction/dragbox';
 import condition from 'ol/events/condition';
 import Overlay from 'ol/overlay';
+import Group from 'ol/layer/group';
 
 import $ from 'jquery';
 import jsTree from 'jstree';
 import Muuri from 'muuri';
 import interact from 'interactjs';
 import rbush from 'rbush';
+import LayerSwitcher from 'ol-layerswitcher';
 
 import {euclideanDistance} from './lib/distance';
 import Arc from './lib/arc';
@@ -49,7 +51,6 @@ var urlDB = "http://159.84.143.179:8080/";
 var controller = new AbortController();
 
 var grid;
-var thumbnails = new OLImage();
 var pictures = [];
 var clusters = [];
 var dendrogram = [];
@@ -61,6 +62,16 @@ var overlay = new Overlay({
   element: document.getElementById('none')
 });
 
+var overlayGroup = new Group({
+    title: 'Calques',
+    combine: false,
+    layers: [
+    ]
+});
+
+
+var layerSwitcher = new LayerSwitcher();
+
 var vectorSource = new Vector(sourceFromXML());
 
 var vector = new VectorLayer({
@@ -68,12 +79,17 @@ var vector = new VectorLayer({
     style: styles.setStyleTopo
 });
 
-
 var map = new Map({
     layers: [
-        new TileLayer({
-            source: new OSM()
-        })
+        new Group({
+            title: 'Cartes',
+            layers: [new TileLayer({
+                title:'OSM',
+                type:'base',
+                source: new OSM()
+            })]
+        }),
+        overlayGroup
     ],
     target: 'map',
     view: new View({
@@ -93,13 +109,18 @@ var clusterSource = new OLCluster({
 var vectorLayerArc = new Vector();
 
 var arcs = new VectorLayer({
+    title: 'Cônes de visibilité',
     source: vectorLayerArc,
     style: styles.setStyleArcs
 });
 
+var thumbnails = new OLImage({
+    title: 'Vignettes'
+});
 
 var styleCache2 = {};
 var olClusters = new VectorLayer({
+    title:'Grappes',
     source: clusterSource,
     style: styles.setStyleClusters
 });
@@ -109,6 +130,7 @@ var lineSource = new Vector({
 });
 
 var lines = new VectorLayer({
+    title: 'Polygones de visibilité',
     source: lineSource,
     style: styles.setStyleLinesIsovist
 });
@@ -118,6 +140,7 @@ var inputLineSource = new Vector({
 });
 
 var inputLines = new VectorLayer({
+    title: 'Cadastre',
     source: inputLineSource,
     style : styles.setStyleInput
 });
@@ -689,13 +712,17 @@ $("#buttonDir").on("click", function(event) {
 
 });
 
+
 //map.addLayer(vector);
-map.addLayer(olClusters);
-map.addLayer(arcs);
-map.addLayer(thumbnails);
-map.addLayer(lines);
-map.addLayer(inputLines);
+
 map.addInteraction(select);
 map.addInteraction(dragBox);
 
 map.addOverlay(overlay);
+map.addControl(layerSwitcher);
+
+overlayGroup.getLayers().push(arcs);
+overlayGroup.getLayers().push(lines);
+overlayGroup.getLayers().push(olClusters);
+overlayGroup.getLayers().push(thumbnails);
+overlayGroup.getLayers().push(inputLines);
