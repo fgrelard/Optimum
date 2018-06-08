@@ -30,6 +30,7 @@
     "ol": "^4.6.5",
     "papaparse": "^4.3.7",
     "process": "^0.11.10",
+    "rbush": "^2.0.2",
     "threadify": "^0.2.4",
     "transpose": "0.0.2",
     "util": "^0.10.3"

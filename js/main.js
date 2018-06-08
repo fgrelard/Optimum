@@ -26,6 +26,7 @@ import $ from 'jquery';
 import jsTree from 'jstree';
 import Muuri from 'muuri';
 import interact from 'interactjs';
+import rbush from 'rbush';
 
 import {euclideanDistance} from './lib/distance';
 import Arc from './lib/arc';
@@ -54,6 +55,7 @@ var clusters = [];
 var dendrogram = [];
 var featuresLine = [];
 var inputFeatures = [];
+var rtree = rbush();
 var select = new Select();
 var overlay = new Overlay({
   element: document.getElementById('none')
@@ -250,16 +252,19 @@ function computeIsovistForPicture(feature, signal) {
     var t1Image = t0Image.then(function (response) {
         return response.json();
     });
-    t1Image.then(function(data) {
+    var t2Image = t1Image.then(function(data) {
         var arrayCoordinates = [];
         for (var i = 0; i < data.flatCoordinates.length-1; i+=2)
             arrayCoordinates.push([parseFloat(data.flatCoordinates[i]),
                                    parseFloat(data.flatCoordinates[i+1])]);
         var superArray = arrayCoordinates;
         return superArray;
-    }).then(function(array) {
+    });
+    return t2Image.then(function(array) {
         var polygon = new Polygon([array]);
         feature.set("isovist", polygon);
+        polygon.set("feature", feature);
+        return polygon;
     });
 
 }
@@ -473,10 +478,18 @@ dragBox.on('boxend', function() {
             }
         });
     });
-    $.each(pictures, function(i, feature) {
+
+    var request = {minX: extentDrag[0],
+                   minY: extentDrag[1],
+                   maxX: extentDrag[2],
+                   maxY: extentDrag[3]};
+    var result = rtree.search(request);
+
+    $.each(result, function(i, intersectingIsovist) {
+        var feature = intersectingIsovist.feature;
         var picture = feature.getProperties();
-        var isovist = picture.isovist;
-        if (isovist && isovist.intersectsExtent(extentDrag)) {
+        var polygon = picture.isovist;
+        if (polygon.intersectsExtent(extentDrag)) {
             count.number++;
             picturesVisualizing.push(feature);
             var overlay = styles.createCircleOutOverlay(picture.position);
@@ -484,6 +497,18 @@ dragBox.on('boxend', function() {
 
         }
     });
+
+    // $.each(pictures, function(i, feature) {
+    //     var picture = feature.getProperties();
+    //     var isovist = picture.isovist;
+    //     if (isovist && isovist.intersectsExtent(extentDrag)) {
+    //         count.number++;
+    //         picturesVisualizing.push(feature);
+    //         var overlay = styles.createCircleOutOverlay(picture.position);
+    //         map.addOverlay(overlay);
+
+    //     }
+    // });
 
     $.each(picturesVisualizing, function(i, feature) {
         getImageLayout(feature).then(function(uri) {
@@ -581,6 +606,7 @@ $("#fileTree").on('changed.jstree', function (e, data) {
         //Display grid of image clusters
         var images = [];
         var count = {number:0};
+        var promises = [];
         $.each(pictures, function(i, feature) {
             var label = -1;
             var distance = -1;
@@ -596,11 +622,26 @@ $("#fileTree").on('changed.jstree', function (e, data) {
             getImageLayout(feature, signal).then(function(uri) {
                 loadImageAndFillGrid(uri, images, {label:label, distance:distance}, count, pictures.length);
             });
-            computeIsovistForPicture(feature, signal);
-
+            var promise = computeIsovistForPicture(feature, signal);
+            promises.push(promise);
         });
 
+        //R-tree bulk loading
+        Promise.all(promises).then(function(polygons) {
+            var boundingBoxes = [];
+            $.each(polygons, function(i, polygon) {
+                var polygonExtent = polygon.getExtent();
+                var polygonBBox = {minX: polygonExtent[0],
+                                   minY: polygonExtent[1],
+                                   maxX: polygonExtent[2],
+                                   maxY: polygonExtent[3],
+                                   feature : polygon.get("feature")};
+                boundingBoxes.push(polygonBBox);
+            });
+            rtree = rbush();
+            rtree.load(boundingBoxes);
 
+        });
         //Put values into select fields
         for (var i = 0; i < clusters.length; i++) {
             $('#selectPosition').append($('<option>', {
