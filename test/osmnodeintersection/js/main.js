@@ -147,14 +147,14 @@ var vectorSource = new Vector({
             }
             vectorSource.addFeatures(limitedFeatures);
 
-            var isovist = new IsoVist(arc, vectorSource.getFeatures(), true, false);
+            var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
             var visibleSegments = isovist.isovist();
 
-            // featuresLine.push(new Feature({geometry : visibleSegments}));
-            console.log(visibleSegments);
-            $.each(visibleSegments, function(i, segment) {
-                featuresLine.push(new Feature(new LineString([segment.getFirstCoordinate(), segment.getLastCoordinate()])));
-            });
+            featuresLine.push(new Feature({geometry : visibleSegments}));
+            // console.log(visibleSegments);
+            // $.each(visibleSegments, function(i, segment) {
+            //     featuresLine.push(new Feature(new LineString([segment.getFirstCoordinate(), segment.getLastCoordinate()])));
+            // });
 
             lines.getSource().clear();
             lines.getSource().addFeatures(featuresLine);

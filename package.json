@@ -16,6 +16,7 @@
     "rollup-watch": "^4.3.1"
   },
   "dependencies": {
+    "@turf/turf": "^5.1.6",
     "bigdecimal": "^0.6.1",
     "body-parser": "^1.18.2",
     "dist-exiftool": "^10.53.0",

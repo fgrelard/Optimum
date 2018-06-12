@@ -29,6 +29,7 @@ import Muuri from 'muuri';
 import interact from 'interactjs';
 import rbush from 'rbush';
 import LayerSwitcher from 'ol-layerswitcher';
+//import turfIntersect from '@turf/intersect';
 
 import {euclideanDistance} from './lib/distance';
 import Arc from './lib/arc';
@@ -65,18 +66,7 @@ var overlay = new Overlay({
 var overlayGroup = new Group({
     title: 'Calques',
     combine: false,
-    layers: [
-    ]
-});
-
-
-var layerSwitcher = new LayerSwitcher();
-
-var vectorSource = new Vector(sourceFromXML());
-
-var vector = new VectorLayer({
-    source: vectorSource,
-    style: styles.setStyleTopo
+    layers: []
 });
 
 var map = new Map({
@@ -120,7 +110,7 @@ var thumbnails = new OLImage({
 
 var styleCache2 = {};
 var olClusters = new VectorLayer({
-    title:'Grappes',
+    title:'Photographies',
     source: clusterSource,
     style: styles.setStyleClusters
 });
@@ -145,34 +135,16 @@ var inputLines = new VectorLayer({
     style : styles.setStyleInput
 });
 
+
+
+
+var layerSwitcher = new LayerSwitcher();
+
+
 var dragBox = new DragBox({
     condition: condition.shiftKeyOnly
 });
 
-
-
-function sourceFromXML() {
-    return {
-        format: new OSMXML(),
-        loader: function(extent2, resolution, projection) {
-            if (resolution < 2) {
-                vectorSource.clear();
-                var client = getBuildingSegments(extent2, projection);
-                client.addEventListener('load', function(e) {
-                    var features = segmentsFromXMLRequest(client);
-                    vectorSource.addFeatures(features);
-                });
-            }
-            this.resolution = resolution;
-        },
-        strategy: function(extent2, resolution) {
-            if(this.resolution && this.resolution != resolution){
-                this.loadedExtentsRtree_.clear();
-            }
-            return [extent2];
-        }
-    };
-}
 
 
 function extractFileTree(json, firstString) {
@@ -315,12 +287,24 @@ function getIsovist(f) {
         lines.getSource().addFeature(new Feature({geometry : picture.isovist}));
     }
 
+    //Then get the canvas element;
+    //it returns an array, so we will take the first index only
+    // console.log(lines);
+    // var canvas = $('.ol-unselectable')[0];
+    // var context = canvas.getContext("2d");
+
+    // //Now set the blending mode
+    // context.globalCompositeOperation = "color-dodge";
+
 
     // $.each(visibleSegments, function(i, segment) {
     //     featuresLine.push(new Feature(segment));
     // });
 
 }
+
+
+
 
 
 function filter() {
@@ -395,6 +379,64 @@ function fillGrid(image, images, label, count, length) {
     }
 }
 
+
+function intersectingPolygons() {
+    var geoFormat = new GeoJSON();
+    var intersections = [];
+    $.each(pictures, function(i, feature) {
+        var picture = feature.getProperties();
+        var polygon1 = picture.isovist;
+        var featurePoly1 = new Feature({geometry : polygon1});
+        var polygonExtent = polygon1.getExtent();
+        var request =  {minX: polygonExtent[0],
+                        minY: polygonExtent[1],
+                        maxX: polygonExtent[2],
+                        maxY: polygonExtent[3]};
+        var result = rtree.search(request);
+        var geojsonPoly1 = geoFormat.writeFeatureObject(featurePoly1);
+        console.log(result.length);
+        var currentIntersections = [];
+        $.each(result, function(j, intersectingIsovist) {
+            var feature2 = intersectingIsovist.feature;
+            var picture2 = feature2.getProperties();
+            var polygon2 = picture2.isovist;
+            var featurePoly2 = new Feature({geometry : polygon2});
+
+            var geojsonPoly2 = geoFormat.writeFeatureObject(featurePoly2);
+            splitIntersections(currentIntersections, geojsonPoly2);
+
+            var intersection = turfIntersect(geojsonPoly1, geojsonPoly2);
+            if (intersection) {
+                currentIntersections.push({
+                    intersection: geoFormat.writeFeatureObject(geoFormat.readFeature(intersection)),
+                    count: 1
+                });
+            }
+        });
+        $.each(currentIntersections, function(k, currentIntersection) {
+            intersections.push({
+                intersection: geoFormat.readFeature(currentIntersection.intersection),
+                count: currentIntersection.count
+            });
+        });
+    });
+    console.log(intersections);
+}
+
+function splitIntersections(intersections, i2) {
+    $.each(intersections, function(i, i1) {
+        console.log(i1.intersection.geometry);
+        console.log(i2);
+        var intersection = turfIntersect(i1.intersection, i2);
+        if (intersection) {
+            intersections.push({
+                intersection: intersection,
+                count: i1.count+1
+            });
+        }
+    });
+}
+
 interact('.muuri-item')
     .resizable({
         edges: { left: true, right: true, bottom: true, top: true },
@@ -444,7 +486,6 @@ $("#myRange").on("change", function(event) {
         return isFilterMatch && isSliderMatch;
     });
 });
-
 
 
 
@@ -664,6 +705,9 @@ $("#fileTree").on('changed.jstree', function (e, data) {
             rtree = rbush();
             rtree.load(boundingBoxes);
 
+//            intersectingPolygons();
+
+
         });
         //Put values into select fields
         for (var i = 0; i < clusters.length; i++) {
@@ -712,7 +756,6 @@ $("#buttonDir").on("click", function(event) {
 
 });
 
-
 //map.addLayer(vector);
 
 map.addInteraction(select);
@@ -721,8 +764,8 @@ map.addInteraction(dragBox);
 map.addOverlay(overlay);
 map.addControl(layerSwitcher);
 
-overlayGroup.getLayers().push(arcs);
-overlayGroup.getLayers().push(lines);
 overlayGroup.getLayers().push(olClusters);
 overlayGroup.getLayers().push(thumbnails);
+overlayGroup.getLayers().push(arcs);
+overlayGroup.getLayers().push(lines);
 overlayGroup.getLayers().push(inputLines);
