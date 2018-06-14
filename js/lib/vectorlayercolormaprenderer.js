@@ -22,7 +22,6 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         super(imageLayer);
 
         this.gradient = this.createGradient(imageLayer.colors);
-;
     };
 
 
@@ -60,7 +59,7 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         var i, ii, alpha;
         for (i = 0, ii = view8.length; i < ii; i += 4) {
             alpha = view8[i + 3] * 4;
-            if (alpha && alpha < 255 * 4) {
+            if (alpha) {
                 view8[i] = this.gradient[alpha];
                 view8[i + 1] = this.gradient[alpha + 1];
                 view8[i + 2] = this.gradient[alpha + 2];
@@ -87,11 +86,15 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         var height = frameState.size[1];
         var t = frameState.coordinateToPixelTransform;
         var extent = frameState.extent;
-
         var context = dom.createCanvasContext2D(width, height);
         var canvas = context.canvas;
         var renderer = render.toContext(context);
-        renderer.setStyle(this.getLayer().getStyleFunction()()[0]);
+
+        var style = this.getLayer().getStyle();
+        if (Array.isArray(style))
+            renderer.setStyle(style[0]);
+        else
+            renderer.setStyle(style());
         var features = this.getLayer().getVectorSource().getFeatures();
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
@@ -99,6 +102,7 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
             renderer.drawGeometry(new Polygon([pixelCoordinates]));
         }
         this.rasterOpacityToContextColorMap(context, width, height);
+
         this.image_ = new ImageCanvas(extent, frameState.viewState.resolution, frameState.pixelRatio, context.canvas);
         return true;
 

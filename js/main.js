@@ -125,7 +125,7 @@ var lineSource = new Vector();
 var lines = new VectorLayer({
     title: 'Polygones de visibilité',
     source: lineSource,
-    style: styles.setStylePolygonHeatmapIsovist
+    style: styles.setStylePolygonIsovist
 });
 
 var inputLineSource = new Vector({

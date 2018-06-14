@@ -93,7 +93,7 @@ export function setStylePolygonIsovist() {
         }),
         fill: new Fill({
             color: 'rgba(140, 208, 95, 0.5)',
-        }),
+        })
     });
 }
 
@@ -101,7 +101,7 @@ export function setStylePolygonHeatmapIsovist() {
     return new Style({
         fill: new Fill({
             color: 'rgba(140, 208, 95, 0.5)',
-        }),
+        })
     });
 }
 
@@ -110,7 +110,7 @@ export function setStyleInput() {
          stroke : new Stroke({
              color: '#0000FF',
              width: 5
-        }),
+        })
     });
 }
 

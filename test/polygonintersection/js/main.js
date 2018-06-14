@@ -39,12 +39,12 @@ var styles = [
      *    the style.
      */
     new Style({
-        // stroke: new Stroke({
-        //     color: 'blue',
-        //     width: 3
-        // }),
+        stroke: new Stroke({
+            color: 'rgba(0,0,255,0.2)',
+            width: 3
+        }),
         fill: new Fill({
-            color: 'rgba(120,120,120,0.4)'
+            color: 'rgba(120,120,120,0.2)'
         })
     }),
     new Style({
@@ -61,6 +61,7 @@ var styles = [
         }
     })
 ];
+
 
 
 function createGradient(colors) {

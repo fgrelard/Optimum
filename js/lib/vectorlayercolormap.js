@@ -1,6 +1,7 @@
 import ol from 'ol';
 import VectorLayer from 'ol/layer/vector.js';
 import obj from 'ol/obj.js';
+import Style from 'ol/style/style';
 
 var LayerType = {
     VectorHeatmap : 'VECTOR_COLORMAP'
@@ -19,7 +20,7 @@ export default class VectorLayerColormap extends VectorLayer {
         delete baseOptions.updateWhileInteracting;
 
         super(baseOptions);
-
+        this.style = options.style || Style.defaultFunction;
         this.vectorSource = options.vectorSource;
         this.colors = options.colors || ['#00f', '#0ff', '#0f0', '#ff0', '#f00'];
         this.type = LayerType.VectorHeatmap;
@@ -40,6 +41,8 @@ export default class VectorLayerColormap extends VectorLayer {
     setColors(colors) {
         this.colors = colors;
     }
-};
 
-//ol.inherits(VectorLayerColormap, VectorLayer);
+    getStyle() {
+        return this.style;
+    }
+};
