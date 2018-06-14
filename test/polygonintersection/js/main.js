@@ -18,8 +18,8 @@ import transform from 'ol/transform';
 import proj from 'ol/proj';
 import Projection from 'ol/proj/projection';
 import Group from 'ol/layer/group';
-import VectorLayerHeatmapRenderer from './vectorlayerheatmaprenderer';
-import VectorLayerHeatmap from './vectorlayerheatmap';
+import VectorLayerColormapRenderer from '../../../js/lib/vectorlayercolormaprenderer';
+import VectorLayerColormap from '../../../js/lib/vectorlayercolormap';
 import plugins from 'ol/plugins';
 import PluginType from 'ol/plugintype';
 import LayerImage from 'ol/layer/image';
@@ -39,10 +39,10 @@ var styles = [
      *    the style.
      */
     new Style({
-        stroke: new Stroke({
-            color: 'blue',
-            width: 3
-        }),
+        // stroke: new Stroke({
+        //     color: 'blue',
+        //     width: 3
+        // }),
         fill: new Fill({
             color: 'rgba(120,120,120,0.4)'
         })
@@ -128,12 +128,11 @@ var layer = new LayerVector({
     style: styles
 });
 
-var imageStatic = new ImageStatic({url:'', imageExtent:[0,0,0,0]});
 var imageLayer = new LayerImage();
 
 
 
-plugins.register(PluginType.LAYER_RENDERER, VectorLayerHeatmapRenderer);
+plugins.register(PluginType.LAYER_RENDERER, VectorLayerColormapRenderer);
 
 
 var colors = ['#00f', '#0ff', '#0f0', '#ff0', '#f00'];
@@ -146,10 +145,17 @@ var osm = new TileLayer({
     source: new OSM()
 });
 
+var imageStatic = new ImageStatic({url:'', imageExtent:[0,0,0,0]});
+
+var vectorLayerColormap = new VectorLayerColormap({
+    source: imageStatic,
+    style: styles,
+    vectorSource: source
+});
 
 
 var map = new Map({
-    layers: [osm, imageLayer],
+    layers: [osm, imageLayer, vectorLayerColormap],
     target: 'map',
     view: new View({
         center: [0, 3000000],
@@ -158,8 +164,12 @@ var map = new Map({
 });
 
 
-var vectorColorMap = new VectorColorMap(source, map, styles[0]);
+var vectorColorMap = new VectorColorMap(layer, map, styles[0]);
 
-map.getView().on('change', function(event) {
-    imageLayer.setSource(vectorColorMap.getStyleImage());
-});
+
+ console.log(vectorLayerColormap.getSource());
+
+
+// map.getView().on('change', function(event) {
+//     imageLayer.setSource(vectorColorMap.getStyleImage());
+// });

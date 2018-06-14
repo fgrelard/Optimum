@@ -22,6 +22,9 @@ import DragBox from 'ol/interaction/dragbox';
 import condition from 'ol/events/condition';
 import Overlay from 'ol/overlay';
 import Group from 'ol/layer/group';
+import ImageStatic from 'ol/source/imagestatic';
+import plugins from 'ol/plugins';
+import PluginType from 'ol/plugintype';
 
 import $ from 'jquery';
 import jsTree from 'jstree';
@@ -29,7 +32,6 @@ import Muuri from 'muuri';
 import interact from 'interactjs';
 import rbush from 'rbush';
 import LayerSwitcher from 'ol-layerswitcher';
-//import turfIntersect from '@turf/intersect';
 
 import {euclideanDistance} from './lib/distance';
 import Arc from './lib/arc';
@@ -40,6 +42,8 @@ import {getPosition, getOrientation} from './lib/exiftool-util';
 import * as styles from './lib/styles';
 import DistanceStrategy from './lib/clustering/distancestrategy';
 import DendrogramStrategy from './lib/clustering/dendrogramstrategy';
+import VectorLayerColormapRenderer from './lib/vectorlayercolormaprenderer';
+import VectorLayerColormap from './lib/vectorlayercolormap';
 
 var stEtienneLonLat = [4.392569444444445, 45.42289722222222];
 var stEtienneLonLatConv = proj.fromLonLat(stEtienneLonLat);
@@ -55,7 +59,6 @@ var grid;
 var pictures = [];
 var clusters = [];
 var dendrogram = [];
-var featuresLine = [];
 var inputFeatures = [];
 var rtree = rbush();
 var select = new Select();
@@ -69,6 +72,8 @@ var overlayGroup = new Group({
     layers: []
 });
 
+
+plugins.register(PluginType.LAYER_RENDERER, VectorLayerColormapRenderer);
 var map = new Map({
     layers: [
         new Group({
@@ -115,14 +120,12 @@ var olClusters = new VectorLayer({
     style: styles.setStyleClusters
 });
 
-var lineSource = new Vector({
-    features: featuresLine
-});
+var lineSource = new Vector();
 
 var lines = new VectorLayer({
     title: 'Polygones de visibilité',
     source: lineSource,
-    style: styles.setStyleLinesIsovist
+    style: styles.setStylePolygonHeatmapIsovist
 });
 
 var inputLineSource = new Vector({
@@ -136,6 +139,15 @@ var inputLines = new VectorLayer({
 });
 
 
+var imageStatic = new ImageStatic({url:'', imageExtent:[0,0,0,0]});
+var polygonSource = new Vector();
+
+var vectorLayerColormap = new VectorLayerColormap({
+    title: 'Polygones de visibilité',
+    source: imageStatic,
+    style: styles.setStylePolygonHeatmapIsovist,
+    vectorSource: polygonSource
+});
 
 
 var layerSwitcher = new LayerSwitcher();
@@ -259,6 +271,7 @@ function computeIsovistForPicture(feature, signal) {
         var polygon = new Polygon([array]);
         feature.set("isovist", polygon);
         polygon.set("feature", feature);
+        vectorLayerColormap.getVectorSource().addFeature(new Feature({geometry : polygon}));
         return polygon;
     });
 
@@ -377,64 +390,6 @@ function fillGrid(image, images, label, count, length) {
         grid.refreshItems().layout();
         document.body.className = 'images-loaded';
     }
-}
-
-
-function intersectingPolygons() {
-    var geoFormat = new GeoJSON();
-    var intersections = [];
-    $.each(pictures, function(i, feature) {
-        var picture = feature.getProperties();
-        var polygon1 = picture.isovist;
-        var featurePoly1 = new Feature({geometry : polygon1});
-        var polygonExtent = polygon1.getExtent();
-        var request =  {minX: polygonExtent[0],
-                        minY: polygonExtent[1],
-                        maxX: polygonExtent[2],
-                        maxY: polygonExtent[3]};
-        var result = rtree.search(request);
-        var geojsonPoly1 = geoFormat.writeFeatureObject(featurePoly1);
-        console.log(result.length);
-        var currentIntersections = [];
-        $.each(result, function(j, intersectingIsovist) {
-            var feature2 = intersectingIsovist.feature;
-            var picture2 = feature2.getProperties();
-            var polygon2 = picture2.isovist;
-            var featurePoly2 = new Feature({geometry : polygon2});
-
-            var geojsonPoly2 = geoFormat.writeFeatureObject(featurePoly2);
-            splitIntersections(currentIntersections, geojsonPoly2);
-
-            var intersection = turfIntersect(geojsonPoly1, geojsonPoly2);
-            if (intersection) {
-                currentIntersections.push({
-                    intersection: geoFormat.writeFeatureObject(geoFormat.readFeature(intersection)),
-                    count: 1
-                });
-            }
-        });
-        $.each(currentIntersections, function(k, currentIntersection) {
-            intersections.push({
-                intersection: geoFormat.readFeature(currentIntersection.intersection),
-                count: currentIntersection.count
-            });
-        });
-    });
-    console.log(intersections);
-}
-
-function splitIntersections(intersections, i2) {
-    $.each(intersections, function(i, i1) {
-        console.log(i1.intersection.geometry);
-        console.log(i2);
-        var intersection = turfIntersect(i1.intersection, i2);
-        if (intersection) {
-            intersections.push({
-                intersection: intersection,
-                count: i1.count+1
-            });
-        }
-    });
 }
 
 interact('.muuri-item')
@@ -562,17 +517,6 @@ dragBox.on('boxend', function() {
         }
     });
 
-    // $.each(pictures, function(i, feature) {
-    //     var picture = feature.getProperties();
-    //     var isovist = picture.isovist;
-    //     if (isovist && isovist.intersectsExtent(extentDrag)) {
-    //         count.number++;
-    //         picturesVisualizing.push(feature);
-    //         var overlay = styles.createCircleOutOverlay(picture.position);
-    //         map.addOverlay(overlay);
-
-    //     }
-    // });
 
     $.each(picturesVisualizing, function(i, feature) {
         getImageLayout(feature).then(function(uri) {
@@ -769,3 +713,4 @@ overlayGroup.getLayers().push(thumbnails);
 overlayGroup.getLayers().push(arcs);
 overlayGroup.getLayers().push(lines);
 overlayGroup.getLayers().push(inputLines);
+overlayGroup.getLayers().push(vectorLayerColormap);

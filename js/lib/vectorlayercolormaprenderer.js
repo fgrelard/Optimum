@@ -1,16 +1,30 @@
+import ol from 'ol';
+import CanvasImageLayerRenderer from 'ol/renderer/canvas/imagelayer.js';
+import LayerType from 'ol/layertype.js';
+import EventType from 'ol/events/eventtype.js';
+import renderCanvas from 'ol/render/canvas.js';
+import events from 'ol/events.js';
 import dom from 'ol/dom';
-import $ from 'jquery';
+import transform from 'ol/transform';
+import ImageStatic from 'ol/source/imagestatic';
 import render from 'ol/render';
 import Polygon from 'ol/geom/polygon';
-import ImageStatic from 'ol/source/imagestatic';
+import ImageCanvas from 'ol/imagecanvas';
 
-export default class VectorColorMap {
-    constructor(vectorSource, map, style, colors = ['#00f', '#0ff', '#0f0', '#ff0', '#f00']) {
-        this.vectorSource = vectorSource.getSource();
-        this.map = map;
-        this.style = style;
-        this.gradient = this.createGradient(colors);
-    }
+/**
+ * @constructor
+ * @extends {module:ol/renderer/canvas/Layer}
+ * @param {module:ol/layer/Vector} vectorLayer Vector layer.
+ * @api
+ */
+export default class VectorLayerColormapRenderer extends CanvasImageLayerRenderer {
+    constructor(imageLayer) {
+        super(imageLayer);
+
+        this.gradient = this.createGradient(imageLayer.colors);
+;
+    };
+
 
     createGradient(colors) {
         var width = 1;
@@ -29,12 +43,12 @@ export default class VectorColorMap {
         return context.getImageData(0, 0, width, height).data;
     }
 
-    polygonToPixelCoordinates(polygon) {
+    polygonToPixelCoordinates(polygon, t) {
         var pixelCoordinates = [];
         var coordinates = polygon.getCoordinates()[0];
         for (var j = 0; j < coordinates.length; j++) {
             var coord = coordinates[j];
-            var pixelCoordinate = this.map.getPixelFromCoordinate(coord);
+            var pixelCoordinate = transform.apply(t, coord);
             pixelCoordinates.push(pixelCoordinate);
         }
         return pixelCoordinates;
@@ -46,7 +60,7 @@ export default class VectorColorMap {
         var i, ii, alpha;
         for (i = 0, ii = view8.length; i < ii; i += 4) {
             alpha = view8[i + 3] * 4;
-            if (alpha) {
+            if (alpha && alpha < 255 * 4) {
                 view8[i] = this.gradient[alpha];
                 view8[i + 1] = this.gradient[alpha + 1];
                 view8[i + 2] = this.gradient[alpha + 2];
@@ -55,9 +69,8 @@ export default class VectorColorMap {
         context.putImageData(image, 0,0);
     }
 
-    contextToImageStatic(context) {
+    contextToImageStatic(context, extent) {
         var dataURL = context.canvas.toDataURL();
-        var extent = this.map.getView().calculateExtent();
 
         var imageStatic = new ImageStatic({
             url: '',
@@ -69,22 +82,35 @@ export default class VectorColorMap {
         return imageStatic;
     }
 
-    getStyleImage() {
-        var width = this.map.getSize()[0];
-        var height = this.map.getSize()[1];
+    prepareFrame(frameState, layerState) {
+        var width = frameState.size[0];
+        var height = frameState.size[1];
+        var t = frameState.coordinateToPixelTransform;
+        var extent = frameState.extent;
+
         var context = dom.createCanvasContext2D(width, height);
         var canvas = context.canvas;
         var renderer = render.toContext(context);
-        renderer.setStyle(this.style);
-        var that = this;
-        $.each(this.vectorSource.getFeatures(), function(i, feature) {
-            var pixelCoordinates = that.polygonToPixelCoordinates(feature.getGeometry());
+        renderer.setStyle(this.getLayer().getStyleFunction()()[0]);
+        var features = this.getLayer().getVectorSource().getFeatures();
+        for (var i = 0; i < features.length; i++) {
+            var feature = features[i];
+            var pixelCoordinates = this.polygonToPixelCoordinates(feature.getGeometry(), t);
             renderer.drawGeometry(new Polygon([pixelCoordinates]));
-        });
+        }
         this.rasterOpacityToContextColorMap(context, width, height);
-        var imageStatic = this.contextToImageStatic(context);
-        return imageStatic;
+        this.image_ = new ImageCanvas(extent, frameState.viewState.resolution, frameState.pixelRatio, context.canvas);
+        return true;
+
     }
 
+}
 
+
+VectorLayerColormapRenderer['handles'] =  function(type, layer) {
+    return layer.getType() === "VECTOR_COLORMAP";
+};
+
+VectorLayerColormapRenderer['create'] = function(mapRenderer, layer) {
+    return new VectorLayerColormapRenderer(/** @type {module:ol/layer/Vector} */ (layer));
 };

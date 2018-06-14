@@ -86,13 +86,21 @@ export function setStyleTopo(feature) {
     return null;
 }
 
-export function setStyleLinesIsovist() {
+export function setStylePolygonIsovist() {
     return new Style({
         stroke : new Stroke({
             color: '#FFFF00'
         }),
         fill: new Fill({
-            color: 'rgba(140, 208, 95, 0.5)'
+            color: 'rgba(140, 208, 95, 0.5)',
+        }),
+    });
+}
+
+export function setStylePolygonHeatmapIsovist() {
+    return new Style({
+        fill: new Fill({
+            color: 'rgba(140, 208, 95, 0.5)',
         }),
     });
 }
