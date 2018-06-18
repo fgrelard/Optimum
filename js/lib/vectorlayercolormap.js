@@ -45,4 +45,8 @@ export default class VectorLayerColormap extends VectorLayer {
     getStyle() {
         return this.style;
     }
+
+    setStyle(style) {
+        this.style = style || Style.defaultFunction;
+    }
 };

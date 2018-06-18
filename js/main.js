@@ -145,7 +145,7 @@ var polygonSource = new Vector();
 var vectorLayerColormap = new VectorLayerColormap({
     title: 'Polygones de visibilité',
     source: imageStatic,
-    style: styles.setStylePolygonHeatmapIsovist,
+    style: styles.setStylePolygonColormapIsovist,
     vectorSource: polygonSource
 });
 

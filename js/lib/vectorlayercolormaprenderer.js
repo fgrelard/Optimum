@@ -10,13 +10,9 @@ import ImageStatic from 'ol/source/imagestatic';
 import render from 'ol/render';
 import Polygon from 'ol/geom/polygon';
 import ImageCanvas from 'ol/imagecanvas';
+import Fill from 'ol/style/fill';
+import Style from 'ol/style/style';
 
-/**
- * @constructor
- * @extends {module:ol/renderer/canvas/Layer}
- * @param {module:ol/layer/Vector} vectorLayer Vector layer.
- * @api
- */
 export default class VectorLayerColormapRenderer extends CanvasImageLayerRenderer {
     constructor(imageLayer) {
         super(imageLayer);
@@ -53,12 +49,33 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         return pixelCoordinates;
     }
 
-    rasterOpacityToContextColorMap(context, width, height) {
+    changeOpacityScale(renderer, style) {
+        var color = style.getFill().getColor().toString();
+        var rgba = color.split(",");
+        var a = rgba[rgba.length-1].split(")")[0];
+        var anum = Number.parseFloat(a).toFixed(4);
+        anum -= 0.05;
+        var newColor = rgba[0] + "," + rgba[1] + "," + rgba[2] + "," + anum.toString() + ")";
+        var fill = new Fill({
+            color: newColor
+        });
+        style.setFill(fill);
+        this.getLayer().setStyle([style]);
+        renderer.setStyle(style);
+    }
+
+    rasterOpacityToContextColorMap(renderer, context, style, width, height) {
         var image = context.getImageData(0, 0, width, height);
         var view8 = image.data;
         var i, ii, alpha;
+        var changedOpacity = false;
         for (i = 0, ii = view8.length; i < ii; i += 4) {
-            alpha = view8[i + 3] * 4;
+            var alphaChar = view8[i+3];
+            if (!changedOpacity && alphaChar >= 250) {
+                this.changeOpacityScale(renderer, style);
+                changedOpacity = true;
+            }
+            alpha = alphaChar * 4;
             if (alpha) {
                 view8[i] = this.gradient[alpha];
                 view8[i + 1] = this.gradient[alpha + 1];
@@ -85,25 +102,36 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         var width = frameState.size[0];
         var height = frameState.size[1];
         var t = frameState.coordinateToPixelTransform;
+        var resolution = frameState.viewState.resolution;
         var extent = frameState.extent;
+
         var context = dom.createCanvasContext2D(width, height);
         var canvas = context.canvas;
         var renderer = render.toContext(context);
 
         var style = this.getLayer().getStyle();
-        if (Array.isArray(style))
-            renderer.setStyle(style[0]);
-        else
-            renderer.setStyle(style());
+        var actualStyle;
+        if (Array.isArray(style)) {
+            actualStyle = style[0];
+        }
+        else {
+            if (Array.isArray(style())) {
+                actualStyle = style()[0];
+            } else {
+                actualStyle = style();
+            }
+        }
+        actualStyle.setStroke();
+        renderer.setStyle(actualStyle);
         var features = this.getLayer().getVectorSource().getFeatures();
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
             var pixelCoordinates = this.polygonToPixelCoordinates(feature.getGeometry(), t);
             renderer.drawGeometry(new Polygon([pixelCoordinates]));
         }
-        this.rasterOpacityToContextColorMap(context, width, height);
+        this.rasterOpacityToContextColorMap(renderer, context, actualStyle, width, height);
 
-        this.image_ = new ImageCanvas(extent, frameState.viewState.resolution, frameState.pixelRatio, context.canvas);
+        this.image_ = new ImageCanvas(extent, resolution, frameState.pixelRatio, context.canvas);
         return true;
 
     }

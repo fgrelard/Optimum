@@ -2,3 +2,4 @@
 node_modules/
 bundle.js
 test/csv-parser/data
+/.tern-port

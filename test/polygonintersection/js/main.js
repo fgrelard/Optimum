@@ -44,7 +44,7 @@ var styles = [
             width: 3
         }),
         fill: new Fill({
-            color: 'rgba(120,120,120,0.2)'
+            color: 'rgba(120,120,120,0.9)'
         })
     }),
     new Style({
@@ -168,9 +168,7 @@ var map = new Map({
 var vectorColorMap = new VectorColorMap(layer, map, styles[0]);
 
 
- console.log(vectorLayerColormap.getSource());
+map.getView().on('change', function(event) {
+    console.log(vectorLayerColormap.getStyle());
 
-
-// map.getView().on('change', function(event) {
-//     imageLayer.setSource(vectorColorMap.getStyleImage());
-// });
+});

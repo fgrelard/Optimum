@@ -97,10 +97,10 @@ export function setStylePolygonIsovist() {
     });
 }
 
-export function setStylePolygonHeatmapIsovist() {
+export function setStylePolygonColormapIsovist() {
     return new Style({
         fill: new Fill({
-            color: 'rgba(140, 208, 95, 0.5)',
+            color: 'rgba(255, 255, 255, 1.0)',
         })
     });
 }
