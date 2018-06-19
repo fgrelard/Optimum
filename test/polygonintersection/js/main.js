@@ -96,29 +96,29 @@ var geojsonObject = {
         'type': 'Feature',
         'geometry': {
             'type': 'Polygon',
-            'coordinates': [[[-5e6, 6e6], [-5e6, 8e6], [-3e6, 8e6],
-                             [-3e6, 6e6], [-5e6, 6e6]]]
+            'coordinates': [[[-5e2, 6e2], [-5e2, 8e2], [-3e2, 8e2],
+                             [-3e2, 6e2], [-5e2, 6e2]]]
         }
     }, {
         'type': 'Feature',
         'geometry': {
             'type': 'Polygon',
-            'coordinates': [[[-4e6, 6e6], [-4e6, 8e6], [0, 8e6],
-                             [0, 6e6], [-4e6, 6e6]]]
+            'coordinates': [[[-4e2, 6e2], [-4e2, 8e2], [0, 8e2],
+                             [0, 6e2], [-4e2, 6e2]]]
         }
     }, {
         'type': 'Feature',
         'geometry': {
             'type': 'Polygon',
-            'coordinates': [[[-3.5e6, 6e6], [-3.5e6, 8e6], [-2.5e6, 8e6],
-                             [-2.5e6, 6e6], [-3.5e6, 6e6]]]
+            'coordinates': [[[-3.5e2, 6e2], [-3.5e2, 8e2], [-2.5e2, 8e2],
+                             [-2.5e2, 6e2], [-3.5e2, 6e2]]]
         }
     }, {
         'type': 'Feature',
         'geometry': {
             'type': 'Polygon',
-            'coordinates': [[[-2e6, -1e6], [-1e6, 1e6],
-                             [0, -1e6], [-2e6, -1e6]]]
+            'coordinates': [[[-2e2, -1e2], [-1e2, 1e2],
+                             [0, -1e2], [-2e2, -1e2]]]
         }
     }]
 };
@@ -178,7 +178,7 @@ var map = new Map({
     layers: [osm, imageLayer, vectorLayerColormap],
     target: 'map',
     view: new View({
-        center: [0, 3000000],
-        zoom: 2
+        center: [0, 0],
+        zoom: 16
     })
 });

@@ -73,6 +73,12 @@ var overlayGroup = new Group({
 });
 
 
+var onClickGroup = new Group({
+    title: 'Au clic',
+    combine: false,
+    layers: []
+});
+
 plugins.register(PluginType.LAYER_RENDERER, VectorLayerColormapRenderer);
 var map = new Map({
     layers: [
@@ -84,7 +90,8 @@ var map = new Map({
                 source: new OSM()
             })]
         }),
-        overlayGroup
+        overlayGroup,
+        onClickGroup
     ],
     target: 'map',
     view: new View({
@@ -708,8 +715,9 @@ map.addOverlay(overlay);
 map.addControl(layerSwitcher);
 
 overlayGroup.getLayers().push(olClusters);
-overlayGroup.getLayers().push(thumbnails);
-overlayGroup.getLayers().push(arcs);
-overlayGroup.getLayers().push(lines);
-overlayGroup.getLayers().push(inputLines);
 overlayGroup.getLayers().push(vectorLayerColormap);
+
+onClickGroup.getLayers().push(thumbnails);
+onClickGroup.getLayers().push(arcs);
+onClickGroup.getLayers().push(lines);
+onClickGroup.getLayers().push(inputLines);

@@ -47,7 +47,7 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         transform.apply(tmp, coord);
 
         transform.reset(tmp);
-        var scale = (resolution > VectorLayerColormapRenderer.LIMIT_RESOLUTION) ? resolution - (VectorLayerColormapRenderer.LIMIT_RESOLUTION - 2.0) : 1.0;
+        var scale = (resolution > VectorLayerColormapRenderer.LIMIT_RESOLUTION) ? resolution / 2.0 : 1.0;
         transform.scale(tmp, scale, scale);
         transform.apply(tmp, coord);
 
@@ -61,7 +61,8 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         var coordinates = polygon.getCoordinates()[0];
         for (var j = 0; j < coordinates.length; j++) {
             var coord = coordinates[j].slice();
-            this.scaleCoordinate(coord, resolution, t, polygon.getInteriorPoint().getFlatCoordinates());
+            if (this.getLayer().isScale())
+                this.scaleCoordinate(coord, resolution, t, polygon.getFirstCoordinate());
             var pixelCoordinate = transform.apply(t, coord);
             pixelCoordinates.push(pixelCoordinate);
         }

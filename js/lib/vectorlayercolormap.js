@@ -25,6 +25,7 @@ export default class VectorLayerColormap extends VectorLayer {
         this.colors = options.colors || ['#00f', '#0ff', '#0f0', '#ff0', '#f00'];
         this.type = LayerType.VectorHeatmap;
         this.image = null;
+        this.scale = options.scale || true;
     }
 
     getVectorSource() {
@@ -57,5 +58,13 @@ export default class VectorLayerColormap extends VectorLayer {
 
     setImage(image) {
         this.image = image;
+    }
+
+    isScale() {
+        return this.scale;
+    }
+
+    setScale(scale) {
+        this.scale = scale;
     }
 };
