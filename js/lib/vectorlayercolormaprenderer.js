@@ -38,11 +38,30 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         return context.getImageData(0, 0, width, height).data;
     }
 
-    polygonToPixelCoordinates(polygon, t) {
+
+    scaleCoordinate(coord, resolution, t, center) {
+        var tCopy = t.slice();
+        var tmp = transform.create();
+
+        transform.translate(tmp, -center[0], -center[1]);
+        transform.apply(tmp, coord);
+
+        transform.reset(tmp);
+        var scale = (resolution > VectorLayerColormapRenderer.LIMIT_RESOLUTION) ? resolution - (VectorLayerColormapRenderer.LIMIT_RESOLUTION - 2.0) : 1.0;
+        transform.scale(tmp, scale, scale);
+        transform.apply(tmp, coord);
+
+        transform.reset(tmp);
+        transform.translate(tmp, center[0], center[1]);
+        transform.apply(tmp, coord);
+    }
+
+    polygonToPixelCoordinates(polygon, t, resolution) {
         var pixelCoordinates = [];
         var coordinates = polygon.getCoordinates()[0];
         for (var j = 0; j < coordinates.length; j++) {
-            var coord = coordinates[j];
+            var coord = coordinates[j].slice();
+            this.scaleCoordinate(coord, resolution, t, polygon.getInteriorPoint().getFlatCoordinates());
             var pixelCoordinate = transform.apply(t, coord);
             pixelCoordinates.push(pixelCoordinate);
         }
@@ -54,7 +73,7 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         var rgba = color.split(",");
         var a = rgba[rgba.length-1].split(")")[0];
         var anum = Number.parseFloat(a).toFixed(4);
-        anum -= 0.05;
+        anum = (anum - 0.05 > 0) ? anum - 0.05 : 0.05;
         var newColor = rgba[0] + "," + rgba[1] + "," + rgba[2] + "," + anum.toString() + ")";
         var fill = new Fill({
             color: newColor
@@ -64,22 +83,21 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         renderer.setStyle(style);
     }
 
-    rasterOpacityToContextColorMap(renderer, context, style, width, height) {
+    rasterOpacityToContextColorMap(renderer, context, style, resolution, width, height) {
         var image = context.getImageData(0, 0, width, height);
         var view8 = image.data;
-        var i, ii, alpha;
+        var i, length, alpha;
         var changedOpacity = false;
-        for (i = 0, ii = view8.length; i < ii; i += 4) {
+        for (i = 0, length = view8.length; i < length; i += 4) {
             var alphaChar = view8[i+3];
-            if (!changedOpacity && alphaChar >= 250) {
+            if (!changedOpacity && alphaChar >= 250 && resolution < VectorLayerColormapRenderer.LIMIT_RESOLUTION) {
                 this.changeOpacityScale(renderer, style);
                 changedOpacity = true;
             }
             alpha = alphaChar * 4;
             if (alpha) {
-                view8[i] = this.gradient[alpha];
-                view8[i + 1] = this.gradient[alpha + 1];
-                view8[i + 2] = this.gradient[alpha + 2];
+                for (var j = 0; j < 3; j++)
+                    view8[i+j] = this.gradient[alpha + j];
             }
         }
         context.putImageData(image, 0,0);
@@ -101,10 +119,9 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
     prepareFrame(frameState, layerState) {
         var width = frameState.size[0];
         var height = frameState.size[1];
-        var t = frameState.coordinateToPixelTransform;
+        var t = frameState.coordinateToPixelTransform.slice();
         var resolution = frameState.viewState.resolution;
         var extent = frameState.extent;
-
         var context = dom.createCanvasContext2D(width, height);
         var canvas = context.canvas;
         var renderer = render.toContext(context);
@@ -126,18 +143,18 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         var features = this.getLayer().getVectorSource().getFeatures();
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
-            var pixelCoordinates = this.polygonToPixelCoordinates(feature.getGeometry(), t);
+            var pixelCoordinates = this.polygonToPixelCoordinates(feature.getGeometry(), t, resolution);
             renderer.drawGeometry(new Polygon([pixelCoordinates]));
         }
-        this.rasterOpacityToContextColorMap(renderer, context, actualStyle, width, height);
+        this.rasterOpacityToContextColorMap(renderer, context, actualStyle, resolution, width, height);
 
         this.image_ = new ImageCanvas(extent, resolution, frameState.pixelRatio, context.canvas);
+        this.getLayer().setImage(this.image_);
         return true;
-
     }
-
 }
 
+VectorLayerColormapRenderer.LIMIT_RESOLUTION = 3;
 
 VectorLayerColormapRenderer['handles'] =  function(type, layer) {
     return layer.getType() === "VECTOR_COLORMAP";

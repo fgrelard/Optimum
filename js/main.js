@@ -93,6 +93,14 @@ var map = new Map({
     })
 });
 
+var map2 = new Map({
+    layers: [overlayGroup],
+    view: new View({
+        center: stEtienneLonLatConv,
+        zoom: 16
+    })
+});
+
 var extent2 = map.getView().calculateExtent(map.getSize());
 
 var source = new Vector();
@@ -143,11 +151,13 @@ var imageStatic = new ImageStatic({url:'', imageExtent:[0,0,0,0]});
 var polygonSource = new Vector();
 
 var vectorLayerColormap = new VectorLayerColormap({
-    title: 'Polygones de visibilité',
+    title: 'Intersection des polygones',
     source: imageStatic,
     style: styles.setStylePolygonColormapIsovist,
     vectorSource: polygonSource
 });
+
+
 
 
 var layerSwitcher = new LayerSwitcher();
@@ -157,7 +167,18 @@ var dragBox = new DragBox({
     condition: condition.shiftKeyOnly
 });
 
-
+function weightFromPolygonColormap(feature, layer, map) {
+    var features = layer.getVectorSource().getFeatures();
+    var centroid = feature.getGeometry().getInteriorPoint();
+    var centroidFlat = centroid.getFlatCoordinates();
+    var centroid2D = [centroidFlat[0], centroidFlat[1]];
+    var centroidPixel2D = map.getPixelFromCoordinate(centroid2D);
+    var image = layer.getImage();
+    var canvas = image.canvas_;
+    var imageData = canvas.getContext('2d').getImageData(0,0,canvas.width, canvas.height).data;
+    var index = Math.round(centroidPixel2D[0]) + Math.round(centroidPixel2D[1]) * canvas.width;
+    var r = imageData[index];
+}
 
 function extractFileTree(json, firstString) {
     var data = [];
@@ -299,25 +320,7 @@ function getIsovist(f) {
     if (picture.isovist) {
         lines.getSource().addFeature(new Feature({geometry : picture.isovist}));
     }
-
-    //Then get the canvas element;
-    //it returns an array, so we will take the first index only
-    // console.log(lines);
-    // var canvas = $('.ol-unselectable')[0];
-    // var context = canvas.getContext("2d");
-
-    // //Now set the blending mode
-    // context.globalCompositeOperation = "color-dodge";
-
-
-    // $.each(visibleSegments, function(i, segment) {
-    //     featuresLine.push(new Feature(segment));
-    // });
-
 }
-
-
-
 
 
 function filter() {
@@ -517,7 +520,6 @@ dragBox.on('boxend', function() {
         }
     });
 
-
     $.each(picturesVisualizing, function(i, feature) {
         getImageLayout(feature).then(function(uri) {
             loadImageAndFillGrid(uri, images, {}, count, picturesVisualizing.length);
@@ -648,9 +650,6 @@ $("#fileTree").on('changed.jstree', function (e, data) {
             });
             rtree = rbush();
             rtree.load(boundingBoxes);
-
-//            intersectingPolygons();
-
 
         });
         //Put values into select fields

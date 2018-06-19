@@ -29,6 +29,9 @@ import Overlay from 'ol/overlay';
 import render from 'ol/render';
 import Polygon from 'ol/geom/polygon';
 import VectorColorMap from './VectorColorMap';
+import Heatmap from 'ol/layer/heatmap';
+import Feature from 'ol/feature';
+import Point from 'ol/geom/point';
 
 var styles = [
     /* We are using two different styles for the polygons:
@@ -154,6 +157,22 @@ var vectorLayerColormap = new VectorLayerColormap({
     vectorSource: source
 });
 
+var coordinates = [];
+$.each(source.getFeatures(), function(i, feature) {
+    var newPoint = new Feature(new Point(feature.getGeometry().getFirstCoordinate()));
+    newPoint.set('weight', 0.9);
+    coordinates.push(newPoint);
+});
+
+var firstCoordinates = new SourceVector({
+    features: coordinates
+});
+
+var heatmap = new Heatmap({
+    source: firstCoordinates,
+    radius: 50,
+    blur: 50
+});
 
 var map = new Map({
     layers: [osm, imageLayer, vectorLayerColormap],
@@ -162,13 +181,4 @@ var map = new Map({
         center: [0, 3000000],
         zoom: 2
     })
-});
-
-
-var vectorColorMap = new VectorColorMap(layer, map, styles[0]);
-
-
-map.getView().on('change', function(event) {
-    console.log(vectorLayerColormap.getStyle());
-
 });
