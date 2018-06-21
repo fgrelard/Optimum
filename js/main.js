@@ -466,6 +466,8 @@ $("#fileTree").on('changed.jstree', function (e, data) {
     for(i = 0, j = data.selected.length; i < j; i++) {
         r.push(data.instance.get_node(data.selected[i]).text);
     }
+
+    vectorLayerColormap.getVectorSource().clear();
     //Query DB and generate objects
     Polls.pollDB(r, "fullDocs").then(function(metadataJSON) {
         loadPictures(metadataJSON);

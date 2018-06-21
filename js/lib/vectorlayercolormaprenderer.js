@@ -96,7 +96,8 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         for (i = 0, length = view8.length; i < length; i += 4) {
             var alphaChar = view8[i+3];
             if (alphaChar > maxOpacity) {
-                maxOpacity = alphaChar;            }
+                maxOpacity = alphaChar;
+            }
             alpha = alphaChar * 4;
             if (alpha) {
                 for (var j = 0; j < 3; j++)
