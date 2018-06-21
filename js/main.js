@@ -63,7 +63,7 @@ var inputFeatures = [];
 var rtree = rbush();
 var select = new Select();
 var overlay = new Overlay({
-  element: document.getElementById('none')
+    element: document.getElementById('none')
 });
 
 var overlayGroup = new Group({
@@ -174,18 +174,6 @@ var dragBox = new DragBox({
     condition: condition.shiftKeyOnly
 });
 
-function weightFromPolygonColormap(feature, layer, map) {
-    var features = layer.getVectorSource().getFeatures();
-    var centroid = feature.getGeometry().getInteriorPoint();
-    var centroidFlat = centroid.getFlatCoordinates();
-    var centroid2D = [centroidFlat[0], centroidFlat[1]];
-    var centroidPixel2D = map.getPixelFromCoordinate(centroid2D);
-    var image = layer.getImage();
-    var canvas = image.canvas_;
-    var imageData = canvas.getContext('2d').getImageData(0,0,canvas.width, canvas.height).data;
-    var index = Math.round(centroidPixel2D[0]) + Math.round(centroidPixel2D[1]) * canvas.width;
-    var r = imageData[index];
-}
 
 function extractFileTree(json, firstString) {
     var data = [];
@@ -235,9 +223,45 @@ function getDocs(path, url2) {
     return t1Image;
 }
 
+function visibilityPolygon(data, center, radius) {
+    var polygon = [];
+    var anglesToSegments = data[0].slice();
+    var freeVisionAngles = data[1].slice();
+    $.each(freeVisionAngles, function(i, arc) {
+        var angle = new Arc(arc.center, radius || arc.radius, arc.alpha, arc.omega);
+        if (angle.omega - angle.alpha < 0.5) return;
+        angle.computeGeometry();
+        var freeSegment = new LineString([angle.fullGeometry[1].getFlatCoordinates(),
+                                          angle.fullGeometry[2].getFlatCoordinates()]);
+        var angleToSegment = {angle: angle, segment: freeSegment};
+        anglesToSegments.push(angleToSegment);
+    });
+
+    anglesToSegments.sort(function(a,b) {
+        if (a.angle.alpha === b.angle.alpha)
+            return a.angle.omega - b.angle.omega;
+        return a.angle.alpha - b.angle.alpha;
+    });
+    if (anglesToSegments.length > 0) {
+        polygon.push(center);
+        var firstCoords = anglesToSegments[0].segment.flatCoordinates;
+        polygon.push([firstCoords[0], firstCoords[1]]);
+        for (var i = 0; i < anglesToSegments.length; i++) {
+            var coords = anglesToSegments[i].segment.flatCoordinates;
+            var fc = [coords[0], coords[1]];
+            var lc = [coords[2], coords[3]];
+            polygon.push(fc);
+            polygon.push(lc);
+        }
+        polygon.push(center);
+    }
+    return new Polygon([polygon]);
+
+}
+
 
 function getThumbnail(f) {
-   getImageLayout(f).then(function(url) {
+    getImageLayout(f).then(function(url) {
         var position = f.getGeometry()['flatCoordinates'];
         var imageStatic = styles.createNewImage(url, position, proj.get());
         thumbnails.setSource(imageStatic);
@@ -247,7 +271,7 @@ function getThumbnail(f) {
 function segmentsFromXMLRequest(client, position = null) {
     var features = new OSMXML().readFeatures(client.responseText, {
         featureProjection: (position) ? new View({center:position}).getProjection() : map.getView().getProjection()
-     });
+    });
     var limitedFeatures = [];
     for (var i = 0; i < features.length; i++) {
         var f = features[i];
@@ -279,26 +303,18 @@ function getBuildingSegments(extent2, projection) {
 function computeIsovistForPicture(feature, signal) {
     var previousArc = feature.getProperties().arc;
     var arc = new Arc(previousArc.center, previousArc.radius, previousArc.alpha, previousArc.omega);
-     var t0Image = fetch(urlDB + "isovist", {
+    var t0Image = fetch(urlDB + "isovist", {
         method: 'post',
-         body: JSON.stringify({arc: arc}),
-         signal
+        body: JSON.stringify({arc: arc}),
+        signal
     });
     var t1Image = t0Image.then(function (response) {
         return response.json();
     });
-    var t2Image = t1Image.then(function(data) {
-        var arrayCoordinates = [];
-        for (var i = 0; i < data.flatCoordinates.length-1; i+=2)
-            arrayCoordinates.push([parseFloat(data.flatCoordinates[i]),
-                                   parseFloat(data.flatCoordinates[i+1])]);
-        var superArray = arrayCoordinates;
-        return superArray;
-    });
-    return t2Image.then(function(array) {
-        var polygon = new Polygon([array]);
+    return t1Image.then(function(data) {
+        var polygon = visibilityPolygon(data, arc.center, arc.radius);
+        feature.set("visibilityAngles", data);
         feature.set("isovist", polygon);
-        polygon.set("feature", feature);
         vectorLayerColormap.getVectorSource().addFeature(new Feature({geometry : polygon}));
         return polygon;
     });
@@ -402,6 +418,13 @@ function fillGrid(image, images, label, count, length) {
     }
 }
 
+function arcRadiusFromZoomLevel(map) {
+    var ext = map.getView().calculateExtent(map.getSize());
+    var diameter = euclideanDistance([ext[0], ext[1]],
+                                     [ext[2], ext[3]]);
+    return diameter/2.0;
+}
+
 interact('.muuri-item')
     .resizable({
         edges: { left: true, right: true, bottom: true, top: true },
@@ -456,19 +479,22 @@ $("#myRange").on("change", function(event) {
 
 map.getView().on('change:resolution', function(event)  {
     arcs.getSource().clear();
-    var ext = map.getView().calculateExtent(map.getSize());
+    lines.getSource().clear();
     olClusters.getSource().getSource().forEachFeature(function(feature) {
         var previousArc = feature.getProperties().arc;
         var selected = previousArc.selected;
         var arc = new Arc(previousArc.center, previousArc.radius, previousArc.alpha, previousArc.omega);
 
-        var diameter = euclideanDistance([ext[0], ext[1]],
-                                         [ext[2], ext[3]]);
-        arc.radius = diameter/2;
+        arc.radius = arcRadiusFromZoomLevel(map);
         arc.computeGeometry();
         previousArc.geometry = arc.geometry;
         previousArc.fullGeometry = arc.fullGeometry;
         if (selected) {
+            if (feature.get("visibilityAngles")) {
+                var polygon = visibilityPolygon(feature.get("visibilityAngles"), arc.center, arc.radius);
+                feature.set("isovist", polygon);
+                lines.getSource().addFeature(new Feature({geometry: polygon}));
+            }
             arcs.getSource().addFeature(new Feature(arc));
         }
     });
@@ -544,9 +570,9 @@ dragBox.on('boxstart', function() {
 
 
 select.on('select', function(e) {
-
     //Reset
     if (!e.mapBrowserEvent.originalEvent.ctrlKey) {
+        lines.getSource().clear();
         arcs.getSource().clear();
         if (thumbnails.getSource())
             thumbnails.setSource();
@@ -555,8 +581,6 @@ select.on('select', function(e) {
         });
     }
 
-    lines.getSource().clear();
-
     e.selected.filter(function(feature) {
         var selectedFeatures = feature.get('features');
         var images = [];
@@ -564,6 +588,8 @@ select.on('select', function(e) {
         $.each(selectedFeatures, function(i, f) {
             var arc = f.getProperties().arc;
             arc.selected = true;
+            arc.radius = arcRadiusFromZoomLevel(map);
+            arc.computeGeometry();
             arcs.getSource().addFeature(new Feature(arc));
             getIsovist(f);
             getThumbnail(f);
@@ -646,14 +672,17 @@ $("#fileTree").on('changed.jstree', function (e, data) {
         //R-tree bulk loading
         Promise.all(promises).then(function(polygons) {
             var boundingBoxes = [];
-            $.each(polygons, function(i, polygon) {
-                var polygonExtent = polygon.getExtent();
-                var polygonBBox = {minX: polygonExtent[0],
-                                   minY: polygonExtent[1],
-                                   maxX: polygonExtent[2],
-                                   maxY: polygonExtent[3],
-                                   feature : polygon.get("feature")};
-                boundingBoxes.push(polygonBBox);
+            $.each(pictures, function(i, feature) {
+                var polygon = feature.get("isovist");
+                if (polygon) {
+                    var polygonExtent = polygon.getExtent();
+                    var polygonBBox = {minX: polygonExtent[0],
+                                       minY: polygonExtent[1],
+                                       maxX: polygonExtent[2],
+                                       maxY: polygonExtent[3],
+                                       feature : feature};
+                    boundingBoxes.push(polygonBBox);
+                }
             });
             rtree = rbush();
             rtree.load(boundingBoxes);
@@ -668,7 +697,7 @@ $("#fileTree").on('changed.jstree', function (e, data) {
         }
 
         //Display clusters on map
-         olClusters.getSource().getSource().clear();
+        olClusters.getSource().getSource().clear();
         olClusters.getSource().getSource().addFeatures(pictures);
 
         arcs.getSource().clear();

@@ -74,13 +74,11 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         var rgba = color.split(",");
         var a = rgba[rgba.length-1].split(")")[0];
         var anum = Number.parseFloat(a);
-        console.log(maxOpacity);
         if (maxOpacity < 200) {
             anum += (anum + 0.05 < 1) ? 0.05 : 0;
         } else if (maxOpacity >= 250) {
             anum -= (anum - 0.05 > 0) ? 0.05 : 0;
         }
-        console.log(anum+0.05);
         var newColor = rgba[0] + "," + rgba[1] + "," + rgba[2] + "," + anum.toString() + ")";
         var fill = new Fill({
             color: newColor
