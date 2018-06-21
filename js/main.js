@@ -196,7 +196,7 @@ function arcRadiusFromZoomLevel(map) {
 function onLoadedSegments(client, extentDrag, center) {
     client.addEventListener('load', function(e) {
         inputLines.getSource().clear();
-        var buildingSegments = Polls.segmentsFromXMLRequest(client, center);
+        var buildingSegments = Polls.segmentsFromXMLRequest(client, map, center);
         $.each(buildingSegments, function(i, feature) {
             if (feature.getGeometry().intersectsExtent(extentDrag)) {
                 var coordinates = feature.getGeometry().getFlatCoordinates();
@@ -215,7 +215,7 @@ function onLoadedSegments(client, extentDrag, center) {
     });
 }
 
-function updateGridOnPicturesVisualizing(rtree, request, extent) {
+function updateGridOnPicturesVisualizing(request, extent) {
     var result = rtree.search(request);
     var picturesVisualizing = [];
 
@@ -273,7 +273,8 @@ function clusteringInGrid(signal) {
     var images = [];
     var count = {number:0};
     var promises = [];
-    $.each(pictures, function(i, feature) {
+    for (var i = 0; i < pictures.length; i++) {
+        var feature = pictures[i];
         var label = -1;
         var distance = -1;
         for (var key in clusters) {
@@ -290,7 +291,7 @@ function clusteringInGrid(signal) {
         });
         var promise = computeIsovistForPicture(feature, signal);
         promises.push(promise);
-    });
+    }
     return promises;
 }
 
@@ -414,7 +415,7 @@ dragBox.on('boxend', function() {
                    maxY: extentDrag[3]};
 
 
-    updateGridOnPicturesVisualizing(rbush, request, extentDrag);
+    updateGridOnPicturesVisualizing(request, extentDrag);
 });
 
 
@@ -434,7 +435,8 @@ select.on('select', function(e) {
         var selectedFeatures = feature.get('features');
         var images = [];
         var count = {number:0};
-        $.each(selectedFeatures, function(i, f) {
+        for (var i = 0; i < selectedFeatures.length; i++) {
+            var f = selectedFeatures[i];
             var arc = f.getProperties().arc;
             arc.selected = true;
             arc.radius = arcRadiusFromZoomLevel(map);
@@ -442,7 +444,7 @@ select.on('select', function(e) {
             arcs.getSource().addFeature(new Feature(arc));
             getIsovist(f);
             getThumbnail(f);
-        });
+        }
     });
 
 });
@@ -473,10 +475,18 @@ $("#fileTree").on('changed.jstree', function (e, data) {
         }
 
         var promises = clusteringInGrid(signal);
+
         //R-tree bulk loading
         Promise.all(promises).then(function(polygons) {
-            loadRTree(rtree);
+            loadRTree();
         });
+
+        for (var i = 0; i < clusters.length; i++) {
+            $('#selectPosition').append($('<option>', {
+                value: i,
+                text: clusters[i].label
+            }));
+        }
 
         //Display clusters on map
         olClusters.getSource().getSource().clear();
@@ -487,23 +497,6 @@ $("#fileTree").on('changed.jstree', function (e, data) {
 });
 
 
-function loadRTree(rtree) {
-    var boundingBoxes = [];
-    $.each(pictures, function(i, feature) {
-        var polygon = feature.get("isovist");
-        if (polygon) {
-            var polygonExtent = polygon.getExtent();
-            var polygonBBox = {minX: polygonExtent[0],
-                               minY: polygonExtent[1],
-                               maxX: polygonExtent[2],
-                               maxY: polygonExtent[3],
-                               feature : feature};
-            boundingBoxes.push(polygonBBox);
-        }
-    });
-    rtree = rbush();
-    rtree.load(boundingBoxes);
-}
 
 $("#buttonDir").on("click", function(event) {
     Polls.pollDB("/", "partialDocs").then(function(json) {
