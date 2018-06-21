@@ -69,12 +69,18 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         return pixelCoordinates;
     }
 
-    changeOpacityScale(renderer, style) {
+    changeOpacityScale(maxOpacity, renderer, style) {
         var color = style.getFill().getColor().toString();
         var rgba = color.split(",");
         var a = rgba[rgba.length-1].split(")")[0];
-        var anum = Number.parseFloat(a).toFixed(4);
-        anum = (anum - 0.05 > 0) ? anum - 0.05 : 0.05;
+        var anum = Number.parseFloat(a);
+        console.log(maxOpacity);
+        if (maxOpacity < 200) {
+            anum += (anum + 0.05 < 1) ? 0.05 : 0;
+        } else if (maxOpacity >= 250) {
+            anum -= (anum - 0.05 > 0) ? 0.05 : 0;
+        }
+        console.log(anum+0.05);
         var newColor = rgba[0] + "," + rgba[1] + "," + rgba[2] + "," + anum.toString() + ")";
         var fill = new Fill({
             color: newColor
@@ -88,19 +94,18 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         var image = context.getImageData(0, 0, width, height);
         var view8 = image.data;
         var i, length, alpha;
-        var changedOpacity = false;
+        var maxOpacity = 0;
         for (i = 0, length = view8.length; i < length; i += 4) {
             var alphaChar = view8[i+3];
-            if (!changedOpacity && alphaChar >= 250 && resolution < VectorLayerColormapRenderer.LIMIT_RESOLUTION) {
-                this.changeOpacityScale(renderer, style);
-                changedOpacity = true;
-            }
+            if (alphaChar > maxOpacity) {
+                maxOpacity = alphaChar;            }
             alpha = alphaChar * 4;
             if (alpha) {
                 for (var j = 0; j < 3; j++)
                     view8[i+j] = this.gradient[alpha + j];
             }
         }
+        this.changeOpacityScale(maxOpacity, renderer, style);
         context.putImageData(image, 0,0);
     }
 
