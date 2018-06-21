@@ -62,7 +62,7 @@ body {
 .container {
 	margin-left: auto;
 	margin-right: auto;
-	margin-bottom: 1%;
+	margin-bottom: 2% !important;
 	margin-top:2%;
 }
 
@@ -2210,10 +2210,9 @@ ol.default li {
 	input[type="reset"],
 	button,
 	.button {
-		width: 100%;
 		text-align: center;
 		font-size: 1.35em;
-		padding: 0.85em 0 !important;
+		padding: 0.4em 1.5em !important;
 	}
 
 	input[type="button"].icon,
@@ -2233,7 +2232,7 @@ ol.default li {
 		top: 0.05em;
 	}
 
-	/* Wrappers */
+	Wrappers
 
 	#header-wrapper {
 		padding: 3em 0 1em 0;
@@ -2517,11 +2516,11 @@ ol.default li {
 	input[type="reset"],
 	button,
 	.button {
-		width: 100%;
 		text-align: center;
-		font-size: 1.25em !important;
-		padding: 0.65em 0 !important;
+		font-size: 1.35em;
+		padding: 0.4em 1.5em !important;
 	}
+
 
 	input[type="button"].icon,
 	input[type="submit"].icon,
@@ -3062,4 +3061,8 @@ controls {
     height:1px;
     background:#717171;
     border-bottom:1px solid #313030;
+}
+
+p#clusterText {
+    font-size: 1em;
 }
