@@ -7,7 +7,11 @@
     "start": "rollup --config rollup.config.js --watch"
   },
   "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-env": "^1.7.0",
     "rollup": "^0.41.4",
+    "rollup-plugin-babel": "^3.0.5",
     "rollup-plugin-commonjs": "^7.0.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^2.1.1",
@@ -16,7 +20,6 @@
     "rollup-watch": "^4.3.1"
   },
   "dependencies": {
-    "@turf/turf": "^5.1.6",
     "bigdecimal": "^0.6.1",
     "body-parser": "^1.18.2",
     "dist-exiftool": "^10.53.0",
@@ -30,11 +33,11 @@
     "node-exiftool": "^2.3.0",
     "npm": "^5.8.0",
     "ol": "^4.6.5",
+    "ol-ext": "^2.0.4",
     "ol-layerswitcher": "^2.0.0",
     "papaparse": "^4.3.7",
     "process": "^0.11.10",
     "rbush": "^2.0.2",
-    "threadify": "^0.2.4",
     "transpose": "0.0.2",
     "util": "^0.10.3"
   }

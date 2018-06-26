@@ -1,14 +1,20 @@
+
 module.exports = {
     entry: 'js/main.js',
     targets: [
         {dest: 'bundle.js', format: 'iife'}
     ],
     globals: {
-		jquery: "jQuery"
+        $: "jquery"
 	},
+    external : ["$"],
     plugins: [
+        require('rollup-plugin-commonjs')({
+            namedExports: {
+                "node_modules/jquery/dist/jquery.js": ["jquery", "$"]
+            }
+        }),
         require('rollup-plugin-node-resolve')(),
-        require('rollup-plugin-commonjs')(),
         require('rollup-plugin-uglify-es')()
     ],
     sourceMap: 'inline'

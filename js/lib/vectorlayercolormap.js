@@ -23,9 +23,10 @@ export default class VectorLayerColormap extends VectorLayer {
         this.style = options.style || Style.defaultFunction;
         this.vectorSource = options.vectorSource;
         this.colors = options.colors || ['#00f', '#0ff', '#0f0', '#ff0', '#f00'];
+        this.scale = options.scale !== false;
+
         this.type = LayerType.VectorHeatmap;
         this.image = null;
-        this.scale = options.scale || true;
     }
 
     getVectorSource() {

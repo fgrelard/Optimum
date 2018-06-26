@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
     <link href="css/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="css/ol-layerswitcher.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="../../dist/ol-ext.css" />
+    <link rel="stylesheet" href="css/fontawesome.css" type="text/css">
     <link rel="stylesheet" href="css/main.css" />
 
   </head>
@@ -24,9 +26,10 @@
 		<div id="banner">
 
           <div class="box container">
+
             
             <div id="map" class="map">
-
+              
             </div>
 
             <div class="loading">
@@ -34,6 +37,12 @@
               <div id="isovist"> </div>
             </div>
             <hr>
+
+            <ul class="polygonIntersection">
+              <li><span class="floatLeft">0</span></li>
+              <li><span id="maxIntersection" class="floatRight">?</span></li>
+            </ul>
+
             <form>
               <label for="buttonDir">Photographies</label>
               <button type="button" id="buttonDir">Parcourir <i class="material-icons">

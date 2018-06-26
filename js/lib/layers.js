@@ -74,5 +74,6 @@ export var vectorLayerColormap = new VectorLayerColormap({
     title: 'Intersection des polygones',
     source: imageStatic,
     style: styles.setStylePolygonColormapIsovist,
-    vectorSource: polygonSource
+    vectorSource: polygonSource,
+    scale: false
 });

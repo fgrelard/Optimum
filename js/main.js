@@ -104,6 +104,14 @@ function extractFileTree(json, firstString) {
     return data;
 }
 
+function numberOfPictures(style) {
+    var color = style.getFill().getColor().toString();
+    var rgba = color.split(",");
+    var a = rgba[rgba.length-1].split(")")[0];
+    var opacity = Number.parseFloat(a);
+    return Math.abs(Math.log(100 * (1 - opacity)) / Math.log(1 - opacity));
+}
+
 function computeRangeSlider(clusters) {
     var min = Number.MAX_VALUE;
     var max = 0;
@@ -174,6 +182,8 @@ function computeIsovistForPicture(feature, signal) {
         feature.set("visibilityAngles", data);
         feature.set("isovist", polygon);
         vectorLayerColormap.getVectorSource().addFeature(new Feature({geometry : polygon}));
+        var maxIntersection = numberOfPictures(vectorLayerColormap.getStyle()[0]);
+        $("#maxIntersection").text(isNaN(maxIntersection) ? 0 : Math.round(maxIntersection).toString());
         return polygon;
     });
 }

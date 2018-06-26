@@ -69,6 +69,7 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         return pixelCoordinates;
     }
 
+
     changeOpacityScale(maxOpacity, renderer, style) {
         var color = style.getFill().getColor().toString();
         var rgba = color.split(",");

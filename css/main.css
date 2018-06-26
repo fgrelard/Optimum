@@ -3066,3 +3066,35 @@ controls {
 p#clusterText {
     font-size: 1em;
 }
+
+.polygonIntersection {
+    display:flex;
+    padding: 0;
+    margin: 1em;
+    justify-content: flex-end;
+    width: 200px;
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#2867cc+1,76ff32+32,d8db29+49,ff9328+78,ff0000+100 */
+    background: #2867cc; /* Old browsers */
+    background: -moz-linear-gradient(left, #2867cc 1%, #76ff32 32%, #d8db29 49%, #ff9328 78%, #ff0000 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(left, #2867cc 1%,#76ff32 32%,#d8db29 49%,#ff9328 78%,#ff0000 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to right, #2867cc 1%,#76ff32 32%,#d8db29 49%,#ff9328 78%,#ff0000 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2867cc', endColorstr='#ff0000',GradientType=1 ); /* IE6-9 */
+}
+
+.polygonIntersection li {
+    color: white;
+    font-weight: bold;
+    list-style: none;
+    text-align: center;
+    flex:auto;
+}
+
+.floatLeft {
+    float:left;
+    padding-left: 1em;
+}
+
+.floatRight {
+    float:right;
+    padding-right: 1em;
+}
