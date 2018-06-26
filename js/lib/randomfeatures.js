@@ -43,7 +43,7 @@ export function addRandomArcs(positions) {
         var coordinates = positions[i];
         var alpha = getRandomArbitrary(0,360);
         var omega = alpha + getRandomArbitrary(10,40);
-        var radius = getRandomArbitrary(100,150);
+        var radius = getRandomArbitrary(100,500);
         var arc =  new Arc(coordinates, radius, alpha, omega);
         arc.computeGeometry();
         arcs.push(arc);

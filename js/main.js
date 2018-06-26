@@ -19,6 +19,7 @@ import DragBox from 'ol/interaction/dragbox';
 import condition from 'ol/events/condition';
 import plugins from 'ol/plugins';
 import PluginType from 'ol/plugintype';
+import FullScreen from 'ol/control/fullscreen';
 
 import $ from 'jquery';
 import jsTree from 'jstree';
@@ -84,7 +85,6 @@ var map = new Map({
         zoom: 16
     })
 });
-
 
 
 function extractFileTree(json, firstString) {
@@ -557,3 +557,4 @@ map.addInteraction(dragBox);
 
 map.addOverlay(overlay);
 map.addControl(layerSwitcher);
+map.addControl(new FullScreen());
