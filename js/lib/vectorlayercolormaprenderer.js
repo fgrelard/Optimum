@@ -123,8 +123,9 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
     }
 
     prepareFrame(frameState, layerState) {
-        var width = frameState.size[0];
-        var height = frameState.size[1];
+        var pixelRatio = frameState.pixelRatio;
+        var width = frameState.size[0] * pixelRatio;
+        var height = frameState.size[1] * pixelRatio;
         var t = frameState.coordinateToPixelTransform.slice();
         var resolution = frameState.viewState.resolution;
         var extent = frameState.extent;
@@ -154,7 +155,7 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         }
         this.rasterOpacityToContextColorMap(renderer, context, actualStyle, resolution, width, height);
 
-        this.image_ = new ImageCanvas(extent, resolution, frameState.pixelRatio, context.canvas);
+        this.image_ = new ImageCanvas(extent, resolution, pixelRatio, context.canvas);
         this.getLayer().setImage(this.image_);
         return true;
     }
