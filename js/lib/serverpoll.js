@@ -20,10 +20,10 @@ export function pollDB(path, url2) {
 }
 
 
-export function pollImages(f, signal = null) {
+export function pollImages(path, size = 800, signal = null) {
     var t0Image = fetch(urlDB + "images", {
         method: 'post',
-        body: JSON.stringify({str: f.getProperties().filename}),
+        body: JSON.stringify({str: path, size:size}),
         signal
     });
     var t1Image = t0Image.then(function (response) {
@@ -37,8 +37,8 @@ export function pollImages(f, signal = null) {
     return t2Image;
 }
 
-export function pollIsovist(feature, signal) {
-    var previousArc = feature.getProperties().arc;
+export function pollIsovist(angle, signal) {
+    var previousArc = angle;
     var arc = new Arc(previousArc.center, previousArc.radius, previousArc.alpha, previousArc.omega);
     var t0Image = fetch(urlDB + "isovist", {
         method: 'post',

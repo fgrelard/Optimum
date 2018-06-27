@@ -167,7 +167,8 @@ function visibilityPolygon(data, center, radius) {
 }
 
 function getThumbnail(f) {
-    Polls.pollImages(f).then(function(url) {
+    Polls.pollImages(f.getProperties().filename).then(function(url) {
+        console.log(url);
         var position = f.getGeometry()['flatCoordinates'];
         var imageStatic = styles.createNewImage(url, position, proj.get());
         thumbnails.setSource(imageStatic);
@@ -177,7 +178,7 @@ function getThumbnail(f) {
 function computeIsovistForPicture(feature, signal) {
     var previousArc = feature.getProperties().arc;
     var arc = new Arc(previousArc.center, previousArc.radius, previousArc.alpha, previousArc.omega);
-    return Polls.pollIsovist(feature, signal).then(function(data) {
+    return Polls.pollIsovist(feature.getProperties().arc, signal).then(function(data) {
         var polygon = visibilityPolygon(data, arc.center, arc.radius);
         feature.set("visibilityAngles", data);
         feature.set("isovist", polygon);
@@ -246,7 +247,7 @@ function updateGridOnPicturesVisualizing(request, extent) {
     });
 
     $.each(picturesVisualizing, function(i, feature) {
-        Polls.pollImages(feature).then(function(uri) {
+        Polls.pollImages(feature.getProperties().filename).then(function(uri) {
             Grid.loadImageAndFillGrid(grid, uri, images, {}, count, picturesVisualizing.length);
         });
     });
@@ -296,7 +297,7 @@ function clusteringInGrid(signal) {
                 distance = dendrogram[key2].label;
             }
         }
-        Polls.pollImages(feature, signal).then(function(uri) {
+        Polls.pollImages(feature.getProperties().filename, signal).then(function(uri) {
             Grid.loadImageAndFillGrid(grid, uri, images, {label:label, distance:distance}, count, pictures.length);
         });
         var promise = computeIsovistForPicture(feature, signal);

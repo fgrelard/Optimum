@@ -7,6 +7,8 @@ import has from 'ol/has';
 import extent from 'ol/extent';
 import ImageStatic from 'ol/source/imagestatic';
 import Overlay from 'ol/overlay';
+import Icon from 'ol/style/icon';
+import * as Polls from './serverpoll';
 
 export var pointRadius = 20;
 
@@ -116,24 +118,38 @@ export function setStyleInput() {
 
 export function setStyleClusters(feature) {
     var styleCache = {};
-    var size = feature.get('features').length;
+    var features = feature.get('features');
+    var size = features.length;
     var style = styleCache[size];
+    var image = new Image();
+    var icon = new Icon({
+        img: features[0].get('image') || image,
+        imgSize: [100, 100]
+    });
+    if (!features[0].get('image') && features.length > 0) {
+        Polls.pollImages(features[0].getProperties().filename, 100).then(function(url) {
+            image.src = url;
+            features[0].set('image', image);
+        });
+    }
     if (!style) {
         style = new Style({
-            image: new Circle({
-                radius: pointRadius,
-                stroke: new Stroke({
-                    color: '#fff'
-                }),
-                fill: new Fill({
-                    color: '#3399CC'
-                })
+            image: icon,
+            stroke: new Stroke({
+                color: '#fff'
             }),
             text: new Text({
                 text: size.toString(),
                 fill: new Fill({
                     color: '#fff'
-                })
+                }),
+                backgroundFill: new Fill({
+                    color: '#cc9933'
+                }),
+                backgroundStroke: new Stroke({
+                    color: '#fff'
+                }),
+                padding: [10,10,10,10]
             })
         });
         styleCache[size] = style;
