@@ -9,8 +9,11 @@ import ImageStatic from 'ol/source/imagestatic';
 import Overlay from 'ol/overlay';
 import Icon from 'ol/style/icon';
 import * as Polls from './serverpoll';
+import Photo from 'ol-ext/style/Photo';
+import RegularShape from 'ol/style/regularshape';
 
 export var pointRadius = 20;
+var styleCache = {};
 
 export var stylesTopo = {
     'amenity': {
@@ -116,46 +119,101 @@ export function setStyleInput() {
     });
 }
 
-export function setStyleClusters(feature) {
-    var styleCache = {};
-    var features = feature.get('features');
-    var size = features.length;
-    var style = styleCache[size];
-    var image = new Image();
-    var icon = new Icon({
-        img: features[0].get('image') || image,
-        imgSize: [100, 100]
-    });
-    if (!features[0].get('image') && features.length > 0) {
-        Polls.pollImages(features[0].getProperties().filename, 100).then(function(url) {
-            image.src = url;
-            features[0].set('image', image);
-        });
+
+export function setStyleClusters(feature, resolution) {
+    var f = feature.get("features")[0];
+	var nb = feature.get("features").length;
+    var th = f.get("thumbnail");
+    var k = th ? th+(nb>1?"_0":"_1") : "default";
+    var style = styleCache[k];
+    var photoSize = 25;
+   	var count = new Style(
+		{	image: new RegularShape(
+			{	points: 12,
+				radius: 13,
+				fill: new Fill({
+					color: '#004499'
+				})
+			}),
+			text: new Text(
+				{	text: nb.toString(),
+					font: 'bold 12px helvetica,sans-serif',
+					offsetX: photoSize,
+					offsetY: -photoSize,
+                    fill: new Fill({
+                        color: '#fff'
+                    })
+				})
+		});
+	var p = count.getImage().getAnchor();
+	p[0]-=photoSize;
+	p[1]+=photoSize;
+    if (th) {
+	    if (!style)
+	    {	styleCache[k] = style = new Style
+		    ({	image: new Photo (
+			    {	src: th,
+				    radius: photoSize,
+				    crop: true,
+				    kind: (nb>1) ? "folio":"square",
+				    shadow: true ,
+				    // onload: function() { vector.changed(); },
+				    stroke: new Stroke(
+					    {	width:  3,
+						    color:'#fff'
+					    })
+			    })
+		     });
+	    }
+        return [ style, count ];
     }
-    if (!style) {
-        style = new Style({
-            image: icon,
-            stroke: new Stroke({
-                color: '#fff'
-            }),
-            text: new Text({
-                text: size.toString(),
-                fill: new Fill({
-                    color: '#fff'
-                }),
-                backgroundFill: new Fill({
-                    color: '#cc9933'
-                }),
-                backgroundStroke: new Stroke({
-                    color: '#fff'
-                }),
-                padding: [10,10,10,10]
-            })
-        });
-        styleCache[size] = style;
-    }
-    return style;
+    else if (style)
+        return [style, count];
+	else return [count];
 }
+
+
+    // var styleCache = {};
+    // var features = feature.get('features');
+    // var size = features.length;
+    // var style = styleCache[size];
+    // var image = new Image();
+    // var icon = new Icon({
+    //     img: features[0].get('image') || image,
+    //     imgSize: [100, 100]
+    // });
+    // if (!features[0].get('image') && features.length > 0) {
+    //     Polls.pollImages(features[0].getProperties().filename, 100).then(function(url) {
+    //         image.src = url;
+    //         features[0].set('image', image);
+    //     });
+    // }
+    // if (!style) {
+    //     style = new Style({
+    //         image: icon,
+    //         stroke: new Stroke({
+    //             color: '#fff'
+    //         }),
+    //         text: new Text({
+    //             text: size.toString(),
+    //             fill: new Fill({
+    //                 color: '#fff'
+    //             }),
+    //             backgroundFill: new Fill({
+    //                 color: '#cc9933'
+    //             }),
+    //             backgroundStroke: new Stroke({
+    //                 color: '#fff'
+    //             }),
+    //             padding: [10,10,10,10],
+    //             textBaseline: 'top',
+    //             textAlign: 'right'
+    //         })
+    //     });
+    //     styleCache[size] = style;
+    // }
+    // return style;
+//}
 
 export function  createCircleOutOverlay(position) {
     var elem = document.createElement('div');

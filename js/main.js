@@ -27,6 +27,7 @@ import interact from 'interactjs';
 import rbush from 'rbush';
 import LayerSwitcher from 'ol-layerswitcher';
 
+
 import {euclideanDistance} from './lib/distance';
 import Arc from './lib/arc';
 import Cluster from './lib/cluster';
@@ -167,12 +168,10 @@ function visibilityPolygon(data, center, radius) {
 }
 
 function getThumbnail(f) {
-    Polls.pollImages(f.getProperties().filename).then(function(url) {
-        console.log(url);
-        var position = f.getGeometry()['flatCoordinates'];
-        var imageStatic = styles.createNewImage(url, position, proj.get());
-        thumbnails.setSource(imageStatic);
-    });
+    var thumbnail = f.get('thumbnail');
+    var position = f.getGeometry()['flatCoordinates'];
+    var imageStatic = styles.createNewImage(thumbnail, position, proj.get());
+    thumbnails.setSource(imageStatic);
 }
 
 function computeIsovistForPicture(feature, signal) {
@@ -256,6 +255,7 @@ function updateGridOnPicturesVisualizing(request, extent) {
 
 function loadPictures(metadataJSON) {
     pictures = [];
+    var promises = [];
     for (var i = 0; i < metadataJSON.length; i++) {
         var photo = metadataJSON[i];
         if (photo.hasOwnProperty('ImageWidth')) {
@@ -270,9 +270,16 @@ function loadPictures(metadataJSON) {
             }
         }
     }
+
 }
 
-function clusteringInGrid(signal) {
+function featureToThumbnails(feature, signal) {
+      Polls.pollImages(feature.getProperties().filename, 75, signal).then(function(uri) {
+          feature.set('thumbnail', uri);
+      });
+}
+
+function completeFeatures(signal) {
      //Clustering with cursor
     var clusteringStrategy = new DistanceStrategy(pictures);
     clusters = clusteringStrategy.computeClusters();
@@ -297,14 +304,20 @@ function clusteringInGrid(signal) {
                 distance = dendrogram[key2].label;
             }
         }
-        Polls.pollImages(feature.getProperties().filename, signal).then(function(uri) {
+
+        featureToThumbnails(feature, signal);
+
+        Polls.pollImages(feature.getProperties().filename, 800, signal).then(function(uri) {
             Grid.loadImageAndFillGrid(grid, uri, images, {label:label, distance:distance}, count, pictures.length);
         });
+
         var promise = computeIsovistForPicture(feature, signal);
         promises.push(promise);
     }
+
     return promises;
 }
+
 
 function loadRTree() {
     var boundingBoxes = [];
@@ -487,9 +500,9 @@ $("#fileTree").on('changed.jstree', function (e, data) {
             document.body.className = 'images-loaded';
         }
 
-        var promises = clusteringInGrid(signal);
+        var promises = completeFeatures(signal);
 
-        //R-tree bulk loading
+        //r-tree bulk loading
         Promise.all(promises).then(function(polygons) {
             loadRTree();
         });

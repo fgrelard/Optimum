@@ -2,7 +2,7 @@
 module.exports = {
     entry: 'js/main.js',
     targets: [
-        {dest: 'bundle.js', format: 'iife'}
+        {dest: 'bundle.js', format: 'iife', useStrict:false}
     ],
     globals: {
         $: "jquery"
