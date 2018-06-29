@@ -21,6 +21,9 @@ import plugins from 'ol/plugins';
 import PluginType from 'ol/plugintype';
 import FullScreen from 'ol/control/fullscreen';
 
+import ControlOverlay from 'ol-ext/control/Overlay';
+import Toggle from 'ol-ext/control/Toggle';
+
 import $ from 'jquery';
 import jsTree from 'jstree';
 import interact from 'interactjs';
@@ -45,7 +48,6 @@ import {overlay,
         onClickGroup,
         olClusters,
         arcs,
-        thumbnails,
         lines,
         inputLines,
         vectorLayerColormap} from './lib/layers';
@@ -61,6 +63,16 @@ var rtree = rbush();
 
 var select = new Select();
 var layerSwitcher = new LayerSwitcher();
+
+var menu = new ControlOverlay ({ closeBox : true, className: "slide-left menu", content: $("#menu") });
+
+// A toggle control to show/hide the menu
+var t = new Toggle(
+	{	html: '<i class="fa fa-bars" ></i>',
+		className: "menu",
+		title: "Menu",
+		onToggle: function() { menu.toggle(); }
+	});
 
 
 var dragBox = new DragBox({
@@ -169,9 +181,11 @@ function visibilityPolygon(data, center, radius) {
 
 function getThumbnail(f) {
     var thumbnail = f.get('thumbnail');
-    var position = f.getGeometry()['flatCoordinates'];
-    var imageStatic = styles.createNewImage(thumbnail, position, proj.get());
-    thumbnails.setSource(imageStatic);
+	var img = $("<img>").attr("src", thumbnail);
+	var content = $("<div>")
+			.append( img );
+ 	$(".data").html(content);
+    console.log(content);
 }
 
 function computeIsovistForPicture(feature, signal) {
@@ -448,8 +462,6 @@ select.on('select', function(e) {
     if (!e.mapBrowserEvent.originalEvent.ctrlKey) {
         lines.getSource().clear();
         arcs.getSource().clear();
-        if (thumbnails.getSource())
-            thumbnails.setSource();
         olClusters.getSource().getSource().forEachFeature(function(feature) {
             feature.getProperties().arc.selected = false;
         });
@@ -471,6 +483,10 @@ select.on('select', function(e) {
         }
     });
 
+});
+
+select.getFeatures().on('remove', function(e) {
+    $(".data").html("");
 });
 
 
@@ -561,7 +577,6 @@ plugins.register(PluginType.LAYER_RENDERER, VectorLayerColormapRenderer);
 overlayGroup.getLayers().push(olClusters);
 overlayGroup.getLayers().push(vectorLayerColormap);
 
-onClickGroup.getLayers().push(thumbnails);
 onClickGroup.getLayers().push(arcs);
 onClickGroup.getLayers().push(lines);
 onClickGroup.getLayers().push(inputLines);
@@ -572,3 +587,5 @@ map.addInteraction(dragBox);
 map.addOverlay(overlay);
 map.addControl(layerSwitcher);
 map.addControl(new FullScreen());
+map.addControl(menu);
+map.addControl(t);

@@ -1725,18 +1725,18 @@ ul.actions li:first-child {
 	padding-left: 0;
 }
 
-ul.menu li {
-	border-left: solid 1px #e0e0e0;
-	display: inline-block;
-	padding: 0 0 0 0.75em;
-	margin: 0 0 0 0.75em;
-}
+/* ul.menu li { */
+/* 	border-left: solid 1px #e0e0e0; */
+/* 	display: inline-block; */
+/* 	padding: 0 0 0 0.75em; */
+/* 	margin: 0 0 0 0.75em; */
+/* } */
 
-ul.menu li:first-child {
-	border-left: 0;
-	margin-left: 0;
-	padding-left: 0;
-}
+/* ul.menu li:first-child { */
+/* 	border-left: 0; */
+/* 	margin-left: 0; */
+/* 	padding-left: 0; */
+/* } */
 
 ol.default {
 	list-style: decimal;
@@ -2186,12 +2186,12 @@ ol.default li {
 
 	/* List */
 
-	ul.menu li {
-		display: block;
-		border: 0 !important;
-		padding: 0 !important;
-		margin: 0 !important;
-	}
+	/* ul.menu li { */
+	/* 	display: block; */
+	/* 	border: 0 !important; */
+	/* 	padding: 0 !important; */
+	/* 	margin: 0 !important; */
+	/* } */
 
 	ul.actions li {
 		display: block;
@@ -2492,12 +2492,12 @@ ol.default li {
 
 	/* List */
 
-	ul.menu li {
-		display: block;
-		border: 0 !important;
-		padding: 0 !important;
-		margin: 0 !important;
-	}
+	/* ul.menu li { */
+	/* 	display: block; */
+	/* 	border: 0 !important; */
+	/* 	padding: 0 !important; */
+	/* 	margin: 0 !important; */
+	/* } */
 
 	ul.actions li {
 		display: block;
@@ -3097,4 +3097,63 @@ p#clusterText {
 .floatRight {
     float:right;
     padding-right: 1em;
+}
+
+.ol-overlay.menu
+{	width: 30%;
+	background: #fff;
+	color: #333;
+	box-shadow: 0px 0px 5px #000;
+	padding: 0.5em;
+	-webkit-transition: all 0.25s;
+	transition: all 0.25s;
+}
+/* style the close box */
+.ol-overlay.menu .ol-closebox
+{	color: #369;
+	left: 1em;
+	top: 0.5em;
+}
+.ol-overlay.menu .ol-closebox:before
+		                          {	content:"\f0c9";
+			                        font-family:FontAwesome;
+		                          }
+#menu
+{	padding-top: 1.5em;
+	font-size: 0.9em;
+}
+/* menu button */
+.ol-control.menu
+{	top: 0.5em;
+	left: 0.5em;
+}
+.ol-control.menu i
+{	color: #fff;
+}
+.ol-zoom
+{	left: auto;
+	right: 0.5em;
+}
+.ol-rotate 
+{	right: 3em;
+}
+.ol-touch .ol-rotate 
+{	right: 3.5em;
+}
+/**/
+.ol-overlay img
+{	max-width: 90%;
+}
+.data,
+.data p
+ {	margin:0;
+	text-align: center;
+	font-size:0.9em;
+ }
+
+.ol-zoom {
+    right: unset;
+    left: 8px;
+    bottom: 10px;
+    top: auto;
 }
