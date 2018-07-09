@@ -23,12 +23,12 @@ import FullScreen from 'ol/control/fullscreen';
 
 import ControlOverlay from 'ol-ext/control/Overlay';
 import Toggle from 'ol-ext/control/Toggle';
+import LayerSwitcher from 'ol-ext/control/LayerSwitcher';
 
 import $ from 'jquery';
 import jsTree from 'jstree';
 import interact from 'interactjs';
 import rbush from 'rbush';
-import LayerSwitcher from 'ol-layerswitcher';
 
 
 import {euclideanDistance} from './lib/distance';
@@ -62,7 +62,9 @@ var dendrogram = [];
 var rtree = rbush();
 
 var select = new Select();
-var layerSwitcher = new LayerSwitcher();
+var layerSwitcher = new LayerSwitcher({
+    reordering: false
+});
 
 var menu = new ControlOverlay ({ closeBox : true, className: "slide-left menu", content: $("#menu") });
 
@@ -180,12 +182,20 @@ function visibilityPolygon(data, center, radius) {
 }
 
 function getThumbnail(f) {
-    var thumbnail = f.get('thumbnail');
-	var img = $("<img>").attr("src", thumbnail);
-	var content = $("<div>")
-			.append( img );
- 	$(".data").html(content);
-    console.log(content);
+    if (f.get('image')) {
+        var image = f.get('image');
+        var img = $("<img>").attr("src", image);
+        img = img.attr('class', 'menuImage');
+	    var content = $("<div>")
+			    .append( img );
+ 	    $(".data").html(content);
+    }
+    else {
+        Polls.pollImages(f.getProperties().filename, 400).then(function(uri) {
+            f.set('image', uri);
+            getThumbnail(f);
+        });
+    }
 }
 
 function computeIsovistForPicture(feature, signal) {

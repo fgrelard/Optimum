@@ -1655,7 +1655,7 @@ input[type="submit"]:hover,
 input[type="reset"]:hover,
 button:hover,
 .button:hover {
-	background: #10a0d5;
+	background-color: #10a0d5;
 }
 
 input[type="button"]:active,
@@ -1663,7 +1663,7 @@ input[type="submit"]:active,
 input[type="reset"]:active,
 button:active,
 .button:active {
-	background: #20b0e5;
+	background-color: #20b0e5;
 }
 
 input[type="button"].alt,
@@ -3072,7 +3072,7 @@ p#clusterText {
     padding: 0;
     margin: 1em;
     justify-content: flex-end;
-    width: 200px;
+    width: 100%;
     /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#2867cc+1,76ff32+32,d8db29+49,ff9328+78,ff0000+100 */
     background: #2867cc; /* Old browsers */
     background: -moz-linear-gradient(left, #2867cc 1%, #76ff32 32%, #d8db29 49%, #ff9328 78%, #ff0000 100%); /* FF3.6-15 */
@@ -3114,10 +3114,10 @@ p#clusterText {
 	left: 1em;
 	top: 0.5em;
 }
-.ol-overlay.menu .ol-closebox:before
-		                          {	content:"\f0c9";
-			                        font-family:FontAwesome;
-		                          }
+.ol-overlay.menu .ol-closebox:before {
+    content:"\f0c9";
+	font-family:FontAwesome;
+}
 #menu
 {	padding-top: 1.5em;
 	font-size: 0.9em;
@@ -3144,6 +3144,11 @@ p#clusterText {
 .ol-overlay img
 {	max-width: 90%;
 }
+
+.ol-control button {
+    padding: 0 !important;
+}
+
 .data,
 .data p
  {	margin:0;
@@ -3156,4 +3161,26 @@ p#clusterText {
     left: 8px;
     bottom: 10px;
     top: auto;
+}
+
+#isovistCaption {
+    position: absolute;
+    bottom: 2px;
+    width: 75%;
+}
+
+img.menuImage {
+    max-height: 50%;
+    max-width: 90%;
+    height: auto;
+    width: auto;
+
+}
+
+#banner p.defaultParagraph {
+    font-size: 1.1em;
+}
+
+.ol-layerswitcher .panel li label {
+    display: inline;
 }

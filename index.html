@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
     <link href="css/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link href="css/ol-layerswitcher.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="./node_modules/ol-ext/dist/ol-ext.css" />
     <link rel="stylesheet" href="css/main.css" />
@@ -33,11 +32,20 @@
 	        </div>
             <!-- Content of the menu -->
 	        <div id="menu">
-		      <h1>Menu</h1>
-		      <p style="border-bottom:1px solid #999;">
-			   Description des photographies.
+		      <h4>Menu</h4>
+		      <p class="defaultParagraph">
+			   Description des photographies
 		      </p>
 		      <div class="data"></div>
+              <hr>
+              
+              <div id="isovistCaption">
+                <p class="defaultParagraph">Légende</p>
+                <ul class="polygonIntersection">
+                  <li><span class="floatLeft">0</span></li>
+                  <li><span id="maxIntersection" class="floatRight">?</span></li>
+                </ul>
+              </div>
             </div>
 
             <div class="loading">
@@ -46,10 +54,7 @@
             </div>
             <hr>
 
-            <ul class="polygonIntersection">
-              <li><span class="floatLeft">0</span></li>
-              <li><span id="maxIntersection" class="floatRight">?</span></li>
-            </ul>
+           
 
             <form>
               <label for="buttonDir">Photographies</label>
