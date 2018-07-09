@@ -3099,6 +3099,84 @@ p#clusterText {
     padding-right: 1em;
 }
 
+
+.data,
+.data p
+ {	margin:0;
+	text-align: center;
+	font-size:0.9em;
+ }
+
+
+
+#isovistCaption {
+    position: absolute;
+    bottom: 2em;
+    width: 75%;
+}
+
+img.menuImage {
+    max-height: 90%;
+    max-width: 90%;
+    height: auto;
+    width: auto;
+
+}
+
+#banner p.defaultParagraph {
+    font-size: 1.1em;
+    padding-top: 1em;
+}
+
+.containerMenuImg {
+    height: 50%;
+}
+
+.ol-layerswitcher .panel li label {
+    display: inline;
+}
+
+.ol-zoom {
+    right: 0.5em;
+    top: 3em;
+    bottom: auto;
+    left: auto;
+}
+
+.ol-control.ol-layerswitcher {
+    top: 4.5em;
+    left: 0.5em;
+    bottom: auto;
+    right: auto;
+    z-index: 0;
+}
+
+.ol-layerswitcher button {
+    width: 2.5em;
+    height: 2.5em;
+    background-size: 2em 2em;
+    background-position: center;
+    background-color: rgba(0,60,136,.5);
+}
+
+
+/* menu button */
+.ol-control.menu {
+    right: auto;
+	top: 0.5em;
+    bottom: auto;
+    left: 0.5em;
+}
+
+.ol-control.menu i {
+    color: #fff;
+}
+
+.ol-control.menu button{
+    width: 2.5em;
+    height: 2.5em;
+}
+
 .ol-overlay.menu
 {	width: 30%;
 	background: #fff;
@@ -3122,24 +3200,8 @@ p#clusterText {
 {	padding-top: 1.5em;
 	font-size: 0.9em;
 }
-/* menu button */
-.ol-control.menu
-{	top: 0.5em;
-	left: 0.5em;
-}
-.ol-control.menu i
-{	color: #fff;
-}
-.ol-zoom
-{	left: auto;
-	right: 0.5em;
-}
-.ol-rotate 
-{	right: 3em;
-}
-.ol-touch .ol-rotate 
-{	right: 3.5em;
-}
+
+
 /**/
 .ol-overlay img
 {	max-width: 90%;
@@ -3147,40 +3209,4 @@ p#clusterText {
 
 .ol-control button {
     padding: 0 !important;
-}
-
-.data,
-.data p
- {	margin:0;
-	text-align: center;
-	font-size:0.9em;
- }
-
-.ol-zoom {
-    right: unset;
-    left: 8px;
-    bottom: 10px;
-    top: auto;
-}
-
-#isovistCaption {
-    position: absolute;
-    bottom: 2px;
-    width: 75%;
-}
-
-img.menuImage {
-    max-height: 50%;
-    max-width: 90%;
-    height: auto;
-    width: auto;
-
-}
-
-#banner p.defaultParagraph {
-    font-size: 1.1em;
-}
-
-.ol-layerswitcher .panel li label {
-    display: inline;
 }

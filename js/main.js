@@ -185,9 +185,8 @@ function getThumbnail(f) {
     if (f.get('image')) {
         var image = f.get('image');
         var img = $("<img>").attr("src", image);
-        img = img.attr('class', 'menuImage');
-	    var content = $("<div>")
-			    .append( img );
+        img = img.attr("class", "menuImage");
+	    var content = $("<div>").attr("class", "containerMenuImg").append( img );
  	    $(".data").html(content);
     }
     else {
