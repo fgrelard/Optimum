@@ -1,4 +1,3 @@
-import CSV from 'papaparse';
 import transpose from 'transpose';
 import Arc from './arc';
 
@@ -6,25 +5,6 @@ export function lonLatToDecimal(deg, min, sec) {
     return deg + min / 60 + sec / 3600;
 }
 
-export function loadExifToolMetadata(filename) {
-    var f = fetch(filename);
-    var t1 = f.then(function(response) {
-        return response.text();
-    });
-    var t2 = t1.then(function(text) {
-        var textS = text.toString();
-        return CSV.parse(text.replace(/ /g, ""),
-                         {delimiter: ':',
-                          complete: function(results) {
-                              return results;
-                          },
-                          dynamicTyping: true
-                         });
-
-    });
-    return t2;
-
-}
 
 export function convertMetadataToJSON(metadata) {
     const transposed = transpose(metadata.data);
