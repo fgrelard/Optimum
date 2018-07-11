@@ -3159,13 +3159,8 @@ img.menuImage {
     background-size: 2em 2em;
     background-position: center;
     background-color: rgba(0,60,136,.5);
-    float:left;
+    float: left;
 }
-
-.ol-layerswitcher .panel {
-    padding: 0 !important;
-}
-
 
 /* menu button */
 .ol-control.menu {
