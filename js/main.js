@@ -30,7 +30,6 @@ import jsTree from 'jstree';
 import interact from 'interactjs';
 import rbush from 'rbush';
 
-
 import {euclideanDistance} from './lib/distance';
 import Arc from './lib/arc';
 import Cluster from './lib/cluster';
@@ -546,7 +545,6 @@ $("#fileTree").on('changed.jstree', function (e, data) {
         arcs.getSource().clear();
     });
 });
-
 
 
 $("#buttonDir").on("click", function(event) {
