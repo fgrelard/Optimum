@@ -2061,7 +2061,7 @@ ol.default li {
 }
 
 #banner ul {
-	margin: 0 0 0 2em;
+	margin: 0 0 0 0em;
 }
 
 /* Footer */
@@ -3009,6 +3009,7 @@ controls {
     -webkit-animation-direction: forwards;
     animation-direction: forwards;
 }
+
 @-webkit-keyframes fadeOut {
     0% {
         -webkit-transform: scale(0);
@@ -3023,6 +3024,7 @@ controls {
         opacity: 0;
     }
 }
+
 @keyframes fadeOut {
     0% {
         -webkit-transform: scale(0);
@@ -3157,6 +3159,11 @@ img.menuImage {
     background-size: 2em 2em;
     background-position: center;
     background-color: rgba(0,60,136,.5);
+    float:left;
+}
+
+.ol-layerswitcher .panel {
+    padding: 0 !important;
 }
 
 
