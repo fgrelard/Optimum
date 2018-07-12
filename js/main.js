@@ -32,8 +32,6 @@ import rbush from 'rbush';
 
 import {euclideanDistance} from './lib/distance';
 import Arc from './lib/arc';
-import Cluster from './lib/cluster';
-import IsoVist from './lib/isovistsectors2d';
 import Picture from './lib/picture';
 import {getPosition, getOrientation} from './lib/exiftool-util';
 import * as styles from './lib/styles';
@@ -64,6 +62,7 @@ var select = new Select();
 var layerSwitcher = new LayerSwitcher({
     reordering: false
 });
+
 
 var menu = new ControlOverlay ({ closeBox : true, className: "slide-left menu", content: $("#menu") });
 
@@ -99,7 +98,6 @@ var map = new Map({
         zoom: 16
     })
 });
-
 
 function extractFileTree(json, firstString) {
     var data = [];

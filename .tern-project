@@ -1,7 +1,11 @@
 {
-    "plugins": {
-        "node": {
-        }
-    }
+  "libs": [
+    "ecmascript"
+  ],
+  "loadEagerly": [],
+  "async": false,
+  "plugins": {
+    "es_modules": {},
+    "node": {}
+  }
 }
-
