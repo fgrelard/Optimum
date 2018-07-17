@@ -544,8 +544,7 @@ $("#fileTree").on('changed.jstree', function (e, data) {
     });
 });
 
-
-$("#buttonDir").on("click", function(event) {
+$(document).ready( function(event) {
     Polls.pollDB("/", "partialDocs").then(function(json) {
         $.each(json, function(i, photo) {
             var ymdString = photo.CreateDate.split(" ")[0];

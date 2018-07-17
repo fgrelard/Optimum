@@ -139,6 +139,52 @@ export function segmentIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
     return {x: x,y: y};
 }
 
+
+/**
+ * Intersection half line
+ * @param {} x1 First segment first point x
+ * @param {} y1 First segment first point y
+ * @param {} x2 First segment second point x
+ * @param {} y2 First segment second point y
+ * @param {} x3 Second segment first point x
+ * @param {} y3 Second segment first point y
+ * @param {} x4 Second segment second point x
+ * @param {} y4 Second segment second point y
+ * @returns {} the intersection, if it exists
+ */
+export function halfLineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
+    var x=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4)) /
+            ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+    var y=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4)) /
+        ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+    if (isNaN(x)||isNaN(y)) {
+        return false;
+    } else {
+        if (x1>=x2) {
+            if (x > x1) {return false;}
+        } else {
+            if (x < x1) {return false;}
+        }
+        if (y1>=y2) {
+            if (y > y1) {return false;}
+        } else {
+            if (y < y1) {return false;}
+        }
+        if (x3>=x4) {
+            if (x > x3) {return false;}
+        } else {
+            if (x < x3) {return false;}
+        }
+        if (y3>=y4) {
+            if (y > y3) {return false;}
+        } else {
+            if (y < y3) {return false;}
+        }
+    }
+    return {x: x,y: y};
+}
+
+
 /**
  * Helper function to check if there is intersection between two segments represented as linestring objects
  * @param {} s1 first linestring segment
@@ -153,6 +199,26 @@ export function segmentsIntersect(s1, s2) {
 
 
     var intersection = segmentIntersection(pS1F[0], pS1F[1],
+                                           pS1L[0], pS1L[1],
+                                           pS2F[0], pS2F[1],
+                                           pS2L[0], pS2L[1]);
+    return intersection;
+}
+
+/**
+ * Helper function to check if there is intersection between two half lines represented as linestring objects where first coordinate is the start of the half line
+ * @param {} s1 first linestring half lines
+ * @param {} s2 second linestring half lines
+ * @returns {} the intersection, if it exists
+ */
+export function halfLinesIntersect(s1, s2) {
+    var pS1F = s1.getFirstCoordinate();
+    var pS1L = s1.getLastCoordinate();
+    var pS2F = s2.getFirstCoordinate();
+    var pS2L = s2.getLastCoordinate();
+
+
+    var intersection = halfLineIntersection(pS1F[0], pS1F[1],
                                            pS1L[0], pS1L[1],
                                            pS2F[0], pS2F[1],
                                            pS2L[0], pS2L[1]);
