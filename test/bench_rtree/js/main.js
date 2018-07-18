@@ -31,23 +31,10 @@ var polygon = new VectorLayer({
     source: polygonSource
 });
 
-var map = new Map({
-    layers: [
-        new Group({
-            title: 'Cartes',
-            layers: [new TileLayer({
-                title:'OSM',
-                type:'base',
-                source: new OSM()
-            })]
-        })
-    ],
-    target: 'map',
-    view: new View({
-        center: stEtienneLonLatConv,
-        zoom: 12
-    })
-});
+var map = new Map({ layers: [ new Group({ title: 'Cartes', layers:
+    [new TileLayer({ title:'OSM', type:'base', source: new OSM() })]
+    }) ], target: 'map', view: new View({ center: stEtienneLonLatConv,
+    zoom: 12 }) });
 
 
 function generateRandomPolygons(extent, number = 100) {
