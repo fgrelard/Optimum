@@ -1,24 +1,26 @@
 import Arc from './arc.js';
 import {halfLineIntersection, segmentIntersection} from './lineintersection.js';
 import {euclideanDistance} from './distance.js';
+import Plane from './plane.js';
 
 export default class ASTree {
-    constructor(sectors) {
-        this.tree = [ [ new Arc([0,0],5, 0, 360) ] ];
+    constructor(sectors, n = 2) {
+        this.tree = [ [ new Plane([0,0], [0,0]) ] ];
         this.sectors = sectors;
+        this.maxNumberLeaves = n;
     }
 
 
-    intersectingSectors(sector, index) {
+    intersectingSectors(sectors, sector, index) {
         var f = sector.center;
         var la = sector.fullGeometry[1].getFlatCoordinates();
         var lo = sector.fullGeometry[2].getFlatCoordinates();
-        var length = this.sectors.length;
+        var length = sectors.length;
         var cpt = 0;
         var intersectionIndexes = [];
         for (var i = 0; i < length; i++) {
             if (i === index) continue;
-            var sectorOther = this.sectors[i];
+            var sectorOther = sectors[i];
             var fOther = sectorOther.center;
             var laOther = sectorOther.fullGeometry[1].getFlatCoordinates();
             var loOther = sectorOther.fullGeometry[2].getFlatCoordinates();
@@ -198,39 +200,18 @@ export default class ASTree {
     }
 
     splitConnectedComponent(cc, arcs, elements) {
+        var planes = [];
         var minSet = this.minimumIntersectingElements(elements);
-        console.log(minSet);
-        console.log(elements);
-        for (var i = 0; i < minSet.length; i++) {
+        for (let i = 0; i < minSet.length; i++) {
             var m = minSet[i];
             var arc = arcs[m];
-            var intersectionsAlpha = this.intersectionWithOtherSectors(m, arcs, true);
-            var intersectionsOmega = this.intersectionWithOtherSectors(m, arcs, false);
-            var maxDAlpha = (intersectionsAlpha.length) ?
-                    Math.max(...intersectionsAlpha.map(function(o){
-                        return euclideanDistance(o.p, o.i);
-                    }))
-                : 0;
-            var maxDOmega = (intersectionsOmega.length) ?
-                    Math.max(...intersectionsOmega.map(function(o){
-                        return euclideanDistance(o.p, o.i);
-                    }))
-                : 0;
-
-            console.log(maxDAlpha + " "+ maxDOmega);
-
-            var omega = 0;
-            var alpha = Math.min(...arcs.map(function(a) {
-                return a.alpha;
-            }));
-            if (maxDAlpha > maxDOmega)
-                omega = arc.alpha;
-            else
-                omega = arc.omega;
-
-            var newArc = new Arc(arc.center, 10, alpha, omega);
-            console.log(newArc);
+            var omega = arc.omega;
+            var vector = this.angleToVector(omega);
+            var orthogonalVector = [vector[1], -vector[0]];
+            var plane = new Plane(arc.center, orthogonalVector);
+            planes.push(plane);
         }
+        return planes;
     }
 
     connectedComponentToAngularSector(cc) {
@@ -258,19 +239,21 @@ export default class ASTree {
         return new Arc(position, 1, minAlpha, maxOmega);
     }
 
-    buildTreeRecursive(indices, node, cpt) {
-        if (indices.length === 0 || cpt > 50) return;
-
-        cpt++;
+    buildTreeRecursive(sectors, node, cpt) {
         var children = [];
-        var elements = [];
 
-        for (let i = 0; i < indices.length; i++) {
-            var intersectingI = this.intersectingSectors(this.sectors[indices[i]], i);
-            elements.push(intersectingI);
+        if (sectors.length <= this.maxNumberLeaves || cpt > 50) {
+            node.push([sectors]);
+            return node;
         }
 
-        this.splitConnectedComponent(children, this.sectors, elements);
+        cpt++;
+        var elements = [];
+        for (let i = 0; i < sectors.length; i++) {
+            var arc = sectors[i];
+            var intersectingI = this.intersectingSectors(sectors, arc, i);
+            elements.push(intersectingI);
+        }
 
         var connectedComponents = [];
         for (let i = 0; i < elements.length; i++) {
@@ -279,34 +262,77 @@ export default class ASTree {
             connectedComponents.push(cc);
         }
         connectedComponents = this.removeDuplicates(connectedComponents);
-        var indexesToRemove = [];
+
         for (let i = 0; i < connectedComponents.length; i++) {
-            let cc = connectedComponents[i];
-            if (cc.length === 1) {
-                var indexCC = cc[0];
-                indexesToRemove.push(indexCC);
-            } else {
-                var sector = this.connectedComponentToAngularSector(cc);
-                this.addNode(sector, children);
+            var cc = connectedComponents[i];
+            if (cc.length > this.maxNumberLeaves) {
+                var splitPlanes = this.splitConnectedComponent(cc, sectors, elements);
+                for (let j = 0; j < splitPlanes.length; j++) {
+                    var splitPlane = splitPlanes[j];
+                    children.push(splitPlane);
+                    var subsectors = [];
+                    for (let k = 0; k < sectors.length; k++) {
+                        var sector = sectors[k];
+                        if (node[0].isSectorAbove(sector))
+                            subsectors.push(sector);
+                    }
+                    this.buildTreeRecursive(subsectors, children, cpt);
+                    console.log(splitPlane);
+                }
             }
         }
-        var maxIntersectArray = this.maximumIntersectingElements(elements);
-        Array.prototype.push.apply(indexesToRemove, maxIntersectArray);
-        indexesToRemove.sort();
-        for (let i = indexesToRemove.length -1; i >= 0; i--) {
-            let ind = indexesToRemove[i];
-            this.addLeaf(this.sectors[ind], children);
-            indices.splice(ind,1);
-        }
-        node.push(children);
-        //this.buildTreeRecursive(indices, children, cpt);
+        return node;
+
+
+
+
+        // cpt++;
+        // var children = [];
+        // var elements = [];
+
+        // for (let i = 0; i < indices.length; i++) {
+        //     var intersectingI = this.intersectingSectors(this.sectors[indices[i]], i);
+        //     elements.push(intersectingI);
+        // }
+
+        // this.splitConnectedComponent(children, this.sectors, elements);
+
+        // var connectedComponents = [];
+        // for (let i = 0; i < elements.length; i++) {
+        //     let cc = [];
+        //     this.connectedComponents(cc, elements, i, []);
+        //     connectedComponents.push(cc);
+        // }
+        // connectedComponents = this.removeDuplicates(connectedComponents);
+        // var indexesToRemove = [];
+        // for (let i = 0; i < connectedComponents.length; i++) {
+        //     let cc = connectedComponents[i];
+        //     if (cc.length === 1) {
+        //         var indexCC = cc[0];
+        //         indexesToRemove.push(indexCC);
+        //     } else {
+        //         var sector = this.connectedComponentToAngularSector(cc);
+        //         this.addNode(sector, children);
+        //     }
+        // }
+        // var maxIntersectArray = this.maximumIntersectingElements(elements);
+        // Array.prototype.push.apply(indexesToRemove, maxIntersectArray);
+        // indexesToRemove.sort();
+        // for (let i = indexesToRemove.length -1; i >= 0; i--) {
+        //     let ind = indexesToRemove[i];
+        //     this.addLeaf(this.sectors[ind], children);
+        //     indices.splice(ind,1);
+        // }
+        // node.push(children);
+        // //this.buildTreeRecursive(indices, children, cpt);
     }
 
     load() {
-        var length = this.sectors.length;
-        var indices = [...Array(length).keys()];
+        // var length = this.sectors.length;
+        // var indices = [...Array(length).keys()];
+        // console.log(indices);
         var cpt = 0;
-        this.buildTreeRecursive(indices, this.tree[0], cpt);
+        this.buildTreeRecursive(this.sectors, this.tree[0], cpt);
         console.log(this.tree);
     }
 

@@ -12,7 +12,6 @@ import extent from 'ol/extent';
 import Vector from 'ol/source/vector';
 import VectorLayer from 'ol/layer/vector';
 
-
 import $ from 'jquery';
 import {getRandomArbitrary, addRandomArcs, addRandomLocations} from '../../../js/lib/randomfeatures.js';
 import Arc from '../../../js/lib/arc.js';
