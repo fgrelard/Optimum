@@ -186,37 +186,38 @@ export default class ASTree {
     splitConnectedComponent(cc, arcs, elements, node) {
         var planes = [];
         var minSet = this.minimumIntersectingElements(elements);
-        for (let i = 0; i < minSet.length; i++) {
-            var m = minSet[i];
-            var arc = arcs[m];
-            var omega = arc.omega;
-            var vector = this.angleToVector(omega);
-            var orthogonalVector = [vector[1], -vector[0]];
-            var minusOV = [-orthogonalVector[0], -orthogonalVector[1]];
-            var center2 = [arc.center[0] + minusOV[0],
-                           arc.center[1] + minusOV[1]];
-            var plane = new Plane(arc.center, orthogonalVector);
-            var plane2 = new Plane(center2, minusOV);
+        // for (let i = 0; i < minSet.length; i++) {
+        //     var m = minSet[i];
+        var m = minSet[0];
+        var arc = arcs[m];
+        var omega = arc.omega;
+        var vector = this.angleToVector(omega);
+        var orthogonalVector = [vector[1], -vector[0]];
+        var minusOV = [-orthogonalVector[0], -orthogonalVector[1]];
+        var center2 = [arc.center[0] + minusOV[0],
+                       arc.center[1] + minusOV[1]];
+        var plane = new Plane(arc.center, orthogonalVector);
+        var plane2 = new Plane(center2, minusOV);
 
-            var alreadyAdded = false, alreadyAdded2 = false;
-            var parent = node;
-            while (parent) {
-                if (parent.value.center && parent.value.normal
-                    && this.arraysEqual(parent.value.center, plane.center)
-                    && this.arraysEqual(parent.value.normal, plane.normal))
-                    alreadyAdded = true;
+        var alreadyAdded = false, alreadyAdded2 = false;
+        var parent = node;
+        while (parent) {
+            if (parent.value.center && parent.value.normal
+                && this.arraysEqual(parent.value.center, plane.center)
+                && this.arraysEqual(parent.value.normal, plane.normal))
+                alreadyAdded = true;
 
-                if (parent.value.center && parent.value.normal
-                    && this.arraysEqual(parent.value.center, plane2.center)
-                    && this.arraysEqual(parent.value.normal, plane2.normal))
-                    alreadyAdded2 = true;
-                parent = parent.parent;
-            }
-            if (!alreadyAdded)
-                planes.push(plane);
-            if (!alreadyAdded2)
-                planes.push(plane2);
+            if (parent.value.center && parent.value.normal
+                && this.arraysEqual(parent.value.center, plane2.center)
+                && this.arraysEqual(parent.value.normal, plane2.normal))
+                alreadyAdded2 = true;
+            parent = parent.parent;
         }
+        if (!alreadyAdded)
+            planes.push(plane);
+        if (!alreadyAdded2)
+            planes.push(plane2);
+        // }
         return planes;
     }
 

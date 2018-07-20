@@ -51,7 +51,6 @@ function generateSectors() {
         polygon.getSource().addFeature(new Feature(arcs[i]));
     }
 
-
     return arcs;
 }
 
