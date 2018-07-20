@@ -3,9 +3,52 @@ import {halfLineIntersection, segmentIntersection} from './lineintersection.js';
 import {euclideanDistance} from './distance.js';
 import Plane from './plane.js';
 
+class Node {
+    constructor(value)  {
+        this.value = value;
+        this.children = [];
+        this.parent = null;
+    }
+
+    setParentNode(node) {
+        this.parent = node;
+    }
+
+    getParentNode() {
+        return this.parent;
+    }
+
+    addChild(node) {
+        node.setParentNode(this);
+        this.children[this.children.length] = node;
+    }
+
+    getChildren() {
+        return this.children;
+    }
+
+    removeChildren () {
+        this.children = [];
+    }
+
+    toString() {
+        var str = this.value.toString();
+        var children = this.children;
+
+        for (var i = 0; i < children.length; i++) {
+            var child = children[i];
+            str += child.toString() + "\n";
+        }
+        str += "\n\n";
+
+        return str;
+    }
+}
+
 export default class ASTree {
+
     constructor(sectors, n = 2) {
-        this.tree = [ [ new Plane([0,0], [0,0]) ] ];
+        this.tree = new Node(new Plane([0,0], [0,0]));
         this.sectors = sectors;
         this.maxNumberLeaves = n;
     }
@@ -48,41 +91,6 @@ export default class ASTree {
         return intersectionIndexes;
     }
 
-    intersectionWithOtherSectors(index, sectors, alpha) {
-        var sector = sectors[index];
-        var f = sector.center;
-        var la;
-        if (alpha)
-            la = sector.fullGeometry[1].getFlatCoordinates();
-        else
-            la = sector.fullGeometry[2].getFlatCoordinates();
-        var length = this.sectors.length;
-        var intersections = [];
-        for (var i = 0; i < length; i++) {
-            if (i === index) continue;
-            var sectorOther = this.sectors[i];
-            var fOther = sectorOther.center;
-            var laOther = sectorOther.fullGeometry[1].getFlatCoordinates();
-            var loOther = sectorOther.fullGeometry[2].getFlatCoordinates();
-            var i1 = halfLineIntersection(f[0], f[1],
-                                          la[0], la[1],
-                                          fOther[0], fOther[1],
-                                          laOther[0], laOther[1]);
-            var i2 = halfLineIntersection(f[0], f[1],
-                                          la[0], la[1],
-                                          fOther[0], fOther[1],
-                                          loOther[0], loOther[1]);
-            if (i1) {
-                intersections.push({p: fOther, i: [i1.x, i1.y]});
-            }
-            else if (i2) {
-                intersections.push({p: fOther, i: [i2.x, i2.y]});
-            }
-
-        }
-        return intersections;
-    }
-
     connectedComponents(cc, elements, index, knownIndices) {
         if (knownIndices.indexOf(index) >= 0 || index >= elements.length) return;
         knownIndices.push(index);
@@ -117,20 +125,6 @@ export default class ASTree {
         return unique;
     }
 
-    maximumIntersectingElements(elements) {
-        var maxElements = [];
-        var maxLength = 0;
-        for (let i = 0; i < elements.length; i++) {
-            if (elements[i].length > maxLength)
-                maxLength = elements[i].length;
-        }
-        for (let i = 0; i < elements.length; i++) {
-            if (elements[i].length === maxLength)
-                maxElements.push(i);
-        }
-        return maxElements;
-    }
-
 
     minimumIntersectingElements(elements) {
         var minElements = [];
@@ -144,16 +138,6 @@ export default class ASTree {
                 minElements.push(i);
         }
         return minElements;
-    }
-
-
-
-    addNode(element, parentNode) {
-        parentNode.push([element]);
-    }
-
-    addLeaf(element, parentNode) {
-        parentNode.push(element);
     }
 
     angleToVector(angle) {
@@ -199,7 +183,7 @@ export default class ASTree {
         return position;
     }
 
-    splitConnectedComponent(cc, arcs, elements) {
+    splitConnectedComponent(cc, arcs, elements, node) {
         var planes = [];
         var minSet = this.minimumIntersectingElements(elements);
         for (let i = 0; i < minSet.length; i++) {
@@ -208,8 +192,30 @@ export default class ASTree {
             var omega = arc.omega;
             var vector = this.angleToVector(omega);
             var orthogonalVector = [vector[1], -vector[0]];
+            var minusOV = [-orthogonalVector[0], -orthogonalVector[1]];
+            var center2 = [arc.center[0] + minusOV[0],
+                           arc.center[1] + minusOV[1]];
             var plane = new Plane(arc.center, orthogonalVector);
-            planes.push(plane);
+            var plane2 = new Plane(center2, minusOV);
+
+            var alreadyAdded = false, alreadyAdded2 = false;
+            var parent = node;
+            while (parent) {
+                if (parent.value.center && parent.value.normal
+                    && this.arraysEqual(parent.value.center, plane.center)
+                    && this.arraysEqual(parent.value.normal, plane.normal))
+                    alreadyAdded = true;
+
+                if (parent.value.center && parent.value.normal
+                    && this.arraysEqual(parent.value.center, plane2.center)
+                    && this.arraysEqual(parent.value.normal, plane2.normal))
+                    alreadyAdded2 = true;
+                parent = parent.parent;
+            }
+            if (!alreadyAdded)
+                planes.push(plane);
+            if (!alreadyAdded2)
+                planes.push(plane2);
         }
         return planes;
     }
@@ -240,18 +246,20 @@ export default class ASTree {
     }
 
     buildTreeRecursive(sectors, node, cpt) {
-        var children = [];
-
         if (sectors.length <= this.maxNumberLeaves || cpt > 50) {
-            node.push([sectors]);
+            var nodes = [];
+            for (var i  = 0; i < sectors.length; i++) {
+                let child = new Node(sectors[i]);
+                node.addChild(child);
+            }
             return node;
         }
 
         cpt++;
         var elements = [];
         for (let i = 0; i < sectors.length; i++) {
-            var arc = sectors[i];
-            var intersectingI = this.intersectingSectors(sectors, arc, i);
+            let arc = sectors[i];
+            let intersectingI = this.intersectingSectors(sectors, arc, i);
             elements.push(intersectingI);
         }
 
@@ -262,22 +270,22 @@ export default class ASTree {
             connectedComponents.push(cc);
         }
         connectedComponents = this.removeDuplicates(connectedComponents);
-
         for (let i = 0; i < connectedComponents.length; i++) {
             var cc = connectedComponents[i];
             if (cc.length > this.maxNumberLeaves) {
-                var splitPlanes = this.splitConnectedComponent(cc, sectors, elements);
+                var splitPlanes = this.splitConnectedComponent(cc, sectors, elements, node);
                 for (let j = 0; j < splitPlanes.length; j++) {
-                    var splitPlane = splitPlanes[j];
-                    children.push(splitPlane);
-                    var subsectors = [];
+                    let splitPlane = splitPlanes[j];
+                    let child = new Node(splitPlane);
+                    child.setParentNode(node);
+                    let subsectors = [];
                     for (let k = 0; k < sectors.length; k++) {
-                        var sector = sectors[k];
-                        if (node[0].isSectorAbove(sector))
+                        let sector = sectors[k];
+                        if (splitPlane.isSectorAbove(sector))
                             subsectors.push(sector);
                     }
-                    this.buildTreeRecursive(subsectors, children, cpt);
-                    console.log(splitPlane);
+                    this.buildTreeRecursive(subsectors, child, cpt);
+                    node.addChild(child);
                 }
             }
         }
@@ -332,7 +340,7 @@ export default class ASTree {
         // var indices = [...Array(length).keys()];
         // console.log(indices);
         var cpt = 0;
-        this.buildTreeRecursive(this.sectors, this.tree[0], cpt);
+        this.buildTreeRecursive(this.sectors, this.tree, cpt);
         console.log(this.tree);
     }
 
