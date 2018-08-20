@@ -3,18 +3,23 @@ import {halfLineIntersection} from './lineintersection.js';
 export default class Plane {
     constructor(center, normal) {
         this.center = center;
-        this.normal = normal;
+        this.normal = normal.slice();
+        console.log(this.center);
     }
 
     isAbove(p) {
         var d = this.normal[0] * this.center[0] + this.normal[1] * this.center[1];
 	    var valueToCheckForPlane = p[0] * this.normal[0] + p[1] * this.normal[1];
+        if (this.center[0] >= 4.65 && this.center[0] < 5)
+            console.log(this.center);
 	    return (valueToCheckForPlane >= d);
     }
 
     isSectorAbove(arc) {
         var isPointAbove = this.isAbove(arc.center);
+
         if (isPointAbove) return true;
+
 
         if (!arc.fullGeometry) {
             arc.computeGeometry();
@@ -33,11 +38,11 @@ export default class Plane {
                                       fPlane[0], fPlane[1],
                                       lPlane[0], lPlane[1]);
         var i2 = halfLineIntersection(f[0], f[1],
-                                      la[0], la[1],
+                                      lo[0], lo[1],
                                       fPlane[0], fPlane[1],
                                       lPlane[0], lPlane[1]);
-        var isSectorAbove = i1 || i2;
-        return !!isSectorAbove;
+        var sectorAbove = i1 || i2;
+        return sectorAbove;
     }
 
     toString() {

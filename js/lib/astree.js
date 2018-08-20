@@ -107,10 +107,12 @@ export default class ASTree {
         if (a == null || b == null) return false;
         if (a.length != b.length) return false;
 
-        a.sort();
-        b.sort();
-        for (var i = 0; i < a.length; ++i) {
-            if (a[i] !== b[i]) return false;
+        var copyA = a.slice();
+        copyA.sort();
+        var copyB = b.slice();
+        copyB.sort();
+        for (var i = 0; i < copyA.length; ++i) {
+            if (copyA[i] !== copyB[i]) return false;
         }
         return true;
     }
@@ -192,13 +194,14 @@ export default class ASTree {
         var arc = arcs[m];
         var omega = arc.omega;
         var vector = this.angleToVector(omega);
+
         var orthogonalVector = [vector[1], -vector[0]];
         var minusOV = [-orthogonalVector[0], -orthogonalVector[1]];
         var center2 = [arc.center[0] + minusOV[0],
                        arc.center[1] + minusOV[1]];
         var plane = new Plane(arc.center, orthogonalVector);
         var plane2 = new Plane(center2, minusOV);
-
+        console.log(plane2);
         var alreadyAdded = false, alreadyAdded2 = false;
         var parent = node;
         while (parent) {
@@ -253,7 +256,7 @@ export default class ASTree {
                 let child = new Node(sectors[i]);
                 node.addChild(child);
             }
-            return node;
+            return;
         }
 
         cpt++;
@@ -282,15 +285,18 @@ export default class ASTree {
                     let subsectors = [];
                     for (let k = 0; k < sectors.length; k++) {
                         let sector = sectors[k];
-                        if (splitPlane.isSectorAbove(sector))
+                        let isAbove = splitPlane.isSectorAbove(sector);
+                        if (isAbove) {
                             subsectors.push(sector);
+                        }
                     }
+
                     this.buildTreeRecursive(subsectors, child, cpt);
                     node.addChild(child);
                 }
             }
         }
-        return node;
+        return;
 
 
 
