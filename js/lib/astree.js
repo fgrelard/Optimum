@@ -51,6 +51,7 @@ export default class ASTree {
         this.tree = new Node(new Plane([0,0], [0,0]));
         this.sectors = sectors;
         this.maxNumberLeaves = n;
+        this.addedPlanes = [];
     }
 
 
@@ -136,9 +137,29 @@ export default class ASTree {
                 minLength = elements[i].length;
         }
         for (let i = 0; i < elements.length; i++) {
-            if (elements[i].length === minLength)
+            if (elements[i].length === minLength) {
                 minElements.push(i);
+            }
         }
+        //Sorting minElements by max difference between omegas (central element) in ascending order
+        var diffOmegas = [];
+        for (let i = 0; i < minElements.length; i++) {
+            var omegaCurrent = this.sectors[minElements[i]].omega;
+            var maxDiffOmega = 0;
+            for (let j = 0; j < minElements.length; j++) {
+                var omegaOther = this.sectors[minElements[j]].omega;
+                var diff = Math.abs(omegaCurrent - omegaOther);
+                if (diff > maxDiffOmega) {
+                    maxDiffOmega = diff;
+                }
+            }
+            diffOmegas.push(maxDiffOmega);
+        }
+        minElements.sort(function(a,b) {
+            var i1 = minElements.indexOf(a);
+            var i2 = minElements.indexOf(b);
+            return (diffOmegas[i1] - diffOmegas[i2]);
+        });
         return minElements;
     }
 
@@ -188,9 +209,16 @@ export default class ASTree {
     splitConnectedComponent(cc, arcs, elements, node) {
         var planes = [];
         var minSet = this.minimumIntersectingElements(elements);
-        // for (let i = 0; i < minSet.length; i++) {
-        //     var m = minSet[i];
-        var m = minSet[0];
+        var index = 0;
+        //Choose another element if already in tree
+        do {
+            var m = minSet[index];
+            index++;
+        } while (this.addedPlanes.indexOf(m) !== -1 && index < minSet.length);
+        this.addedPlanes.push(m);
+        // console.log("elements");
+        // console.log(elements);
+        // console.log(this.addedPlanes);
         var arc = arcs[m];
         var omega = arc.omega;
         var vector = this.angleToVector(omega);
@@ -201,7 +229,6 @@ export default class ASTree {
                        arc.center[1] + minusOV[1]];
         var plane = new Plane(arc.center, orthogonalVector);
         var plane2 = new Plane(center2, minusOV);
-        console.log(plane2);
         var alreadyAdded = false, alreadyAdded2 = false;
         var parent = node;
         while (parent) {
@@ -220,7 +247,6 @@ export default class ASTree {
             planes.push(plane);
         if (!alreadyAdded2)
             planes.push(plane2);
-        // }
         return planes;
     }
 

@@ -185,6 +185,29 @@ export function halfLineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
 }
 
 /**
+ * Intersection line
+ * @param {} x1 First segment first point x
+ * @param {} y1 First segment first point y
+ * @param {} x2 First segment second point x
+ * @param {} y2 First segment second point y
+ * @param {} x3 Second segment first point x
+ * @param {} y3 Second segment first point y
+ * @param {} x4 Second segment second point x
+ * @param {} y4 Second segment second point y
+ * @returns {} the intersection, if it exists
+ */
+export function lineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
+    var x=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4)) /
+            ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+    var y=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4)) /
+        ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+    if (isNaN(x)||isNaN(y)) {
+        return false;
+    }
+    return {x: x,y: y};
+}
+
+/**
  * Helper function to check if there is intersection between two segments represented as linestring objects
  * @param {} s1 first linestring segment
  * @param {} s2 second linestring segment
