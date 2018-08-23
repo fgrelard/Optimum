@@ -142,24 +142,25 @@ export default class ASTree {
             }
         }
         //Sorting minElements by max difference between omegas (central element) in ascending order
-        var diffOmegas = [];
-        for (let i = 0; i < minElements.length; i++) {
-            var omegaCurrent = this.sectors[minElements[i]].omega;
-            var maxDiffOmega = 0;
-            for (let j = 0; j < minElements.length; j++) {
-                var omegaOther = this.sectors[minElements[j]].omega;
-                var diff = Math.abs(omegaCurrent - omegaOther);
-                if (diff > maxDiffOmega) {
-                    maxDiffOmega = diff;
-                }
-            }
-            diffOmegas.push(maxDiffOmega);
-        }
-        minElements.sort(function(a,b) {
-            var i1 = minElements.indexOf(a);
-            var i2 = minElements.indexOf(b);
-            return (diffOmegas[i1] - diffOmegas[i2]);
-        });
+        // var diffOmegas = [];
+        // for (let i = 0; i < minElements.length; i++) {
+        //     var omegaCurrent = this.sectors[minElements[i]].omega;
+
+        //     var maxDiffOmega = 0;
+        //     for (let j = 0; j < minElements.length; j++) {
+        //         var omegaOther = this.sectors[minElements[j]].omega;
+        //         var diff = Math.abs(omegaCurrent - omegaOther);
+        //         if (diff > maxDiffOmega) {
+        //             maxDiffOmega = diff;
+        //         }
+        //     }
+        //     diffOmegas.push(maxDiffOmega);
+        // }
+        // minElements.sort(function(a,b) {
+        //     var i1 = minElements.indexOf(a);
+        //     var i2 = minElements.indexOf(b);
+        //     return (diffOmegas[i1] - diffOmegas[i2]);
+        // });
         return minElements;
     }
 
@@ -209,44 +210,62 @@ export default class ASTree {
     splitConnectedComponent(cc, arcs, elements, node) {
         var planes = [];
         var minSet = this.minimumIntersectingElements(elements);
-        var index = 0;
-        //Choose another element if already in tree
-        do {
-            var m = minSet[index];
-            index++;
-        } while (this.addedPlanes.indexOf(m) !== -1 && index < minSet.length);
-        this.addedPlanes.push(m);
-        // console.log("elements");
-        // console.log(elements);
-        // console.log(this.addedPlanes);
-        var arc = arcs[m];
-        var omega = arc.omega;
-        var vector = this.angleToVector(omega);
-
-        var orthogonalVector = [vector[1], -vector[0]];
-        var minusOV = [-orthogonalVector[0], -orthogonalVector[1]];
-        var center2 = [arc.center[0] + minusOV[0],
-                       arc.center[1] + minusOV[1]];
-        var plane = new Plane(arc.center, orthogonalVector);
-        var plane2 = new Plane(center2, minusOV);
-        var alreadyAdded = false, alreadyAdded2 = false;
-        var parent = node;
-        while (parent) {
-            if (parent.value.center && parent.value.normal
-                && this.arraysEqual(parent.value.center, plane.center)
-                && this.arraysEqual(parent.value.normal, plane.normal))
-                alreadyAdded = true;
-
-            if (parent.value.center && parent.value.normal
-                && this.arraysEqual(parent.value.center, plane2.center)
-                && this.arraysEqual(parent.value.normal, plane2.normal))
-                alreadyAdded2 = true;
-            parent = parent.parent;
+        var m = -1;
+        var minCpt = Number.MAX_VALUE;
+        var firstPlane, secondPlane;
+        if (node.value.center[0] === 3) {
+            console.log(arcs);
         }
-        if (!alreadyAdded)
-            planes.push(plane);
-        if (!alreadyAdded2)
-            planes.push(plane2);
+        for (let i = 0; i < minSet.length; i++) {
+            var index = minSet[i];
+            if (this.addedPlanes.indexOf(index) !== -1) continue;
+            var arc = arcs[index];
+            var omega = arc.omega;
+            var vector = this.angleToVector(omega);
+
+            var orthogonalVector = [vector[1], -vector[0]];
+            var minusOV = [-orthogonalVector[0], -orthogonalVector[1]];
+            var center2 = [arc.center[0] + minusOV[0],
+                           arc.center[1] + minusOV[1]];
+            var plane = new Plane(arc.center, orthogonalVector);
+            var plane2 = new Plane(center2, minusOV);
+            var alreadyAdded = false, alreadyAdded2 = false;
+            for (let j = 0; j < arcs.length; j++) {
+                var cpt = 0, cpt2 = 0;
+                if (plane.isSectorAbove(arcs[j]))
+                    cpt++;
+                if (plane2.isSectorAbove(arcs[j]))
+                    cpt2++;
+                if (cpt < minCpt || cpt2 < minCpt) {
+                    minCpt = (cpt < cpt2) ? cpt : cpt2 ;
+                    m = index;
+                    firstPlane = plane;
+                    secondPlane = plane2;
+                }
+            }
+        }
+
+            // var parent = node;
+            // while (parent) {
+            //     if (parent.value.center && parent.value.normal
+            //         && this.arraysEqual(parent.value.center, plane.center)
+            //         && this.arraysEqual(parent.value.normal, plane.normal))
+            //         alreadyAdded = true;
+
+            //     if (parent.value.center && parent.value.normal
+            //         && this.arraysEqual(parent.value.center, plane2.center)
+            //         && this.arraysEqual(parent.value.normal, plane2.normal))
+            //         alreadyAdded2 = true;
+            //     parent = parent.parent;
+            // }
+
+        if (m !== -1){
+            this.addedPlanes.push(m);
+            // if (!alreadyAdded)
+            planes.push(firstPlane);
+            // if (!alreadyAdded2)
+            planes.push(secondPlane);
+        }
         return planes;
     }
 
