@@ -19,8 +19,10 @@ class Node {
     }
 
     addChild(node) {
-        node.setParentNode(this);
-        this.children[this.children.length] = node;
+        if (!this.hasChild(node)) {
+            node.setParentNode(this);
+            this.children[this.children.length] = node;
+        }
     }
 
     getChildren() {
@@ -29,6 +31,18 @@ class Node {
 
     removeChildren () {
         this.children = [];
+    }
+
+    hasChild(child) {
+        var childV = child.value;
+        for (let i = 0; i < this.children.length; i++) {
+            var currentChildV = this.children[i].value;
+            if (currentChildV.alpha && currentChildV.alpha === childV.alpha &&
+                currentChildV.omega && currentChildV.omega === childV.omega &&
+                currentChildV.center && currentChildV.center[0] === childV.center[0] && currentChildV.center[1] === childV.center[1])
+                return true;
+        }
+        return false;
     }
 
     toString() {
@@ -262,9 +276,9 @@ export default class ASTree {
         if (m !== -1){
             this.addedPlanes.push(m);
             // if (!alreadyAdded)
-            planes.push(firstPlane);
+            planes.push({plane: firstPlane, index: m});
             // if (!alreadyAdded2)
-            planes.push(secondPlane);
+            planes.push({plane: secondPlane, index: m});
         }
         return planes;
     }
@@ -294,6 +308,8 @@ export default class ASTree {
         return new Arc(position, 1, minAlpha, maxOmega);
     }
 
+
+
     buildTreeRecursive(sectors, node, cpt) {
         if (sectors.length <= this.maxNumberLeaves || cpt > 50) {
             var nodes = [];
@@ -303,6 +319,8 @@ export default class ASTree {
             }
             return;
         }
+
+
 
         cpt++;
         var elements = [];
@@ -319,14 +337,19 @@ export default class ASTree {
             connectedComponents.push(cc);
         }
         connectedComponents = this.removeDuplicates(connectedComponents);
+
         for (let i = 0; i < connectedComponents.length; i++) {
             var cc = connectedComponents[i];
             if (cc.length > this.maxNumberLeaves) {
                 var splitPlanes = this.splitConnectedComponent(cc, sectors, elements, node);
                 for (let j = 0; j < splitPlanes.length; j++) {
-                    let splitPlane = splitPlanes[j];
+                    let splitPlane = splitPlanes[j].plane;
                     let child = new Node(splitPlane);
                     child.setParentNode(node);
+                    if (j === 0) {
+                        let index = splitPlanes[j].index;
+                        child.addChild(new Node(sectors[index]));
+                    }
                     let subsectors = [];
                     for (let k = 0; k < sectors.length; k++) {
                         let sector = sectors[k];
