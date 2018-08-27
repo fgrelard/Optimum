@@ -227,9 +227,7 @@ export default class ASTree {
         var m = -1;
         var minCpt = Number.MAX_VALUE;
         var firstPlane, secondPlane;
-        if (node.value.center[0] === 3) {
-            console.log(arcs);
-        }
+
         for (let i = 0; i < minSet.length; i++) {
             var index = minSet[i];
             if (this.addedPlanes.indexOf(index) !== -1) continue;
@@ -310,8 +308,12 @@ export default class ASTree {
 
 
 
-    buildTreeRecursive(sectors, node, cpt) {
-        if (sectors.length <= this.maxNumberLeaves || cpt > 50) {
+    buildTreeRecursive(sectors, node, indices) {
+        var that = this;
+        var leaf = indices.every(function(element) {
+            return that.addedPlanes.indexOf(element) !== -1;
+        });
+        if (sectors.length <= this.maxNumberLeaves || leaf) {
             var nodes = [];
             for (var i  = 0; i < sectors.length; i++) {
                 let child = new Node(sectors[i]);
@@ -320,9 +322,7 @@ export default class ASTree {
             return;
         }
 
-
-
-        cpt++;
+        console.log(this.addedPlanes);
         var elements = [];
         for (let i = 0; i < sectors.length; i++) {
             let arc = sectors[i];
@@ -337,7 +337,6 @@ export default class ASTree {
             connectedComponents.push(cc);
         }
         connectedComponents = this.removeDuplicates(connectedComponents);
-
         for (let i = 0; i < connectedComponents.length; i++) {
             var cc = connectedComponents[i];
             if (cc.length > this.maxNumberLeaves) {
@@ -346,10 +345,10 @@ export default class ASTree {
                     let splitPlane = splitPlanes[j].plane;
                     let child = new Node(splitPlane);
                     child.setParentNode(node);
-                    if (j === 0) {
-                        let index = splitPlanes[j].index;
-                        child.addChild(new Node(sectors[index]));
-                    }
+                    // if (j === 0) {
+                    //     let index = splitPlanes[j].index;
+                    //     child.addChild(new Node(sectors[index]));
+                    // }
                     let subsectors = [];
                     for (let k = 0; k < sectors.length; k++) {
                         let sector = sectors[k];
@@ -359,64 +358,49 @@ export default class ASTree {
                         }
                     }
 
-                    this.buildTreeRecursive(subsectors, child, cpt);
+                    this.buildTreeRecursive(subsectors, child, cc);
                     node.addChild(child);
+                }
+            }
+            else {
+                for (let i = 0; i < cc.length; i++)  {
+                    node.addChild(new Node(sectors[cc[i]]));
                 }
             }
         }
         return;
+    }
 
+    searchRecursive(p, node) {
+        var childLeft = node.children[0];
+        var childRight = node.children[1];
+        //If it is a sector, return all sectors from this node
+        if (childLeft.value.alpha && childLeft.value.omega && childLeft.value.center) {
+            return node.children;
+        }
+        if (childLeft.value.isAbove(p)) {
+            console.log("left");
+            return this.searchRecursive(p, childLeft);
+        }
+        else {
+            console.log("right");
+            return this.searchRecursive(p, childRight);
+        }
 
+    }
 
-
-        // cpt++;
-        // var children = [];
-        // var elements = [];
-
-        // for (let i = 0; i < indices.length; i++) {
-        //     var intersectingI = this.intersectingSectors(this.sectors[indices[i]], i);
-        //     elements.push(intersectingI);
-        // }
-
-        // this.splitConnectedComponent(children, this.sectors, elements);
-
-        // var connectedComponents = [];
-        // for (let i = 0; i < elements.length; i++) {
-        //     let cc = [];
-        //     this.connectedComponents(cc, elements, i, []);
-        //     connectedComponents.push(cc);
-        // }
-        // connectedComponents = this.removeDuplicates(connectedComponents);
-        // var indexesToRemove = [];
-        // for (let i = 0; i < connectedComponents.length; i++) {
-        //     let cc = connectedComponents[i];
-        //     if (cc.length === 1) {
-        //         var indexCC = cc[0];
-        //         indexesToRemove.push(indexCC);
-        //     } else {
-        //         var sector = this.connectedComponentToAngularSector(cc);
-        //         this.addNode(sector, children);
-        //     }
-        // }
-        // var maxIntersectArray = this.maximumIntersectingElements(elements);
-        // Array.prototype.push.apply(indexesToRemove, maxIntersectArray);
-        // indexesToRemove.sort();
-        // for (let i = indexesToRemove.length -1; i >= 0; i--) {
-        //     let ind = indexesToRemove[i];
-        //     this.addLeaf(this.sectors[ind], children);
-        //     indices.splice(ind,1);
-        // }
-        // node.push(children);
-        // //this.buildTreeRecursive(indices, children, cpt);
+    search(p) {
+        return this.searchRecursive(p, this.tree);
     }
 
     load() {
-        // var length = this.sectors.length;
-        // var indices = [...Array(length).keys()];
+        var length = this.sectors.length;
+        var indices = [...Array(length).keys()];
         // console.log(indices);
-        var cpt = 0;
-        this.buildTreeRecursive(this.sectors, this.tree, cpt);
+        this.buildTreeRecursive(this.sectors, this.tree, indices);
         console.log(this.tree);
+
+        console.log(this.search([-10, 6]));
     }
 
 }
