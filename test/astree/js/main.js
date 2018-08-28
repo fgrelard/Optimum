@@ -44,7 +44,10 @@ function generateSectors() {
     var arcs = [new Arc([5,5], 100, 200, 250),
                 new Arc([2,2], 100, 190, 230),
                 new Arc([3,3], 100, 215, 260),
-                new Arc([2,7], 100, 180, 200)];
+                new Arc([2,7], 100, 180, 200),
+                new Arc([6,6], 100, 0, 45),
+                new Arc([6,4], 100, 290, 330)
+               ];
 
     for (var i  = 0; i < arcs.length; i++) {
         arcs[i].computeGeometry();

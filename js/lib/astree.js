@@ -155,27 +155,31 @@ export default class ASTree {
                 minElements.push(i);
             }
         }
-        //Sorting minElements by max difference between omegas (central element) in ascending order
-        // var diffOmegas = [];
-        // for (let i = 0; i < minElements.length; i++) {
-        //     var omegaCurrent = this.sectors[minElements[i]].omega;
-
-        //     var maxDiffOmega = 0;
-        //     for (let j = 0; j < minElements.length; j++) {
-        //         var omegaOther = this.sectors[minElements[j]].omega;
-        //         var diff = Math.abs(omegaCurrent - omegaOther);
-        //         if (diff > maxDiffOmega) {
-        //             maxDiffOmega = diff;
-        //         }
-        //     }
-        //     diffOmegas.push(maxDiffOmega);
-        // }
-        // minElements.sort(function(a,b) {
-        //     var i1 = minElements.indexOf(a);
-        //     var i2 = minElements.indexOf(b);
-        //     return (diffOmegas[i1] - diffOmegas[i2]);
-        // });
         return minElements;
+    }
+
+    middleAngleElement(arcs) {
+        var diffOmegas = [];
+        for (let i = 0; i < arcs.length; i++) {
+            var omegaCurrent = arcs[i].omega;
+
+            var maxDiffOmega = 0;
+            for (let j = 0; j < arcs.length; j++) {
+                var omegaOther = arcs[j].omega;
+                var diff = Math.abs(omegaCurrent - omegaOther);
+                if (diff > maxDiffOmega) {
+                    maxDiffOmega = diff;
+                }
+            }
+            diffOmegas.push(maxDiffOmega);
+        }
+        var index = -1;
+        var minDiff = Number.MAX_VALUE;
+        var indices = [...Array(arcs.length).keys()];
+        indices.sort(function(a,b) {
+            return diffOmegas[a] - diffOmegas[b];
+        });
+        return indices;
     }
 
     angleToVector(angle) {
@@ -221,16 +225,14 @@ export default class ASTree {
         return position;
     }
 
-    splitConnectedComponent(cc, arcs, elements, node) {
+    splitConnectedComponent(arcs, elements) {
         var planes = [];
-        var minSet = this.minimumIntersectingElements(elements);
         var m = -1;
         var minCpt = Number.MAX_VALUE;
         var firstPlane, secondPlane;
 
-        for (let i = 0; i < minSet.length; i++) {
-            var index = minSet[i];
-            if (this.addedPlanes.indexOf(index) !== -1) continue;
+        for (let i = 0; i < elements.length; i++) {
+            var index = elements[i];
             var arc = arcs[index];
             var omega = arc.omega;
             var vector = this.angleToVector(omega);
@@ -241,7 +243,14 @@ export default class ASTree {
                            arc.center[1] + minusOV[1]];
             var plane = new Plane(arc.center, orthogonalVector);
             var plane2 = new Plane(center2, minusOV);
-            var alreadyAdded = false, alreadyAdded2 = false;
+            var found = this.addedPlanes.findIndex(function(op) {
+                return ((plane.center[0]).toFixed(2) === (op.center[0]).toFixed(2) &&
+                        (plane.center[1]).toFixed(2) === (op.center[1]).toFixed(2) &&
+                        (plane.normal[0]).toFixed(2) === (op.normal[0]).toFixed(2) &&
+                        (plane.normal[1]).toFixed(2) === (op.normal[1]).toFixed(2));
+            });
+            if (found > -1) continue;
+
             for (let j = 0; j < arcs.length; j++) {
                 var cpt = 0, cpt2 = 0;
                 if (plane.isSectorAbove(arcs[j]))
@@ -257,25 +266,9 @@ export default class ASTree {
             }
         }
 
-            // var parent = node;
-            // while (parent) {
-            //     if (parent.value.center && parent.value.normal
-            //         && this.arraysEqual(parent.value.center, plane.center)
-            //         && this.arraysEqual(parent.value.normal, plane.normal))
-            //         alreadyAdded = true;
-
-            //     if (parent.value.center && parent.value.normal
-            //         && this.arraysEqual(parent.value.center, plane2.center)
-            //         && this.arraysEqual(parent.value.normal, plane2.normal))
-            //         alreadyAdded2 = true;
-            //     parent = parent.parent;
-            // }
-
-        if (m !== -1){
-            this.addedPlanes.push(m);
-            // if (!alreadyAdded)
+        if (m !== -1) {
+            this.addedPlanes.push(firstPlane);
             planes.push({plane: firstPlane, index: m});
-            // if (!alreadyAdded2)
             planes.push({plane: secondPlane, index: m});
         }
         return planes;
@@ -306,14 +299,58 @@ export default class ASTree {
         return new Arc(position, 1, minAlpha, maxOmega);
     }
 
+    buildTreeRecursive(ccSectors, node, cc, indices) {
+        if (indices.length === 0) return;
+
+        var currentCCSectors = [];
+        for (let i = 0; i < indices.length; i++) {
+            let cs = ccSectors[indices[i]];
+            currentCCSectors.push(cs);
+        }
+        if (indices.length === 1) {
+            let currentSectors = [];
+            let ccIndices = cc[indices[0]];
+            for (let i = 0; i < ccIndices.length; i++) {
+                currentSectors.push(this.sectors[ccIndices[i]]);
+            }
+            this.separateIntersectingSectors(currentSectors, node, ccIndices);
+            return;
+        }
+        var middle = this.middleAngleElement(currentCCSectors);
+        var planes = this.splitConnectedComponent(currentCCSectors, middle);
+        var firstPlane = planes[0].plane;
+        var secondPlane = planes[1].plane;
+        var firstChild = new Node(firstPlane);
+        var secondChild = new Node(secondPlane);
+
+        var firstSectors = [], secondSectors = [];
+        for (let i = 0; i < indices.length; i++) {
+            let index = indices[i];
+            let cc = ccSectors[index];
+            if (firstPlane.isSectorAbove(cc))
+                firstSectors.push(index);
+            else
+                secondSectors.push(index);
+        }
+        if (firstSectors.length > 0 && secondSectors.length > 0) {
+            node.addChild(firstChild);
+            node.addChild(secondChild);
+        } else { //Plane does not allow separation of angular sectors
+            firstChild = node;
+            secondChild = node;
+        }
+        this.buildTreeRecursive(ccSectors, firstChild, cc, firstSectors);
+        this.buildTreeRecursive(ccSectors, secondChild, cc, secondSectors);
+    }
 
 
-    buildTreeRecursive(sectors, node, indices) {
+
+    separateIntersectingSectors(sectors, node, cc) {
         var that = this;
-        var leaf = indices.every(function(element) {
+        var isLeaf = cc.every(function(element) {
             return that.addedPlanes.indexOf(element) !== -1;
         });
-        if (sectors.length <= this.maxNumberLeaves || leaf) {
+        if (sectors.length <= this.maxNumberLeaves || isLeaf) {
             var nodes = [];
             for (var i  = 0; i < sectors.length; i++) {
                 let child = new Node(sectors[i]);
@@ -321,12 +358,52 @@ export default class ASTree {
             }
             return;
         }
-
-        console.log(this.addedPlanes);
         var elements = [];
         for (let i = 0; i < sectors.length; i++) {
             let arc = sectors[i];
             let intersectingI = this.intersectingSectors(sectors, arc, i);
+            elements.push(intersectingI);
+        }
+
+        if (cc.length > this.maxNumberLeaves) {
+            var minSet = this.minimumIntersectingElements(elements);
+            var splitPlanes = this.splitConnectedComponent(sectors, minSet);
+            for (let j = 0; j < splitPlanes.length; j++) {
+                let splitPlane = splitPlanes[j].plane;
+                let index = splitPlanes[j].index;
+                let sector = sectors[index];
+                let child = new Node(splitPlane);
+                child.setParentNode(node);
+                // Left child
+                if (j === 0) {
+                    child.addChild(new Node(sector));
+                }
+                let subsectors = [];
+                for (let k = 0; k < sectors.length; k++) {
+                    let sector = sectors[k];
+                    let isAbove = splitPlane.isSectorAbove(sector);
+                    if (isAbove) {
+                        subsectors.push(sector);
+                    }
+                }
+
+                this.separateIntersectingSectors(subsectors, child, cc);
+                node.addChild(child);
+            }
+        }
+        else {
+            for (let i = 0; i < cc.length; i++)  {
+                node.addChild(new Node(sectors[cc[i]]));
+            }
+        }
+        return;
+    }
+
+    buildTree() {
+        var elements = [];
+        for (let i = 0; i < this.sectors.length; i++) {
+            let arc = this.sectors[i];
+            let intersectingI = this.intersectingSectors(this.sectors, arc, i);
             elements.push(intersectingI);
         }
 
@@ -337,38 +414,16 @@ export default class ASTree {
             connectedComponents.push(cc);
         }
         connectedComponents = this.removeDuplicates(connectedComponents);
-        for (let i = 0; i < connectedComponents.length; i++) {
-            var cc = connectedComponents[i];
-            if (cc.length > this.maxNumberLeaves) {
-                var splitPlanes = this.splitConnectedComponent(cc, sectors, elements, node);
-                for (let j = 0; j < splitPlanes.length; j++) {
-                    let splitPlane = splitPlanes[j].plane;
-                    let child = new Node(splitPlane);
-                    child.setParentNode(node);
-                    // if (j === 0) {
-                    //     let index = splitPlanes[j].index;
-                    //     child.addChild(new Node(sectors[index]));
-                    // }
-                    let subsectors = [];
-                    for (let k = 0; k < sectors.length; k++) {
-                        let sector = sectors[k];
-                        let isAbove = splitPlane.isSectorAbove(sector);
-                        if (isAbove) {
-                            subsectors.push(sector);
-                        }
-                    }
 
-                    this.buildTreeRecursive(subsectors, child, cc);
-                    node.addChild(child);
-                }
-            }
-            else {
-                for (let i = 0; i < cc.length; i++)  {
-                    node.addChild(new Node(sectors[cc[i]]));
-                }
-            }
+        var connectedSectors = [];
+        for (let i = 0; i < connectedComponents.length; i++) {
+            var connectedSector = this.connectedComponentToAngularSector(connectedComponents[i]);
+            connectedSectors.push(connectedSector);
         }
-        return;
+        var length = connectedSectors.length;
+        var indices = [...Array(length).keys()];
+        this.buildTreeRecursive(connectedSectors, this.tree, connectedComponents, indices);
+        console.log(this.tree);
     }
 
     searchRecursive(p, node) {
@@ -379,11 +434,9 @@ export default class ASTree {
             return node.children;
         }
         if (childLeft.value.isAbove(p)) {
-            console.log("left");
             return this.searchRecursive(p, childLeft);
         }
         else {
-            console.log("right");
             return this.searchRecursive(p, childRight);
         }
 
@@ -394,13 +447,14 @@ export default class ASTree {
     }
 
     load() {
-        var length = this.sectors.length;
-        var indices = [...Array(length).keys()];
+        this.buildTree();
+        // var length = this.sectors.length;
+        // var indices = [...Array(length).keys()];
         // console.log(indices);
-        this.buildTreeRecursive(this.sectors, this.tree, indices);
-        console.log(this.tree);
+        // this.buildTreeRecursive(this.sectors, this.tree, indices);
+        // console.log(this.tree);
 
-        console.log(this.search([-10, 6]));
+        // console.log(this.search([-10, 6]));
     }
 
 }
