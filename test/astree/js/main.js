@@ -24,12 +24,15 @@ var polygon = new VectorLayer({
     source: polygonSource
 });
 
+var pointSource = new Vector();
+var points = new VectorLayer({
+    source: pointSource
+});
+
 var map = new Map({ layers: [ new Group({ title: 'Cartes', layers:
     [new TileLayer({ title:'OSM', type:'base', source: new OSM() })]
     }) ], target: 'map', view: new View({ center: stEtienneLonLatConv,
     zoom: 18 }) });
-
-
 
 function generateRandomSectors(n) {
     var extent = [0,0, 10, 10];
@@ -57,8 +60,14 @@ function generateSectors() {
     return arcs;
 }
 
+var p = [-7, -10];
+points.getSource().addFeature(new Feature(new Point(p)));
+
 var arcs = generateSectors();
 var astree = new ASTree(arcs);
+
 astree.load();
+console.log(astree.search(p));
 
 map.addLayer(polygon);
+map.addLayer(points);

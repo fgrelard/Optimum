@@ -426,24 +426,38 @@ export default class ASTree {
         console.log(this.tree);
     }
 
-    searchRecursive(p, node) {
-        var childLeft = node.children[0];
-        var childRight = node.children[1];
+    searchRecursive(p, hits, node) {
+        console.log(node);
+        var hasChildren = node.children;
+        if (!hasChildren) return;
+
+        var nbChildren = node.children.length;
+        var index = 0;
         //If it is a sector, return all sectors from this node
-        if (childLeft.value.alpha && childLeft.value.omega && childLeft.value.center) {
-            return node.children;
+        while (index < nbChildren && node.children[index].value.radius) {
+            hits.push(node.children[index]);
+            index++;
         }
+
+        if (index >= nbChildren) { // a leaf was reached
+            return;
+        }
+        var childLeft = node.children[index];
+        var childRight = node.children[index + 1];
+        console.log(index + " " + nbChildren);
         if (childLeft.value.isAbove(p)) {
-            return this.searchRecursive(p, childLeft);
+            this.searchRecursive(p, hits, childLeft);
         }
         else {
-            return this.searchRecursive(p, childRight);
+            this.searchRecursive(p, hits, childRight);
         }
 
     }
 
     search(p) {
-        return this.searchRecursive(p, this.tree);
+        var hits = [];
+        this.searchRecursive(p, hits, this.tree);
+        return hits;
     }
 
     load() {
@@ -453,8 +467,6 @@ export default class ASTree {
         // console.log(indices);
         // this.buildTreeRecursive(this.sectors, this.tree, indices);
         // console.log(this.tree);
-
-        // console.log(this.search([-10, 6]));
     }
 
 }
