@@ -166,7 +166,8 @@ export default class ASTree {
             var sector = sectors[i];
             for (var property in sector) {
                 if (property === "alpha" || property === "omega") {
-                    var plane = this.angleToPlane(sector[property], sector.center);
+                    var plane = this.angleToPlane(sector[property], sector.center, property === "alpha");
+
                     var number = this.differenceAboveBelowPlane(plane, sectors);
                     if (number < minDifference) {
                         minDifference = number;
@@ -181,12 +182,13 @@ export default class ASTree {
     differenceAboveBelowPlane(plane, sectors) {
         var numberLeft = 0;
         var numberRight = 0;
+        var plane2 = this.complementaryPlane(plane);
         for (let i = 0; i < sectors.length; i++) {
             var sector = sectors[i];
             if (plane.isSectorAbove(sector)) {
                 numberLeft++;
             }
-            else {
+            if (plane2.isSectorAbove(sector)) {
                 numberRight++;
             }
         }
@@ -224,10 +226,12 @@ export default class ASTree {
         return [x, y];
     }
 
-    angleToPlane(angle, center) {
+    angleToPlane(angle, center, isAlpha = false) {
         var vector = this.angleToVector(angle);
 
         var orthogonalVector = [vector[1], -vector[0]];
+        if (isAlpha)
+            orthogonalVector = [-orthogonalVector[0], -orthogonalVector[1]];
         var plane = new Plane(center, orthogonalVector);
         return plane;
     }
@@ -349,7 +353,6 @@ export default class ASTree {
 
     buildTreeRecursive(ccSectors, node, cc, indices) {
         if (indices.length === 0) return;
-        console.log(ccSectors);
         var currentCCSectors = [];
         for (let i = 0; i < indices.length; i++) {
             let cs = ccSectors[indices[i]];
@@ -361,7 +364,7 @@ export default class ASTree {
             for (let i = 0; i < ccIndices.length; i++) {
                 currentSectors.push(this.sectors[ccIndices[i]]);
             }
-            this.separateIntersectingSectors(currentSectors, node, ccIndices);
+            //this.separateIntersectingSectors(currentSectors, node, ccIndices);
             return;
         }
         var firstPlane = this.bestSeparatingPlane(currentCCSectors);
@@ -472,7 +475,7 @@ export default class ASTree {
     }
 
     searchRecursive(p, hits, node) {
-        console.log("calls");
+        console.log(node);
         var hasChildren = node.children;
         if (!hasChildren) return;
 

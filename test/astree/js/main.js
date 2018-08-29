@@ -60,7 +60,7 @@ function generateSectors() {
     return arcs;
 }
 
-var p = [7, 5];
+var p = [100, 4.9];
 points.getSource().addFeature(new Feature(new Point(p)));
 
 var arcs = generateSectors();
