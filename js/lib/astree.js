@@ -364,7 +364,7 @@ export default class ASTree {
             for (let i = 0; i < ccIndices.length; i++) {
                 currentSectors.push(this.sectors[ccIndices[i]]);
             }
-            //this.separateIntersectingSectors(currentSectors, node, ccIndices);
+            this.separateIntersectingSectors(currentSectors, node, ccIndices);
             return;
         }
         var firstPlane = this.bestSeparatingPlane(currentCCSectors);
