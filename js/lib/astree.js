@@ -158,6 +158,41 @@ export default class ASTree {
         return minElements;
     }
 
+    bestSeparatingPlane(sectors) {
+        var minDifference = Number.MAX_VALUE;
+        var bestPlane;
+        for (let i = 0; i < sectors.length; i++) {
+            if (minDifference === 0) break;
+            var sector = sectors[i];
+            for (var property in sector) {
+                if (property === "alpha" || property === "omega") {
+                    var plane = this.angleToPlane(sector[property], sector.center);
+                    var number = this.differenceAboveBelowPlane(plane, sectors);
+                    if (number < minDifference) {
+                        minDifference = number;
+                        bestPlane = plane;
+                    }
+                }
+            }
+        }
+        return bestPlane;
+    }
+
+    differenceAboveBelowPlane(plane, sectors) {
+        var numberLeft = 0;
+        var numberRight = 0;
+        for (let i = 0; i < sectors.length; i++) {
+            var sector = sectors[i];
+            if (plane.isSectorAbove(sector)) {
+                numberLeft++;
+            }
+            else {
+                numberRight++;
+            }
+        }
+        return Math.abs(numberLeft - numberRight);
+    }
+
     middleAngleElement(arcs) {
         var diffOmegas = [];
         for (let i = 0; i < arcs.length; i++) {
@@ -187,6 +222,22 @@ export default class ASTree {
         var x = Math.cos(rad);
         var y = Math.sin(rad);
         return [x, y];
+    }
+
+    angleToPlane(angle, center) {
+        var vector = this.angleToVector(angle);
+
+        var orthogonalVector = [vector[1], -vector[0]];
+        var plane = new Plane(center, orthogonalVector);
+        return plane;
+    }
+
+    complementaryPlane(plane) {
+        var normal = plane.normal;
+        var minusNormal = [-normal[0], -normal[1]];
+        var center = [plane.center[0] + minusNormal[0],
+                      plane.center[1] + minusNormal[1]];
+        return new Plane(center, minusNormal);
     }
 
     boundingBox(cones) {
@@ -225,6 +276,8 @@ export default class ASTree {
         return position;
     }
 
+
+
     splitConnectedComponent(arcs, elements) {
         var planes = [];
         var m = -1;
@@ -236,13 +289,8 @@ export default class ASTree {
             var arc = arcs[index];
             var omega = arc.omega;
             var vector = this.angleToVector(omega);
-
-            var orthogonalVector = [vector[1], -vector[0]];
-            var minusOV = [-orthogonalVector[0], -orthogonalVector[1]];
-            var center2 = [arc.center[0] + minusOV[0],
-                           arc.center[1] + minusOV[1]];
-            var plane = new Plane(arc.center, orthogonalVector);
-            var plane2 = new Plane(center2, minusOV);
+            var plane = this.angleToPlane(omega, arc.center);
+            var plane2 = this.complementaryPlane(plane);
             var found = this.addedPlanes.findIndex(function(op) {
                 return ((plane.center[0]).toFixed(2) === (op.center[0]).toFixed(2) &&
                         (plane.center[1]).toFixed(2) === (op.center[1]).toFixed(2) &&
@@ -301,7 +349,7 @@ export default class ASTree {
 
     buildTreeRecursive(ccSectors, node, cc, indices) {
         if (indices.length === 0) return;
-
+        console.log(ccSectors);
         var currentCCSectors = [];
         for (let i = 0; i < indices.length; i++) {
             let cs = ccSectors[indices[i]];
@@ -316,13 +364,10 @@ export default class ASTree {
             this.separateIntersectingSectors(currentSectors, node, ccIndices);
             return;
         }
-        var middle = this.middleAngleElement(currentCCSectors);
-        var planes = this.splitConnectedComponent(currentCCSectors, middle);
-        var firstPlane = planes[0].plane;
-        var secondPlane = planes[1].plane;
+        var firstPlane = this.bestSeparatingPlane(currentCCSectors);
+        var secondPlane = this.complementaryPlane(firstPlane);
         var firstChild = new Node(firstPlane);
         var secondChild = new Node(secondPlane);
-
         var firstSectors = [], secondSectors = [];
         for (let i = 0; i < indices.length; i++) {
             let index = indices[i];
@@ -427,6 +472,7 @@ export default class ASTree {
     }
 
     searchRecursive(p, hits, node) {
+        console.log("calls");
         var hasChildren = node.children;
         if (!hasChildren) return;
 
@@ -464,6 +510,4 @@ export default class ASTree {
         var hits = [];
         this.searchRecursive(p, hits, this.tree);
         return hits;
-    }
-
-}
+    }}
