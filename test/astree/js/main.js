@@ -60,11 +60,11 @@ function generateSectors() {
     return arcs;
 }
 
-var p = [50, 0];
+var p = [-20, 20];
 points.getSource().addFeature(new Feature(new Point(p)));
 
 var arcs = generateSectors();
-var astree = new ASTree(arcs);
+var astree = new ASTree(arcs, 2);
 
 astree.load();
 console.log(astree.search(p));
