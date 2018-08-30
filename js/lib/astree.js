@@ -410,7 +410,7 @@ export default class ASTree {
         var isLeaf = cc.every(function(element) {
             return that.addedSectors.indexOf(element) !== -1;
         });
-        if (sectors.length <= this.maxNumberLeaves || isLeaf) {
+        if (sectors.length <= this.maxNumberLeaves-1 || isLeaf) {
             var nodes = [];
             for (var i  = 0; i < sectors.length; i++) {
                 let child = new Node(sectors[i]);
@@ -447,10 +447,9 @@ export default class ASTree {
                     let isAddedSector = (sector.center[0] === associatedSector.center[0] &&
                                          sector.center[1] === associatedSector.center[1] &&
                                          sector.alpha === associatedSector.alpha &&
-                                         sector.omega === sector.omega);
+                                         sector.omega === associatedSector.omega);
 
-                    if (isAbove // && !isAddedSector
-                       ) {
+                    if (isAbove && !isAddedSector) {
                         subsectors.push(sector);
                     }
                 }
@@ -496,7 +495,6 @@ export default class ASTree {
     }
 
     searchRecursive(p, hits, node) {
-        console.log(node);
         var hasChildren = node.children;
         if (!hasChildren) return;
 
