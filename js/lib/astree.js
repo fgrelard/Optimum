@@ -143,7 +143,7 @@ export default class ASTree {
     }
 
 
-        angleToVector(angle) {
+    angleToVector(angle) {
         var rad = angle * Math.PI / 180;
         var x = Math.cos(rad);
         var y = Math.sin(rad);
@@ -234,10 +234,7 @@ export default class ASTree {
                     var plane = this.angleToPlane(sector[property], sector.center, property === "alpha");
                     var number = this.differenceAboveBelowPlane(plane, sectors, func);
                     var found = this.addedSectors.findIndex(function(op) {
-                        return ((sector.center[0]).toFixed(2) === (op.center[0]).toFixed(2) &&
-                                (sector.center[1]).toFixed(2) === (op.center[1]).toFixed(2) &&
-                                (sector.alpha).toFixed(2) === (op.alpha).toFixed(2) &&
-                                (sector.omega).toFixed(2) === (op.omega).toFixed(2));
+                        return sector.equals(op);
                     });
                     var condition = (isMinDifference) ? number > difference : number < difference;
                     if (condition && found === -1) {
@@ -269,74 +266,6 @@ export default class ASTree {
         return func(numberLeft, numberRight);
     }
 
-    middleAngleElement(arcs) {
-        var diffOmegas = [];
-        for (let i = 0; i < arcs.length; i++) {
-            var omegaCurrent = arcs[i].omega;
-
-            var maxDiffOmega = 0;
-            for (let j = 0; j < arcs.length; j++) {
-                var omegaOther = arcs[j].omega;
-                var diff = Math.abs(omegaCurrent - omegaOther);
-                if (diff > maxDiffOmega) {
-                    maxDiffOmega = diff;
-                }
-            }
-            diffOmegas.push(maxDiffOmega);
-        }
-        var index = -1;
-        var minDiff = Number.MAX_VALUE;
-        var indices = [...Array(arcs.length).keys()];
-        indices.sort(function(a,b) {
-            return diffOmegas[a] - diffOmegas[b];
-        });
-        return indices;
-    }
-
-
-    splitConnectedComponent(arcs, elements) {
-        var planes = [];
-        var m = -1;
-        var minCpt = Number.MAX_VALUE;
-        var firstPlane, secondPlane;
-
-        for (let i = 0; i < elements.length; i++) {
-            var index = elements[i];
-            var arc = arcs[index];
-            var omega = arc.omega;
-            var vector = this.angleToVector(omega);
-            var plane = this.angleToPlane(omega, arc.center);
-            var plane2 = this.complementaryPlane(plane);
-            var found = this.addedSectors.findIndex(function(op) {
-                return ((plane.center[0]).toFixed(2) === (op.center[0]).toFixed(2) &&
-                        (plane.center[1]).toFixed(2) === (op.center[1]).toFixed(2) &&
-                        (plane.normal[0]).toFixed(2) === (op.normal[0]).toFixed(2) &&
-                        (plane.normal[1]).toFixed(2) === (op.normal[1]).toFixed(2));
-            });
-            if (found > -1) continue;
-
-            for (let j = 0; j < arcs.length; j++) {
-                var cpt = 0, cpt2 = 0;
-                if (plane.isSectorAbove(arcs[j]))
-                    cpt++;
-                if (plane2.isSectorAbove(arcs[j]))
-                    cpt2++;
-                if (cpt < minCpt || cpt2 < minCpt) {
-                    minCpt = (cpt < cpt2) ? cpt : cpt2 ;
-                    m = index;
-                    firstPlane = plane;
-                    secondPlane = plane2;
-                }
-            }
-        }
-
-        if (m !== -1) {
-            this.addedSectors.push(firstPlane);
-            planes.push({plane: firstPlane, index: m});
-            planes.push({plane: secondPlane, index: m});
-        }
-        return planes;
-    }
 
     connectedComponentToAngularSector(cc) {
         var cones = [];
@@ -418,51 +347,35 @@ export default class ASTree {
             }
             return;
         }
-        var elements = [];
-        for (let i = 0; i < sectors.length; i++) {
-            let arc = sectors[i];
-            let intersectingI = this.intersectingSectors(sectors, arc, i);
-            elements.push(intersectingI);
-        }
 
-        if (cc.length > this.maxNumberLeaves) {
-            var bestSeparation = this.separatingPlane(sectors, true);
-            var plane = bestSeparation.plane;
-            if (!plane) return;
-            var plane2 = this.complementaryPlane(plane);
-            var associatedSector = bestSeparation.sector;
-            var splitPlanes = [plane, plane2];
-            for (let j = 0; j < splitPlanes.length; j++) {
-                let splitPlane = splitPlanes[j];
-                let child = new Node(splitPlane);
-                child.setParentNode(node);
-                // Left child
-                if (j === 0) {
-                    child.addChild(new Node(associatedSector));
-                }
-                let subsectors = [];
-                for (let k = 0; k < sectors.length; k++) {
-                    let sector = sectors[k];
-                    let isAbove = splitPlane.isSectorAbove(sector);
-                    let isAddedSector = (sector.center[0] === associatedSector.center[0] &&
-                                         sector.center[1] === associatedSector.center[1] &&
-                                         sector.alpha === associatedSector.alpha &&
-                                         sector.omega === associatedSector.omega);
-
-                    if (isAbove && !isAddedSector) {
-                        subsectors.push(sector);
-                    }
-                }
-
-                this.separateIntersectingSectors(subsectors, child, cc);
-                node.addChild(child);
+        var bestSeparation = this.separatingPlane(sectors, true);
+        var plane = bestSeparation.plane;
+        if (!plane) return;
+        var plane2 = this.complementaryPlane(plane);
+        var associatedSector = bestSeparation.sector;
+        var splitPlanes = [plane, plane2];
+        for (let j = 0; j < splitPlanes.length; j++) {
+            let splitPlane = splitPlanes[j];
+            let child = new Node(splitPlane);
+            child.setParentNode(node);
+            // Left child
+            if (j === 0) {
+                child.addChild(new Node(associatedSector));
             }
-        }
-        else {
-            for (let i = 0; i < cc.length; i++)  {
-                node.addChild(new Node(sectors[cc[i]]));
+            let subsectors = [];
+            for (let k = 0; k < sectors.length; k++) {
+                let sector = sectors[k];
+                let isAbove = splitPlane.isSectorAbove(sector);
+                let isAddedSector = (sector.equals(associatedSector));
+                if (isAbove && !isAddedSector) {
+                    subsectors.push(sector);
+                }
             }
+
+            this.separateIntersectingSectors(subsectors, child, cc);
+            node.addChild(child);
         }
+
         return;
     }
 
@@ -490,7 +403,6 @@ export default class ASTree {
         var length = connectedSectors.length;
         var indices = [...Array(length).keys()];
         this.buildTreeRecursive(connectedSectors, this.tree, connectedComponents, indices);
-        console.log(this.addedSectors);
         console.log(this.tree);
     }
 

@@ -44,12 +44,14 @@ function generateRandomSectors(n) {
 function generateSectors() {
     var extent = [0,0, 10, 10];
 
-    var arcs = [new Arc([5,5], 100, 200, 250),
-                new Arc([2,2], 100, 190, 230),
-                new Arc([3,3], 100, 215, 260),
+    var arcs = [// new Arc([5,5], 100, 200, 250),
+                // new Arc([2,2], 100, 190, 230),
+                // new Arc([3,3], 100, 215, 260),
                 new Arc([2,7], 100, 180, 200),
-                new Arc([6,6], 100, 0, 45),
-                new Arc([6,4], 100, 290, 330)
+                // new Arc([6,6], 100, 0, 45),
+                // new Arc([6,4], 100, 290, 330),
+                new Arc([7,8], 100, 130, 180)// ,
+                // new Arc([10,0], 100, 270, 310)
                ];
 
     for (var i  = 0; i < arcs.length; i++) {

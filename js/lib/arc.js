@@ -62,4 +62,11 @@ export default class Arc {
         this.fullGeometry = arrArc;
         this.geometry = arrArc[0];
     }
+
+    equals(other) {
+        return (this.center[0] === other.center[0] &&
+                this.center[1] === other.center[1] &&
+                this.alpha === other.alpha &&
+                this.omega === other.omega);
+    }
 }
