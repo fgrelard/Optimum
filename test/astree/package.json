@@ -23,6 +23,7 @@
     "rollup-watch": "^4.3.1"
   },
   "dependencies": {
-    "jquery": "^3.3.1"
+    "jquery": "^3.3.1",
+    "vis": "^4.21.0"
   }
 }

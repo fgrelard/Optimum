@@ -289,27 +289,35 @@ export default class ASTree {
         }
         var bb = this.boundingBox(cones);
         var position = this.positionFromDirection(bb, cones);
-        return new Arc(position, 1, minAlpha, maxOmega);
+        return new Arc(position, 100, minAlpha, maxOmega);
     }
 
     buildTreeRecursive(ccSectors, node, cc, indices) {
+
         if (indices.length === 0) return;
         var currentCCSectors = [];
         for (let i = 0; i < indices.length; i++) {
             let cs = ccSectors[indices[i]];
             currentCCSectors.push(cs);
         }
-        if (indices.length === 1) {
+        var firstPlane = this.separatingPlane(currentCCSectors).plane;
+        if (indices.length === 1 || !firstPlane) {
             let currentSectors = [];
-            let ccIndices = cc[indices[0]];
-            for (let i = 0; i < ccIndices.length; i++) {
-                currentSectors.push(this.sectors[ccIndices[i]]);
+            let ccIndices = [];
+            for (let index of indices) {
+                //console.log(cc[index]);
+                ccIndices = cc[index];
+                for (let ccIndex of ccIndices) {
+                    currentSectors.push(this.sectors[ccIndex]);
+                }
+            }
+            if (!firstPlane) {
+                console.log(indices);
             }
             this.separateIntersectingSectors(currentSectors, node, ccIndices);
             return;
         }
-        var firstPlane = this.separatingPlane(currentCCSectors).plane;
-        if (!firstPlane) return;
+
 
         var secondPlane = this.complementaryPlane(firstPlane);
         var firstChild = new Node(firstPlane);
@@ -320,7 +328,7 @@ export default class ASTree {
             let cc = ccSectors[index];
             if (firstPlane.isSectorAbove(cc))
                 firstSectors.push(index);
-            else
+            if (secondPlane.isSectorAbove(cc))
                 secondSectors.push(index);
         }
         if (firstSectors.length > 0 && secondSectors.length > 0) {
@@ -330,6 +338,7 @@ export default class ASTree {
             firstChild = node;
             secondChild = node;
         }
+
         this.buildTreeRecursive(ccSectors, firstChild, cc, firstSectors);
         this.buildTreeRecursive(ccSectors, secondChild, cc, secondSectors);
     }
@@ -339,7 +348,7 @@ export default class ASTree {
         var isLeaf = cc.every(function(element) {
             return that.addedSectors.indexOf(element) !== -1;
         });
-        if (sectors.length <= this.maxNumberLeaves-1 || isLeaf) {
+        if (sectors.length <= this.maxNumberLeaves - node.children.length || isLeaf) {
             var nodes = [];
             for (var i  = 0; i < sectors.length; i++) {
                 let child = new Node(sectors[i]);
@@ -347,7 +356,6 @@ export default class ASTree {
             }
             return;
         }
-
         var bestSeparation = this.separatingPlane(sectors, true);
         var plane = bestSeparation.plane;
         if (!plane) return;
@@ -409,7 +417,7 @@ export default class ASTree {
     searchRecursive(p, hits, node) {
         var hasChildren = node.children;
         if (!hasChildren) return;
-
+        console.log(node);
         var nbChildren = node.children.length;
         var index = 0;
         //If it is a sector, return all sectors from this node
@@ -441,6 +449,7 @@ export default class ASTree {
     }
 
     search(p) {
+        console.log("search");
         var hits = [];
         this.searchRecursive(p, hits, this.tree);
         return hits;

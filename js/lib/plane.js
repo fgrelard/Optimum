@@ -16,8 +16,6 @@ export default class Plane {
 
     isSectorAbove(arc) {
         var isPointAbove = this.isAbove(arc.center);
-        // console.log(this);
-        // console.log(arc);
         if (isPointAbove) return true;
 
         if (!arc.fullGeometry) {
