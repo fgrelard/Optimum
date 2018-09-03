@@ -219,11 +219,14 @@ export default class ASTree {
         return minElements;
     }
 
-    separatingPlane(sectors, isMinDifference = false) {
+    separatingPlane(sectors, node, isMinDifference = false) {
         var absDiff = ((a,b) => Math.abs(a-b));
         var absDiffPositive = ((a,b) => (a === 0 || b === 0) ? 0 : Math.abs(a-b));
         var func = (isMinDifference) ? absDiffPositive : absDiff;
         var difference = (isMinDifference) ? -1 : Number.MAX_VALUE;
+
+        var parents = this.traversedNodes(node);
+
         var bestPlane;
         var bestSector;
         for (let i = 0; i < sectors.length; i++) {
@@ -235,6 +238,9 @@ export default class ASTree {
                     var number = this.differenceAboveBelowPlane(plane, sectors, func);
                     var found = this.addedSectors.findIndex(function(op) {
                         return sector.equals(op);
+                    });
+                    found = parents.findIndex(function(op) {
+                        return plane.equals(op);
                     });
                     var condition = (isMinDifference) ? number > difference : number < difference;
                     if (condition && found === -1) {
@@ -300,37 +306,42 @@ export default class ASTree {
             let cs = ccSectors[indices[i]];
             currentCCSectors.push(cs);
         }
-        var firstPlane = this.separatingPlane(currentCCSectors).plane;
-        if (indices.length === 1 || !firstPlane) {
+        var firstPlane = this.separatingPlane(currentCCSectors, node).plane;
+
+        var secondPlane = this.complementaryPlane(firstPlane);
+        var firstChild = new Node(firstPlane);
+        var secondChild = new Node(secondPlane);
+        var firstSectors = [], secondSectors = [];
+        var addedBoth = false;
+        for (let i = 0; i < indices.length; i++) {
+            let index = indices[i];
+            let cc = ccSectors[index];
+            let cptBoth = 0;
+            if (firstPlane.isSectorAbove(cc)) {
+                firstSectors.push(index);
+                cptBoth++;
+            }
+            if (secondPlane.isSectorAbove(cc)) {
+                cptBoth++;
+                secondSectors.push(index);
+            }
+            addedBoth = (cptBoth === 2);
+        }
+
+        if (indices.length === 1 || !firstPlane || addedBoth) {
             let currentSectors = [];
             let ccIndices = [];
             for (let index of indices) {
-                //console.log(cc[index]);
                 ccIndices = cc[index];
                 for (let ccIndex of ccIndices) {
                     currentSectors.push(this.sectors[ccIndex]);
                 }
-            }
-            if (!firstPlane) {
-                console.log(indices);
             }
             this.separateIntersectingSectors(currentSectors, node, ccIndices);
             return;
         }
 
 
-        var secondPlane = this.complementaryPlane(firstPlane);
-        var firstChild = new Node(firstPlane);
-        var secondChild = new Node(secondPlane);
-        var firstSectors = [], secondSectors = [];
-        for (let i = 0; i < indices.length; i++) {
-            let index = indices[i];
-            let cc = ccSectors[index];
-            if (firstPlane.isSectorAbove(cc))
-                firstSectors.push(index);
-            if (secondPlane.isSectorAbove(cc))
-                secondSectors.push(index);
-        }
         if (firstSectors.length > 0 && secondSectors.length > 0) {
             node.addChild(firstChild);
             node.addChild(secondChild);
@@ -343,12 +354,24 @@ export default class ASTree {
         this.buildTreeRecursive(ccSectors, secondChild, cc, secondSectors);
     }
 
+    traversedNodes(node) {
+        var parent = node;
+        var parentNodes = [];
+        while (parent) {
+            parentNodes.push(parent.value);
+            parent = parent.parent;
+        }
+        return parentNodes;
+    }
+
     separateIntersectingSectors(sectors, node, cc) {
         var that = this;
         var isLeaf = cc.every(function(element) {
             return that.addedSectors.indexOf(element) !== -1;
         });
-        if (sectors.length <= this.maxNumberLeaves - node.children.length || isLeaf) {
+
+        if (sectors.length <= this.maxNumberLeaves // - node.children.length
+            || isLeaf) {
             var nodes = [];
             for (var i  = 0; i < sectors.length; i++) {
                 let child = new Node(sectors[i]);
@@ -356,7 +379,7 @@ export default class ASTree {
             }
             return;
         }
-        var bestSeparation = this.separatingPlane(sectors, true);
+        var bestSeparation = this.separatingPlane(sectors, node, false);
         var plane = bestSeparation.plane;
         if (!plane) return;
         var plane2 = this.complementaryPlane(plane);
@@ -367,15 +390,16 @@ export default class ASTree {
             let child = new Node(splitPlane);
             child.setParentNode(node);
             // Left child
-            if (j === 0) {
-                child.addChild(new Node(associatedSector));
-            }
+            // if (j === 0) {
+            //     child.addChild(new Node(associatedSector));
+            // }
             let subsectors = [];
             for (let k = 0; k < sectors.length; k++) {
                 let sector = sectors[k];
                 let isAbove = splitPlane.isSectorAbove(sector);
                 let isAddedSector = (sector.equals(associatedSector));
-                if (isAbove && !isAddedSector) {
+                if (isAbove //&& !isAddedSector
+                   ) {
                     subsectors.push(sector);
                 }
             }
@@ -415,9 +439,9 @@ export default class ASTree {
     }
 
     searchRecursive(p, hits, node) {
+        console.log(node);
         var hasChildren = node.children;
         if (!hasChildren) return;
-        console.log(node);
         var nbChildren = node.children.length;
         var index = 0;
         //If it is a sector, return all sectors from this node
@@ -453,4 +477,5 @@ export default class ASTree {
         var hits = [];
         this.searchRecursive(p, hits, this.tree);
         return hits;
-    }}
+    }
+}

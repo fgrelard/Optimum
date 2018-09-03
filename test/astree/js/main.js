@@ -64,26 +64,29 @@ function generateSectors() {
     return arcs;
 }
 
-var p = [-45, 40];
+var p = [10, -70];
 points.getSource().addFeature(new Feature(new Point(p)));
 
 var arcs = generateSectors();
-var astree = new ASTree(arcs, 3);
-
+var astree = new ASTree(arcs, 2);
 astree.load();
+
+arcs.map(function(element) {
+    console.log(element.center + " " + element.alpha + " " + element.omega);
+});
 console.log(astree.search(p));
 
-// create an array with nodes
+/* Visualization */
 var dataNodes = [];
 var dataEdges = [];
 var index = 1;
 var fifo = [astree.tree];
 while (fifo.length > 0) {
     var node = fifo.shift();
-    var label = node.value.center[0].toFixed(2).toString() + " " + node.value.center[1].toFixed(2).toString();
-    if (node.value.alpha) {
-        dataNodes.push({id: index++, label: node.value.alpha + " " + node.value.omega, color: 'rgb(255,168,7)'});
+    if (node.value.hasOwnProperty("alpha")) {
+        dataNodes.push({id: index++, label: node.value.alpha + "°-" + node.value.omega+"°", color: 'rgb(255,168,7)'});
     } else {
+        var label = node.value.center[0].toFixed(2).toString() + " " + node.value.center[1].toFixed(2).toString() + "\n" + node.value.normal[0].toFixed(2).toString() + " " + node.value.normal[1].toFixed(2).toString();
         dataNodes.push({id: index++, label: label});
     }
     if (node.parentIndex)

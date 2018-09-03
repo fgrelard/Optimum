@@ -29,4 +29,11 @@ export default class Plane {
     toString() {
         return "c=(" + this.center[0] + "," + this.center[1] +  "), v=(" + this.normal[0] + "," + this.normal[1] + ")";
     }
+
+    equals(other) {
+        return (this.center[0] === other.center[0] &&
+                this.center[1] === other.center[1] &&
+                this.normal[0] === other.normal[0] &&
+                this.normal[1] === other.normal[1]);
+    }
 }
