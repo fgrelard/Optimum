@@ -15,7 +15,7 @@ import VectorLayer from 'ol/layer/vector';
 import $ from 'jquery';
 import {getRandomArbitrary, addRandomArcs, addRandomLocations} from '../../../js/lib/randomfeatures.js';
 import Arc from '../../../js/lib/arc.js';
-import ASTree from '../../../js/lib/astree.js';
+import ASTree from '../../../js/lib/astreesectors.js';
 // import vis from "vis";
 
 var stEtienneLonLatConv = [0, 0];
@@ -64,11 +64,11 @@ function generateSectors() {
     return arcs;
 }
 
-var p = [10, -70];
+var p = [80, 70];
 points.getSource().addFeature(new Feature(new Point(p)));
 
 var arcs = generateSectors();
-var astree = new ASTree(arcs, 2);
+var astree = new ASTree(arcs, 7);
 astree.load();
 
 arcs.map(function(element) {
@@ -86,7 +86,7 @@ while (fifo.length > 0) {
     if (node.value.hasOwnProperty("alpha")) {
         dataNodes.push({id: index++, label: node.value.alpha + "°-" + node.value.omega+"°", color: 'rgb(255,168,7)'});
     } else {
-        var label = node.value.center[0].toFixed(2).toString() + " " + node.value.center[1].toFixed(2).toString() + "\n" + node.value.normal[0].toFixed(2).toString() + " " + node.value.normal[1].toFixed(2).toString();
+        var label = node.value.firstPlane + "\n" + node.value.secondPlane;
         dataNodes.push({id: index++, label: label});
     }
     if (node.parentIndex)

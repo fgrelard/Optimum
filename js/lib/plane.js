@@ -27,7 +27,7 @@ export default class Plane {
     }
 
     toString() {
-        return "c=(" + this.center[0] + "," + this.center[1] +  "), v=(" + this.normal[0] + "," + this.normal[1] + ")";
+        return "c=(" + this.center[0].toFixed(2) + "," + this.center[1].toFixed(2) +  "), v=(" + this.normal[0].toFixed(2) + "," + this.normal[1].toFixed(2) + ")";
     }
 
     equals(other) {
