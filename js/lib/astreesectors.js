@@ -77,40 +77,44 @@ export default class ASTreeSectors {
         return sectorAsPlanes;
     }
 
-
-    intersectingSectors(sectors, sector, index) {
+    sectorsIntersect(sector, otherSector) {
         var f = sector.center;
         var la = sector.fullGeometry[1].getFlatCoordinates();
         var lo = sector.fullGeometry[2].getFlatCoordinates();
+        var fOther = otherSector.center;
+        var laOther = otherSector.fullGeometry[1].getFlatCoordinates();
+        var loOther = otherSector.fullGeometry[2].getFlatCoordinates();
+        var i1 = halfLineIntersection(f[0], f[1],
+                                      la[0], la[1],
+                                      fOther[0], fOther[1],
+                                      laOther[0], laOther[1]);
+        var i2 = halfLineIntersection(f[0], f[1],
+                                      la[0], la[1],
+                                      fOther[0], fOther[1],
+                                      loOther[0], loOther[1]);
+        var i3 = halfLineIntersection(f[0], f[1],
+                                      lo[0], lo[1],
+                                      fOther[0], fOther[1],
+                                      laOther[0], laOther[1]);
+        var i4 = halfLineIntersection(f[0], f[1],
+                                      lo[0], lo[1],
+                                      fOther[0], fOther[1],
+                                      loOther[0], loOther[1]);
+
+        return (i1 || i2 || i3 || i4);
+    }
+
+
+    intersectionIndices(sectors, sector, index) {
         var length = sectors.length;
         var cpt = 0;
         var intersectionIndexes = [];
         for (var i = 0; i < length; i++) {
             if (i === index) continue;
-            var sectorOther = sectors[i];
-            var fOther = sectorOther.center;
-            var laOther = sectorOther.fullGeometry[1].getFlatCoordinates();
-            var loOther = sectorOther.fullGeometry[2].getFlatCoordinates();
-            var i1 = halfLineIntersection(f[0], f[1],
-                                          la[0], la[1],
-                                          fOther[0], fOther[1],
-                                          laOther[0], laOther[1]);
-            var i2 = halfLineIntersection(f[0], f[1],
-                                          la[0], la[1],
-                                          fOther[0], fOther[1],
-                                          loOther[0], loOther[1]);
-            var i3 = halfLineIntersection(f[0], f[1],
-                                          lo[0], lo[1],
-                                          fOther[0], fOther[1],
-                                          laOther[0], laOther[1]);
-            var i4 = halfLineIntersection(f[0], f[1],
-                                          lo[0], lo[1],
-                                          fOther[0], fOther[1],
-                                          loOther[0], loOther[1]);
-            if (i1 || i2 || i3 || i4) {
+            var otherSector = sectors[i];
+            if (this.sectorsIntersect(sector, otherSector)) {
                 intersectionIndexes.push(i);
             }
-
         }
         return intersectionIndexes;
     }
@@ -380,9 +384,9 @@ export default class ASTreeSectors {
         var isLeaf = cc.every(function(element) {
             return that.addedSectors.indexOf(element) !== -1;
         });
-
+        var bestSeparation = this.separatingPlane(sectors, node, false);
         if (sectors.length <= this.maxNumberLeaves // - node.children.length
-            || isLeaf) {
+            || !bestSeparation) {
             var nodes = [];
             for (var i  = 0; i < sectors.length; i++) {
                 let child = new Node(sectors[i]);
@@ -390,12 +394,8 @@ export default class ASTreeSectors {
             }
             return;
         }
-        var bestSeparation = this.separatingPlane(sectors, node, false);
-        if (!bestSeparation) return;
+
         var compBestSeparation = this.complementarySector(bestSeparation);
-        if (Number.parseFloat(node.value.firstPlane.center[0].toFixed(2)) === 2.81 &&
-            Number.parseFloat(node.value.firstPlane.center[1].toFixed(2)) === 2.47)
-            console.log(sectors);
         var splitPlanes = [bestSeparation, compBestSeparation];
         for (let j = 0; j < splitPlanes.length; j++) {
             let splitPlane = splitPlanes[j];
@@ -427,13 +427,52 @@ export default class ASTreeSectors {
         return;
     }
 
+    sectorsFromIndices(elements) {
+        var sectors = [];
+        for (let i = 0; i < elements.length; i++) {
+            var sector = this.sectors[elements[i]];
+            sectors.push(sector);
+        }
+        return sectors;
+    }
+
+    numberIntersection(sectors) {
+        var nb = 0;
+        for (let index in sectors) {
+            var sector = sectors[index];
+            for (let index2 in sectors) {
+                if (index2 <= index) continue;
+                var otherSector = sectors[index2];
+                if (this.sectorsIntersect(sector, otherSector)) {
+                    nb++;
+                }
+            }
+        }
+        return nb;
+    }
+
+    maxNumberSelfIntersections(elements) {
+        var max = -1;
+        for (let indices of elements) {
+            var sectors = this.sectorsFromIndices(indices);
+            var nb = this.numberIntersection(sectors);
+            if (nb > max) {
+                max = nb;
+            }
+        }
+        return max;
+    }
+
     load() {
         var elements = [];
         for (let i = 0; i < this.sectors.length; i++) {
             let arc = this.sectors[i];
-            let intersectingI = this.intersectingSectors(this.sectors, arc, i);
+            let intersectingI = this.intersectionIndices(this.sectors, arc, i);
             elements.push(intersectingI);
         }
+
+        var nb = this.maxNumberSelfIntersections(elements);
+        console.log(nb);
 
         var connectedComponents = [];
         for (let i = 0; i < elements.length; i++) {
