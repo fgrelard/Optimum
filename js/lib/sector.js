@@ -30,4 +30,8 @@ export default class Sector {
         return this.firstPlane.center[0] === other.firstPlane.center[0] &&
             this.firstPlane.center[1] === other.firstPlane.center[1];
     }
+
+    toString() {
+        return this.firstPlane + "\n" + this.secondPlane;
+    }
 }

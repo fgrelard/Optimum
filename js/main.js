@@ -147,6 +147,7 @@ function visibilityPolygon(data, center, radius) {
     var anglesToSegments = data[0].slice();
     var freeVisionAngles = data[1].slice();
     $.each(freeVisionAngles, function(i, arc) {
+        console.log("new Arc(["+ arc.center + "]," + 100 + ", " + arc.alpha + ", " + arc.omega + "),\n");
         var angle = new Arc(arc.center, radius || arc.radius, arc.alpha, arc.omega);
         if (angle.omega - angle.alpha < 0.5) return;
         angle.computeGeometry();

@@ -240,6 +240,53 @@ export default class ASTreeSectors {
         return minElements;
     }
 
+
+    traversedNodes(node) {
+        var parent = node;
+        var parentNodes = [];
+        while (parent) {
+            parentNodes.push(parent.value);
+            parent = parent.parent;
+        }
+        return parentNodes;
+    }
+
+    sectorsFromIndices(elements) {
+        var sectors = [];
+        for (let i = 0; i < elements.length; i++) {
+            var sector = this.sectors[elements[i]];
+            sectors.push(sector);
+        }
+        return sectors;
+    }
+
+    numberIntersection(sectors) {
+        var nb = 0;
+        for (let index in sectors) {
+            var sector = sectors[index];
+            for (let index2 in sectors) {
+                if (index2 <= index) continue;
+                var otherSector = sectors[index2];
+                if (this.sectorsIntersect(sector, otherSector)) {
+                    nb++;
+                }
+            }
+        }
+        return nb;
+    }
+
+    maxNumberSelfIntersections(elements) {
+        var max = -1;
+        for (let indices of elements) {
+            var sectors = this.sectorsFromIndices(indices);
+            var nb = this.numberIntersection(sectors);
+            if (nb > max) {
+                max = nb;
+            }
+        }
+        return max;
+    }
+
     separatingPlane(sectors, node, isMinDifference = false) {
         var absDiff = ((a,b) => Math.abs(a-b));
         var absDiffPositive = ((a,b) => (a === 0 || b === 0) ? 0 : Math.abs(a-b));
@@ -257,9 +304,9 @@ export default class ASTreeSectors {
             var found = this.addedSectors.findIndex(function(op) {
                 return sectorPlane.equals(op);
             });
-            found = parents.findIndex(function(op) {
-                return sectorPlane.equals(op);
-            });
+            // found = parents.findIndex(function(op) {
+            //     return sectorPlane.equals(op);
+            // });
             var condition = (isMinDifference) ? number > difference : number < difference;
             if (condition && found === -1) {
                 difference = number;
@@ -278,12 +325,19 @@ export default class ASTreeSectors {
         var compSector = this.complementarySector(sector);
         for (let i = 0; i < sectors.length; i++) {
             var otherSector = sectors[i];
+            var left = false, right = false;
             if (sector.isSectorAbove(otherSector)) {
-                numberLeft++;
+                left = true;
             }
             if (compSector.isSectorAboveComplementary(otherSector)) {
-                numberRight++;
+                right = true;
             }
+            if (left  // && !right
+               )
+                numberLeft++;
+            if (right  // && !left
+               )
+                numberRight++;
         }
         return func(numberLeft, numberRight);
     }
@@ -321,29 +375,13 @@ export default class ASTreeSectors {
             let cs = ccSectors[indices[i]];
             currentCCSectors.push(cs);
         }
-        var firstSector = this.separatingPlane(currentCCSectors, node);
-
-        var secondSector = this.complementarySector(firstSector);
-        var firstChild = new Node(firstSector);
+        var sector = ccSectors[indices[0]];
+        var sectorHalfPlanes = this.convertArcToHalfPlanes(sector);
+        var secondSector = this.complementarySector(sectorHalfPlanes);
+        var firstChild = new Node(sectorHalfPlanes);
         var secondChild = new Node(secondSector);
-        var firstSectors = [], secondSectors = [];
-        var addedBoth = false;
-        for (let i = 0; i < indices.length; i++) {
-            let index = indices[i];
-            let cc = ccSectors[index];
-            let cptBoth = 0;
-            if (firstSector.isSectorAbove(cc)) {
-                firstSectors.push(index);
-                cptBoth++;
-            }
-            if (secondSector.isSectorAboveComplementary(cc)) {
-                cptBoth++;
-                secondSectors.push(index);
-            }
-            addedBoth = (cptBoth === 2);
-        }
 
-        if (indices.length === 1 || !firstSector || addedBoth) {
+        if (indices.length === 1 || !sector) {
             let currentSectors = [];
             let ccIndices = [];
             for (let index of indices) {
@@ -352,32 +390,22 @@ export default class ASTreeSectors {
                     currentSectors.push(this.sectors[ccIndex]);
                 }
             }
-            this.separateIntersectingSectors(currentSectors, node, ccIndices);
+
+            //            this.separateIntersectingSectors(currentSectors, node, ccIndices);
+            console.log(indices);
+            for (let i = 0; i < indices.length; i++) {
+                node.addChild(new Node(ccSectors[indices[i]]));
+            }
             return;
         }
+        node.addChild(firstChild);
+        node.addChild(secondChild);
 
-
-        if (firstSectors.length > 0 && secondSectors.length > 0) {
-            node.addChild(firstChild);
-            node.addChild(secondChild);
-        } else { //Plane does not allow separation of angular sectors
-            firstChild = node;
-            secondChild = node;
-        }
-
-        this.buildTreeRecursive(ccSectors, firstChild, cc, firstSectors);
-        this.buildTreeRecursive(ccSectors, secondChild, cc, secondSectors);
+        var secondIndices = indices.slice(1,indices.length);
+        this.buildTreeRecursive(ccSectors, firstChild, cc,  [indices[0]]);
+        this.buildTreeRecursive(ccSectors, secondChild, cc, secondIndices);
     }
 
-    traversedNodes(node) {
-        var parent = node;
-        var parentNodes = [];
-        while (parent) {
-            parentNodes.push(parent.value);
-            parent = parent.parent;
-        }
-        return parentNodes;
-    }
 
     separateIntersectingSectors(sectors, node, cc) {
         var that = this;
@@ -427,52 +455,19 @@ export default class ASTreeSectors {
         return;
     }
 
-    sectorsFromIndices(elements) {
-        var sectors = [];
-        for (let i = 0; i < elements.length; i++) {
-            var sector = this.sectors[elements[i]];
-            sectors.push(sector);
-        }
-        return sectors;
-    }
 
-    numberIntersection(sectors) {
-        var nb = 0;
-        for (let index in sectors) {
-            var sector = sectors[index];
-            for (let index2 in sectors) {
-                if (index2 <= index) continue;
-                var otherSector = sectors[index2];
-                if (this.sectorsIntersect(sector, otherSector)) {
-                    nb++;
-                }
-            }
-        }
-        return nb;
-    }
 
-    maxNumberSelfIntersections(elements) {
-        var max = -1;
-        for (let indices of elements) {
-            var sectors = this.sectorsFromIndices(indices);
-            var nb = this.numberIntersection(sectors);
-            if (nb > max) {
-                max = nb;
-            }
-        }
-        return max;
-    }
-
-    load() {
+    load(useHeuristic = false) {
         var elements = [];
         for (let i = 0; i < this.sectors.length; i++) {
             let arc = this.sectors[i];
             let intersectingI = this.intersectionIndices(this.sectors, arc, i);
             elements.push(intersectingI);
         }
-
-        var nb = this.maxNumberSelfIntersections(elements);
-        console.log(nb);
+        if (useHeuristic) {
+            var nb = this.maxNumberSelfIntersections(elements);
+            this.nb = nb;
+        }
 
         var connectedComponents = [];
         for (let i = 0; i < elements.length; i++) {
@@ -481,6 +476,10 @@ export default class ASTreeSectors {
             connectedComponents.push(cc);
         }
         connectedComponents = this.removeDuplicates(connectedComponents);
+
+        connectedComponents.sort(function(a,b) {
+            return (a.length - b.length);
+        });
 
         var connectedSectors = [];
         for (let i = 0; i < connectedComponents.length; i++) {
