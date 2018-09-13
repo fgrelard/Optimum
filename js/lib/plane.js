@@ -1,4 +1,4 @@
-import {halfLineIntersection} from './lineintersection.js';
+import {halfLineAndLineIntersection} from './lineintersection.js';
 
 export default class Plane {
     constructor(center, normal) {
@@ -33,11 +33,11 @@ export default class Plane {
         var lPlane = [this.center[0] + basisVector[0] * 5,
                       this.center[1] + basisVector[1] * 5];
 
-        var i1 = halfLineIntersection(f[0], f[1],
+        var i1 = halfLineAndLineIntersection(f[0], f[1],
                                       la[0], la[1],
                                       fPlane[0], fPlane[1],
                                       lPlane[0], lPlane[1]);
-        var i2 = halfLineIntersection(f[0], f[1],
+        var i2 = halfLineAndLineIntersection(f[0], f[1],
                                       lo[0], lo[1],
                                       fPlane[0], fPlane[1],
                                       lPlane[0], lPlane[1]);

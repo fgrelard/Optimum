@@ -20,7 +20,7 @@ import {getRandomArbitrary, addRandomArcs, addRandomLocations} from '../../../js
 import Arc from '../../../js/lib/arc.js';
 import ASTree from '../../../js/lib/astree.js';
 
-var stEtienneLonLatConv = [500, 500];
+var stEtienneLonLatConv = [5000, 5000];
 
 var polygonSource = new Vector();
 var polygon = new VectorLayer({
@@ -269,7 +269,7 @@ function sectorsStEtienne() {
 
 
 function generateRandomSectors(n) {
-    var extent = [0,0, 1000, 1000];
+    var extent = [0,0, 10000, 10000];
     var locations = addRandomLocations(extent, n);
     var arcs = addRandomArcs(locations);
     for (var i  = 0; i < arcs.length; i++) {
@@ -294,16 +294,21 @@ function generateSectors() {
                 new Arc([-50,-20], 100, -20, 20)
                ];
 
-    arcs = [new Arc([544.7738119825999,334.79811147233676], 100,41.18751251951251, 76.68520756062173),
-            new Arc([327.78976296209055,715.0110233443957], 100,297.20470976023034, 326.3355201785605),
-            new Arc([720.4925212175363,322.149785051927], 100,86.78444609835937, 119.83066885642201),
-            new Arc([435.3358838006101,549.0123326563953], 100,294.3293897405461, 333.69429274196995),
-            new Arc([358.40836175768635,563.3878877213959], 100,99.70834160577783, 127.92588370612673),
-            new Arc([623.4168434711517,279.2286220471577], 100,82.68181378160324, 111.57708582807403),
-            new Arc([348.9216365058879,452.51001444743747], 100,89.63986427488993, 117.97366535820464),
-            new Arc([778.94382042287,621.7287751265075], 100,55.018384637636544, 75.9616360014521),
-            new Arc([373.7891371241594,689.9561342964466], 100,150.45190651900924, 165.5128064196195),
-            new Arc([359.9868541941245,709.4103040133946], 100,69.34996935647162, 104.23728190217702)];
+    arcs = [new Arc([695.5791906089562,682.470408052749], 100,340.40370632372, 373.8835490935983),
+            new Arc([311.2565668443186,362.4144443692543], 100,34.19998354451422, 67.31532293442288),
+            new Arc([209.4886508306108,725.8289945894046], 100,209.98135845908243, 242.89561110818136),
+            new Arc([181.83403726856562,754.9713943267252], 100,180.8384162220812, 219.87519835597396),
+            new Arc([617.281746917871,445.653401470956], 100,330.812323203295, 363.889909866904),
+            new Arc([599.863120758276,637.9239663099816], 100,33.64385446563878, 69.63283336575986),
+            new Arc([741.2868279603404,361.336868121827], 100,51.89358642233333, 83.3442906587361),
+            new Arc([416.31082659015397,214.5249338274188], 100,61.08473980373205, 99.75100877597527),
+            new Arc([308.8659189922946,666.6564337313494], 100,308.09498873779125, 342.4333523965816),
+            new Arc([401.9460290586532,737.9504651725765], 100,235.2443085586332, 269.6795451469176)];
+
+    // arcs = [new Arc([300,500], 100, 340, 380),
+    //         new Arc([700,500], 100, 160, 200),
+    //         new Arc([500,700], 100, 250, 290),
+    //         new Arc([500,300], 100, 70, 110)];
 
     for (var i  = 0; i < arcs.length; i++) {
         arcs[i].computeGeometry();
@@ -316,9 +321,9 @@ function generateSectors() {
 
 points.getSource().addFeature(new Feature(new Point(stEtienneLonLatConv)));
 
-var arcs = generateSectors();
+var arcs = generateRandomSectors(5);
 console.log(arcs);
-var astree = new ASTree(arcs, 5);
+var astree = new ASTree(arcs, 2);
 astree.load();
 
 arcs.map(function(element) {
@@ -394,6 +399,17 @@ network.on("selectNode", function (params) {
     }
     polygonSelected.getSource().addFeature(new Feature(closestArc));
 
+});
+
+map.on('click', function(event) {
+    polygonFound.getSource().clear();
+    points.getSource().clear();
+    points.getSource().addFeature(new Feature(new Point(event.coordinate)));
+    var found = astree.search(event.coordinate);
+    for (let i = 0; i < found.length; i++) {
+        var polyFound = found[i];
+        polygonFound.getSource().addFeature(new Feature(polyFound));
+    }
 });
 
 map.addLayer(polygon);

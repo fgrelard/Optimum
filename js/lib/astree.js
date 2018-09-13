@@ -257,6 +257,7 @@ export default class ASTree {
                 }
             }
         }
+        console.log(difference);
         if (bestPlane)
             this.addedSectors.push(bestSector);
         return {plane: bestPlane, sector: bestSector};
@@ -314,7 +315,7 @@ export default class ASTree {
     }
 
     numberIntersection(sectors) {
-        var min = Number.MAX_VALUE;
+        var min = -1;
         for (let index in sectors) {
             var sector = sectors[index];
             var nb = 0;
@@ -324,7 +325,7 @@ export default class ASTree {
                     nb++;
                 }
             }
-            if (nb < min) {
+            if (nb > min) {
                 min = nb;
             }
         }
@@ -340,7 +341,7 @@ export default class ASTree {
                 max = nb;
             }
         }
-        return max;
+        return max+1;
     }
 
 
@@ -430,7 +431,7 @@ export default class ASTree {
             return that.addedSectors.indexOf(element) !== -1;
         });
 
-        if (sectors.length <= this.maxNumberLeaves // - node.children.length
+        if (sectors.length <= this.maxNumberLeaves
             // || isLeaf
            ) {
             var nodes = [];
@@ -446,26 +447,15 @@ export default class ASTree {
         var plane2 = this.complementaryPlane(plane);
         var associatedSector = bestSeparation.sector;
         var splitPlanes = [plane, plane2];
-        if (Math.round(plane.center[0]) === 374 &&
-            Math.round(plane.center[1]) === 690) {
-            console.log(plane);
-            console.log(plane2.isSectorAbove(new Arc([327.78976296209055,715.0110233443957], 100,297.20470976023034, 326.3355201785605), true));
-        }
         for (let j = 0; j < splitPlanes.length; j++) {
             let splitPlane = splitPlanes[j];
             let child = new Node(splitPlane);
             child.setParentNode(node);
-            // Left child
-            // if (j === 0) {
-            //     child.addChild(new Node(associatedSector));
-            // }
             let subsectors = [];
 
             for (let k = 0; k < sectors.length; k++) {
                 let sector = sectors[k];
                 let isAbove = splitPlane.isSectorAbove(sector, j === 1);
-
-                let isAddedSector = (sector.equals(associatedSector));
                 if (isAbove //&& !isAddedSector
                    ) {
                     subsectors.push(sector);
@@ -479,14 +469,13 @@ export default class ASTree {
         return;
     }
 
-    load() {
+    load(useHeuristic = false) {
         var elements = [];
         for (let i = 0; i < this.sectors.length; i++) {
             let arc = this.sectors[i];
             let intersectingI = this.intersectionIndices(this.sectors, arc, i);
             elements.push(intersectingI);
         }
-        console.log("Max "+this.maxNumberSelfIntersections(elements));
         var connectedComponents = [];
         for (let i = 0; i < elements.length; i++) {
             let cc = [];
@@ -494,6 +483,12 @@ export default class ASTree {
             connectedComponents.push(cc);
         }
         connectedComponents = this.removeDuplicates(connectedComponents);
+        console.log(connectedComponents);
+        if (useHeuristic) {
+            this.maxNumberLeaves = this.maxNumberSelfIntersections(connectedComponents);
+            console.log(this.maxNumberLeaves);
+        }
+
 
         var connectedSectors = [];
         for (let i = 0; i < connectedComponents.length; i++) {

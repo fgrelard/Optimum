@@ -139,51 +139,6 @@ export function segmentIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
     return {x: x,y: y};
 }
 
-
-/**
- * Intersection half line
- * @param {} x1 First segment first point x
- * @param {} y1 First segment first point y
- * @param {} x2 First segment second point x
- * @param {} y2 First segment second point y
- * @param {} x3 Second segment first point x
- * @param {} y3 Second segment first point y
- * @param {} x4 Second segment second point x
- * @param {} y4 Second segment second point y
- * @returns {} the intersection, if it exists
- */
-export function halfLineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
-    var x=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4)) /
-            ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
-    var y=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4)) /
-        ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
-    if (isNaN(x)||isNaN(y)||!isFinite(x)||!isFinite(y)) {
-        return false;
-    } else {
-        if (x1>=x2) {
-            if (x > x1) {return false;}
-        } else {
-            if (x < x1) {return false;}
-        }
-        if (y1>=y2) {
-            if (y > y1) {return false;}
-        } else {
-            if (y < y1) {return false;}
-        }
-        if (x3>=x4) {
-            if (x > x3) {return false;}
-        } else {
-            if (x < x3) {return false;}
-        }
-        if (y3>=y4) {
-            if (y > y3) {return false;}
-        } else {
-            if (y < y3) {return false;}
-        }
-    }
-    return {x: x,y: y};
-}
-
 /**
  * Intersection line
  * @param {} x1 First segment first point x
@@ -206,6 +161,57 @@ export function lineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
     }
     return {x: x,y: y};
 }
+
+
+
+export function halfLineAndLineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
+    var intersection = lineIntersection(x1,y1,x2,y2, x3,y3,x4,y4);
+    if (!intersection) return false;
+    var x = intersection.x;
+    var y = intersection.y;
+    if (x1>=x2) {
+        if (x > x1) {return false;}
+    } else {
+        if (x < x1) {return false;}
+    }
+    if (y1>=y2) {
+        if (y > y1) {return false;}
+    } else {
+        if (y < y1) {return false;}
+    }
+    return {x: x,y: y};
+}
+
+/**
+ * Intersection half line
+ * @param {} x1 First segment first point x
+ * @param {} y1 First segment first point y
+ * @param {} x2 First segment second point x
+ * @param {} y2 First segment second point y
+ * @param {} x3 Second segment first point x
+ * @param {} y3 Second segment first point y
+ * @param {} x4 Second segment second point x
+ * @param {} y4 Second segment second point y
+ * @returns {} the intersection, if it exists
+ */
+export function halfLineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
+    var obj = halfLineAndLineIntersection(x1,y1,x2,y2, x3,y3,x4,y4);
+    if (!obj) return false;
+    var x=obj.x;
+    var y=obj.y;
+    if (x3>=x4) {
+        if (x > x3) {return false;}
+    } else {
+        if (x < x3) {return false;}
+    }
+    if (y3>=y4) {
+        if (y > y3) {return false;}
+    } else {
+        if (y < y3) {return false;}
+    }
+    return {x: x,y: y};
+}
+
 
 /**
  * Helper function to check if there is intersection between two segments represented as linestring objects
