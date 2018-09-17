@@ -260,7 +260,7 @@ export default class ASTreeSectors {
         return sectors;
     }
 
-    numberIntersection(sectors) {
+    maxNumberIntersection(sectors) {
         var nb = 0;
         for (let index in sectors) {
             var sector = sectors[index];
@@ -279,7 +279,7 @@ export default class ASTreeSectors {
         var max = -1;
         for (let indices of elements) {
             var sectors = this.sectorsFromIndices(indices);
-            var nb = this.numberIntersection(sectors);
+            var nb = this.maxNumberIntersection(sectors);
             if (nb > max) {
                 max = nb;
             }
@@ -455,41 +455,89 @@ export default class ASTreeSectors {
         return;
     }
 
+    numberIntersection(sector, sectors) {
+        var nb = 0;
+        for (let sector2 of sectors) {
+            if (this.sectorsIntersect(sector, sector2)) {
+                nb++;
+            }
+        }
+        return nb;
+    }
+
+    sortByNumberIntersection(sectors) {
+        var that = this;
+        sectors.sort(function(a,b) {
+            return that.numberIntersection(a, sectors) - that.numberIntersection(b, sectors);
+        });
+    }
+
+    intersections(sector) {
+        var inters = [];
+        inters.push(sector);
+        for (let sector2 of this.sectors) {
+            if (this.sectorsIntersect(sector, sector2)) {
+                inters.push(sector2);
+            }
+        }
+        return inters;
+    }
+
+
+    buildTreeIntersection(node) {
+        if (this.sectors.length === 0) return;
+        var sector = this.sectors.shift();
+        var inters = this.intersections(sector);
+        var converted = this.convertArcToHalfPlanes(sector);
+        var convertedComp = this.complementarySector(converted);
+        var child = new Node(converted);
+        child.setParentNode(node);
+        for (let s of inters) {
+            child.addChild(new Node(s));
+        }
+        var child2 = new Node(convertedComp);
+        node.addChild(child);
+        node.addChild(child2);
+        this.buildTreeIntersection(child2);
+    }
 
 
     load(useHeuristic = false) {
-        var elements = [];
-        for (let i = 0; i < this.sectors.length; i++) {
-            let arc = this.sectors[i];
-            let intersectingI = this.intersectionIndices(this.sectors, arc, i);
-            elements.push(intersectingI);
-        }
-        if (useHeuristic) {
-            var nb = this.maxNumberSelfIntersections(elements);
-            this.nb = nb;
-        }
+        this.sortByNumberIntersection(this.sectors);
+        var index = 0;
+        this.buildTreeIntersection(this.tree, index);
+        // var elements = [];
+        // for (let i = 0; i < this.sectors.length; i++) {
+        //     let arc = this.sectors[i];
+        //     let intersectingI = this.intersectionIndices(this.sectors, arc, i);
+        //     elements.push(intersectingI);
+        // }
+        // if (useHeuristic) {
+        //     var nb = this.maxNumberSelfIntersections(elements);
+        //     this.nb = nb;
+        // }
 
-        var connectedComponents = [];
-        for (let i = 0; i < elements.length; i++) {
-            let cc = [];
-            this.connectedComponents(cc, elements, i, []);
-            connectedComponents.push(cc);
-        }
-        connectedComponents = this.removeDuplicates(connectedComponents);
+        // var connectedComponents = [];
+        // for (let i = 0; i < elements.length; i++) {
+        //     let cc = [];
+        //     this.connectedComponents(cc, elements, i, []);
+        //     connectedComponents.push(cc);
+        // }
+        // connectedComponents = this.removeDuplicates(connectedComponents);
 
-        connectedComponents.sort(function(a,b) {
-            return (a.length - b.length);
-        });
+        // connectedComponents.sort(function(a,b) {
+        //     return (a.length - b.length);
+        // });
 
-        var connectedSectors = [];
-        for (let i = 0; i < connectedComponents.length; i++) {
-            var connectedSector = this.connectedComponentToSector(connectedComponents[i]);
-            connectedSectors.push(connectedSector);
-        }
+        // var connectedSectors = [];
+        // for (let i = 0; i < connectedComponents.length; i++) {
+        //     var connectedSector = this.connectedComponentToSector(connectedComponents[i]);
+        //     connectedSectors.push(connectedSector);
+        // }
 
-        var length = connectedSectors.length;
-        var indices = [...Array(length).keys()];
-        this.buildTreeRecursive(connectedSectors, this.tree, connectedComponents, indices);
+        // var length = connectedSectors.length;
+        // var indices = [...Array(length).keys()];
+        // this.buildTreeRecursive(connectedSectors, this.tree, connectedComponents, indices);
         console.log(this.tree);
     }
 

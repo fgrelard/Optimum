@@ -257,13 +257,12 @@ export default class ASTree {
                 }
             }
         }
-        console.log(difference);
         if (bestPlane)
             this.addedSectors.push(bestSector);
         return {plane: bestPlane, sector: bestSector};
     }
 
-    differenceAboveBelowPlane(plane, sectors, func = Math.abs) {
+    differenceAboveBelowPlane(plane, sectors, func) {
         var numberLeft = 0;
         var numberRight = 0;
         var plane2 = this.complementaryPlane(plane);
@@ -314,7 +313,7 @@ export default class ASTree {
         return sectors;
     }
 
-    numberIntersection(sectors) {
+    maxNumberIntersection(sectors) {
         var min = -1;
         for (let index in sectors) {
             var sector = sectors[index];
@@ -332,11 +331,28 @@ export default class ASTree {
         return Math.min(min, sectors.length);
     }
 
+    numberIntersection(sector, sectors) {
+        var nb = 0;
+        for (let sector2 of sectors) {
+            if (this.sectorsIntersect(sector, sector2)) {
+                nb++;
+            }
+        }
+        return nb;
+    }
+
+    sortByNumberIntersection(sectors) {
+        var that = this;
+        sectors.sort(function(a,b) {
+            return that.numberIntersection(a, sectors) - that.numberIntersection(b, sectors);
+        });
+    }
+
     maxNumberSelfIntersections(elements) {
         var max = -1;
         for (let indices of elements) {
             var sectors = this.sectorsFromIndices(indices);
-            var nb = this.numberIntersection(sectors);
+            var nb = this.maxNumberIntersection(sectors);
             if (nb > max) {
                 max = nb;
             }
@@ -424,7 +440,7 @@ export default class ASTree {
     }
 
     separateIntersectingSectors(sectors, node, cc) {
-        if (this.cpt > 50) return;
+        if (this.cpt > 1000) return;
         this.cpt++;
         var that = this;
         var isLeaf = cc.every(function(element) {
@@ -443,7 +459,6 @@ export default class ASTree {
         }
         var bestSeparation = this.separatingPlane(sectors, node, false);
         var plane = bestSeparation.plane;
-        if (!plane) return;
         var plane2 = this.complementaryPlane(plane);
         var associatedSector = bestSeparation.sector;
         var splitPlanes = [plane, plane2];
@@ -483,12 +498,11 @@ export default class ASTree {
             connectedComponents.push(cc);
         }
         connectedComponents = this.removeDuplicates(connectedComponents);
-        console.log(connectedComponents);
+
         if (useHeuristic) {
             this.maxNumberLeaves = this.maxNumberSelfIntersections(connectedComponents);
             console.log(this.maxNumberLeaves);
         }
-
 
         var connectedSectors = [];
         for (let i = 0; i < connectedComponents.length; i++) {

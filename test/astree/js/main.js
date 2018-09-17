@@ -18,7 +18,7 @@ import {euclideanDistance} from '../../../js/lib/distance.js';
 import $ from 'jquery';
 import {getRandomArbitrary, addRandomArcs, addRandomLocations} from '../../../js/lib/randomfeatures.js';
 import Arc from '../../../js/lib/arc.js';
-import ASTree from '../../../js/lib/astree.js';
+import ASTree from '../../../js/lib/astreesectors.js';
 
 var stEtienneLonLatConv = [5000, 5000];
 
@@ -287,11 +287,11 @@ function generateSectors() {
                 new Arc([3,3], 100, 215, 260),
                 new Arc([2,7], 100, 180, 200),
                 new Arc([6,6], 100, 0, 45),
+                new Arc([-50,-20], 100, -20, 20),
                 new Arc([6,4], 100, 290, 330),
                 new Arc([7,8], 100, 130, 180),
                 new Arc([10,0], 100, 270, 310),
-                new Arc([-20,20], 100, 250, 290),
-                new Arc([-50,-20], 100, -20, 20)
+                new Arc([-20,20], 100, 250, 290)
                ];
 
     arcs = [new Arc([695.5791906089562,682.470408052749], 100,340.40370632372, 373.8835490935983),
@@ -305,10 +305,10 @@ function generateSectors() {
             new Arc([308.8659189922946,666.6564337313494], 100,308.09498873779125, 342.4333523965816),
             new Arc([401.9460290586532,737.9504651725765], 100,235.2443085586332, 269.6795451469176)];
 
-    // arcs = [new Arc([300,500], 100, 340, 380),
-    //         new Arc([700,500], 100, 160, 200),
-    //         new Arc([500,700], 100, 250, 290),
-    //         new Arc([500,300], 100, 70, 110)];
+    arcs = [new Arc([300,500], 100, 340, 380),
+            new Arc([700,500], 100, 160, 200),
+            new Arc([500,700], 100, 250, 290),
+            new Arc([500,300], 100, 70, 110)];
 
     for (var i  = 0; i < arcs.length; i++) {
         arcs[i].computeGeometry();
@@ -321,10 +321,9 @@ function generateSectors() {
 
 points.getSource().addFeature(new Feature(new Point(stEtienneLonLatConv)));
 
-var arcs = generateRandomSectors(5);
-console.log(arcs);
-var astree = new ASTree(arcs, 2);
-astree.load();
+var arcs = generateSectors(50);
+var astree = new ASTree(arcs, 3);
+astree.load(true);
 
 arcs.map(function(element) {
     console.log("new Arc(["+ element.center + "], 100," + element.alpha + ", " + element.omega +"),");
