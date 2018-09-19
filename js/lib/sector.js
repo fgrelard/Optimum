@@ -6,29 +6,30 @@ export default class Sector {
         this.secondPlane = new Plane(center, normal2);
     }
 
-    isSectorAbove(arc) {
-        return this.firstPlane.isSectorAbove(arc) &&
-            this.secondPlane.isSectorAbove(arc);
+    isSectorAbove(arc, isLine = false) {
+        return (this.firstPlane.isSectorAbove(arc, false, isLine) &&
+                this.secondPlane.isSectorAbove(arc, false, isLine));
     }
 
-    isSectorAboveComplementary(arc) {
-        return this.firstPlane.isSectorAbove(arc) ||
-            this.secondPlane.isSectorAbove(arc);
+    isSectorAboveComplementary(arc, isLine = false) {
+        return (this.firstPlane.isSectorAbove(arc, false, isLine) ||
+                this.secondPlane.isSectorAbove(arc, false, isLine));
     }
+
 
     isAbove(p) {
-        return this.firstPlane.isAbove(p) &&
-            this.secondPlane.isAbove(p);
+        return (this.firstPlane.isAbove(p) &&
+                this.secondPlane.isAbove(p));
     }
 
     equals(other) {
-        return this.firstPlane.equals(other.firstPlane) &&
-            this.secondPlane.equals(other.secondPlane);
+        return (this.firstPlane.equals(other.firstPlane) &&
+                this.secondPlane.equals(other.secondPlane));
     }
 
     sameCenter(other) {
-        return this.firstPlane.center[0] === other.firstPlane.center[0] &&
-            this.firstPlane.center[1] === other.firstPlane.center[1];
+        return (this.firstPlane.center[0] === other.firstPlane.center[0] &&
+                this.firstPlane.center[1] === other.firstPlane.center[1]);
     }
 
     toString() {

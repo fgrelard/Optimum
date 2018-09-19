@@ -1,5 +1,5 @@
 import Arc from './arc.js';
-import {halfLineIntersection, segmentIntersection} from './lineintersection.js';
+import {halfLineIntersection, halfLineAndLineIntersection, segmentIntersection} from './lineintersection.js';
 import {euclideanDistance} from './distance.js';
 import Plane from './plane.js';
 
@@ -440,8 +440,8 @@ export default class ASTree {
     }
 
     separateIntersectingSectors(sectors, node, cc) {
-        if (this.cpt > 1000) return;
-        this.cpt++;
+        // if (this.cpt > 1000) return;
+        // this.cpt++;
         var that = this;
         var isLeaf = cc.every(function(element) {
             return that.addedSectors.indexOf(element) !== -1;
@@ -459,6 +459,7 @@ export default class ASTree {
         }
         var bestSeparation = this.separatingPlane(sectors, node, false);
         var plane = bestSeparation.plane;
+        if (!plane) return;
         var plane2 = this.complementaryPlane(plane);
         var associatedSector = bestSeparation.sector;
         var splitPlanes = [plane, plane2];
@@ -484,6 +485,108 @@ export default class ASTree {
         return;
     }
 
+    positionSectorsIntersect(sector, otherSector, first = true) {
+        var f = sector.center;
+        var la = sector.fullGeometry[1].getFlatCoordinates();
+        var lo = sector.fullGeometry[2].getFlatCoordinates();
+        var s = (first) ? la : lo;
+        var fOther = otherSector.center;
+        var laOther = otherSector.fullGeometry[1].getFlatCoordinates();
+        var loOther = otherSector.fullGeometry[2].getFlatCoordinates();
+        var i1 = halfLineIntersection(f[0], f[1],
+                                      s[0], s[1],
+                                      fOther[0], fOther[1],
+                                      laOther[0], laOther[1]);
+        var i2 = halfLineIntersection(f[0], f[1],
+                                      s[0], s[1],
+                                      fOther[0], fOther[1],
+                                      loOther[0], loOther[1]);
+
+        var i3 = halfLineAndLineIntersection(f[0], f[1],
+                                             s[0], s[1],
+                                             fOther[0], fOther[1],
+                                             loOther[0], loOther[1]
+                                             );
+
+
+        var p1 = (i1) ? [i1.x, i1.y] : f;
+        var p2 = (i2) ? [i2.x, i2.y] : [Number.MAX_VALUE, Number.MAX_VALUE];
+        if (euclideanDistance(p1, f) > euclideanDistance(p2, f)) {
+            var tmp = p1;
+            p1 = p2;
+            p2 = tmp;
+        }
+
+        if (!i2 && i3) {
+            p2 = f.slice();
+        }
+        return {i1: p1,
+                i2: p2,
+                f: f};
+    }
+
+    intersections(sectors, first = true) {
+        var intersections = [];
+        for (var sector of sectors) {
+            var positions = [];
+            for (var otherSector of sectors) {
+                var p = this.positionSectorsIntersect(sector, otherSector, first);
+                positions.push(p);
+            }
+            positions.sort(function(a,b) {
+                return (a[0] !== sector.center[0] && a[1] !== sector.center[1]) ?
+                    (euclideanDistance(a.i1, sector.center) - euclideanDistance(b.i1, sector.center)) :
+                    (euclideanDistance(a.i1, a.i2) - euclideanDistance(b.i1, b.i2));
+            });
+            intersections.push(positions);
+        }
+        return intersections;
+    }
+
+    numberIntersectionLocal(intersection, f) {
+        var max = 0;
+        var shown = false;
+        for (var i of intersection) {
+            if (this.arraysEqual(i.i1, f)) continue;
+            var nb = 2;
+            var lowerBound = {i1: i.i1.slice(),
+                              i2: i.i2.slice()};
+            for (var j of intersection) {
+                if (this.arraysEqual(j.i1, f)) continue;
+                if (euclideanDistance(lowerBound.i1, f) <= euclideanDistance(j.i1, f) && euclideanDistance(lowerBound.i2, f) > euclideanDistance(j.i1, f)) {
+                    nb++;
+                    if (nb > max) {
+                        max = nb;
+                    }
+                } else {
+                    nb = 2;
+                    lowerBound.i2 = j.i2.slice();
+                }
+                if (j.i2[0] < lowerBound.i2[0]) {
+                    lowerBound.i2 = j.i2.slice();
+                }
+                lowerBound.i1 = j.i1.slice();
+            }
+        }
+
+        return max;
+    }
+
+    maxNumberIntersectionLocal(intersections) {
+        var max = 0;
+        var iMax = 0;
+        for (var index in intersections) {
+            var inters = intersections[index].slice();
+            var f = inters[0].f.slice();
+            var nb = this.numberIntersectionLocal(inters, f);
+            if (nb > max) {
+                max = nb;
+                iMax = index;
+            }
+        }
+        return max+1;
+    }
+
     load(useHeuristic = false) {
         var elements = [];
         for (let i = 0; i < this.sectors.length; i++) {
@@ -498,9 +601,10 @@ export default class ASTree {
             connectedComponents.push(cc);
         }
         connectedComponents = this.removeDuplicates(connectedComponents);
-
+        var inters = this.intersections(this.sectors);
+        var inters2 = this.intersections(this.sectors, false);
         if (useHeuristic) {
-            this.maxNumberLeaves = this.maxNumberSelfIntersections(connectedComponents);
+            this.maxNumberLeaves = Math.max(this.maxNumberIntersectionLocal(inters), this.maxNumberIntersectionLocal(inters2));
             console.log(this.maxNumberLeaves);
         }
 
@@ -515,10 +619,10 @@ export default class ASTree {
         console.log(this.tree);
     }
 
-    searchRecursive(p, hits, node) {
-        console.log(node);
+    searchRecursive(p, hits, node, number = 0) {
+        number++;
         var hasChildren = node.children;
-        if (!hasChildren) return;
+        if (!hasChildren) {console.log(number); return;}
         var nbChildren = node.children.length;
         var index = 0;
         //If it is a sector, return all sectors from this node
@@ -536,21 +640,21 @@ export default class ASTree {
         }
 
         if (index >= nbChildren) { // a leaf was reached
+            console.log(number);
             return;
         }
         var childLeft = node.children[index];
         var childRight = node.children[index + 1];
         if (childLeft.value.isAbove(p)) {
-            this.searchRecursive(p, hits, childLeft);
+            this.searchRecursive(p, hits, childLeft, number);
         }
         else {
-            this.searchRecursive(p, hits, childRight);
+            this.searchRecursive(p, hits, childRight, number);
         }
 
     }
 
     search(p) {
-        console.log("search");
         var hits = [];
         this.searchRecursive(p, hits, this.tree);
         return hits;

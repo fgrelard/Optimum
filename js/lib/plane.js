@@ -1,4 +1,4 @@
-import {halfLineIntersection} from './lineintersection.js';
+import {halfLineIntersection, halfLineAndLineIntersection} from './lineintersection.js';
 
 export default class Plane {
     constructor(center, normal) {
@@ -14,14 +14,15 @@ export default class Plane {
 	    return (valueToCheckForPlane >= d);
     }
 
-    isSectorAbove(arc, isComplementary = false) {
+    isSectorAbove(arc, isComplementary = false, isLine = false) {
+        var func = (isLine) ? halfLineIntersection : halfLineAndLineIntersection;
         var isPointAbove = this.isAbove(arc.center);
         if (isPointAbove) return true;
 
         if (!arc.fullGeometry) {
             arc.computeGeometry();
         }
-        var f = arc.center;
+        var f  = arc.center;
         var la = arc.fullGeometry[1].getFlatCoordinates();
         var lo = arc.fullGeometry[2].getFlatCoordinates();
 
@@ -33,14 +34,14 @@ export default class Plane {
         var lPlane = [this.center[0] + basisVector[0] * 5,
                       this.center[1] + basisVector[1] * 5];
 
-        var i1 = halfLineIntersection(f[0], f[1],
-                                      la[0], la[1],
-                                      fPlane[0], fPlane[1],
-                                      lPlane[0], lPlane[1]);
-        var i2 = halfLineIntersection(f[0], f[1],
-                                      lo[0], lo[1],
-                                      fPlane[0], fPlane[1],
-                                      lPlane[0], lPlane[1]);
+        var i1 = func(f[0], f[1],
+                      la[0], la[1],
+                      fPlane[0], fPlane[1],
+                      lPlane[0], lPlane[1]);
+        var i2 = func(f[0], f[1],
+                      lo[0], lo[1],
+                      fPlane[0], fPlane[1],
+                      lPlane[0], lPlane[1]);
         var isSectorAbove = i1 || i2;
         return !!isSectorAbove;
        //return this.isAbove(la) || this.isAbove(lo);

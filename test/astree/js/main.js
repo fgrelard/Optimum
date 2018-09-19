@@ -18,9 +18,9 @@ import {euclideanDistance} from '../../../js/lib/distance.js';
 import $ from 'jquery';
 import {getRandomArbitrary, addRandomArcs, addRandomLocations} from '../../../js/lib/randomfeatures.js';
 import Arc from '../../../js/lib/arc.js';
-import ASTree from '../../../js/lib/astreesectors.js';
+import ASTree from '../../../js/lib/astree.js';
 
-var stEtienneLonLatConv = [5000, 5000];
+var stEtienneLonLatConv = [0, 0];
 
 var polygonSource = new Vector();
 var polygon = new VectorLayer({
@@ -64,6 +64,20 @@ var map = new Map({ layers: [ new Group({ title: 'Cartes', layers:
                                           [new TileLayer({ title:'OSM', type:'base', source: new OSM() })]
                                         }) ], target: 'map', view: new View({ center: stEtienneLonLatConv,
                                                                               zoom: 18 }) });
+
+function test(sectors, tree) {
+    var cpt = 0;
+    for (var sector of sectors) {
+        var c = sector.center;
+        var angle = (sector.alpha + sector.omega) / 2;
+        var vector = tree.angleToVector(angle);
+        var p = [c[0] + vector[0] * 50,
+                 c[1] + vector[1] * 50];
+        var hits = tree.search(p);
+        cpt += (hits.length > 0) ? 1 : 0;
+    }
+    return (cpt === sectors.length);
+}
 
 function sectorsStEtienne() {
     var arcs = [new Arc([490530.2638429834,5689709.625998666],100, 65.42000000000003, 65.4729),
@@ -294,21 +308,31 @@ function generateSectors() {
                 new Arc([-20,20], 100, 250, 290)
                ];
 
-    arcs = [new Arc([695.5791906089562,682.470408052749], 100,340.40370632372, 373.8835490935983),
-            new Arc([311.2565668443186,362.4144443692543], 100,34.19998354451422, 67.31532293442288),
-            new Arc([209.4886508306108,725.8289945894046], 100,209.98135845908243, 242.89561110818136),
-            new Arc([181.83403726856562,754.9713943267252], 100,180.8384162220812, 219.87519835597396),
-            new Arc([617.281746917871,445.653401470956], 100,330.812323203295, 363.889909866904),
-            new Arc([599.863120758276,637.9239663099816], 100,33.64385446563878, 69.63283336575986),
-            new Arc([741.2868279603404,361.336868121827], 100,51.89358642233333, 83.3442906587361),
-            new Arc([416.31082659015397,214.5249338274188], 100,61.08473980373205, 99.75100877597527),
-            new Arc([308.8659189922946,666.6564337313494], 100,308.09498873779125, 342.4333523965816),
-            new Arc([401.9460290586532,737.9504651725765], 100,235.2443085586332, 269.6795451469176)];
+    arcs = [new Arc([1963.0608605225577,7957.874212265062], 100,124.39497950345265, 139.09290292360666),
+            new Arc([2344.6697222992884,1691.0811851001095], 100,7.045371909506182, 24.287886995379687),
+            new Arc([5787.417890761797,7064.850566603171], 100,231.66134498686847, 250.90326977162835),
+            new Arc([3026.4932263104974,6276.769621267011], 100,202.70472855092603, 222.37438079561727),
+            new Arc([3732.9864949538533,6027.55690273146], 100,337.362744099554, 348.68752287148664),
+            new Arc([8165.901073665949,5049.686970229881], 100,175.2452976196485, 189.23374076168815),
+            new Arc([8326.383059964255,7128.674140338831], 100,250.21560154921627, 266.710402168734),
+            new Arc([3587.4510293395783,4335.995191798014], 100,304.7664569148943, 322.0883725897182),
+            new Arc([7606.755463303727,7156.3795666310125], 100,237.78406709673143, 257.52493989875484),
+            new Arc([3988.087356929321,8131.183329366368], 100,330.77818098250737, 343.5924581992027),
+            new Arc([4264.233464574102,6544.889901980767], 100,217.83793345817986, 230.60842039818124),
+            new Arc([7854.638039286165,7136.5408779695645], 100,149.7640466691495, 160.0142719168303),
+            new Arc([7303.696597771188,5970.944949518313], 100,164.81113140018903, 180.44472995133168),
+            new Arc([7663.127328982742,6994.107055100576], 100,190.00695296167777, 201.81085774567083),
+            new Arc([6315.151273068706,3844.383120171383], 100,177.9377340526766, 190.65952606340394),
+            new Arc([8158.496188068568,2553.416424202548], 100,183.24669014561954, 199.37717366116203),
+            new Arc([3029.0470401813127,6998.160534655768], 100,261.97751784493454, 281.33322186123377),
+            new Arc([7229.123939175481,5583.74795730048], 100,303.6522737133702, 317.3806406310329),
+            new Arc([6984.164628707002,2105.3382018106704], 100,170.81142906098452, 190.6500243794766),
+            new Arc([2514.1684691563605,5246.7311660052565], 100,104.32259228743628, 118.09583149706002)];
 
-    arcs = [new Arc([300,500], 100, 340, 380),
-            new Arc([700,500], 100, 160, 200),
-            new Arc([500,700], 100, 250, 290),
-            new Arc([500,300], 100, 70, 110)];
+    // arcs = [new Arc([300,500], 100, 340, 380),
+    //         new Arc([700,500], 100, 160, 200),
+    //         new Arc([500,700], 100, 250, 290),
+    //         new Arc([500,300], 100, 70, 110)];
 
     for (var i  = 0; i < arcs.length; i++) {
         arcs[i].computeGeometry();
@@ -321,8 +345,8 @@ function generateSectors() {
 
 points.getSource().addFeature(new Feature(new Point(stEtienneLonLatConv)));
 
-var arcs = generateSectors(50);
-var astree = new ASTree(arcs, 3);
+var arcs = sectorsStEtienne(50);
+var astree = new ASTree(arcs, 11);
 astree.load(true);
 
 arcs.map(function(element) {
@@ -380,25 +404,28 @@ var options = {
           arrows: {to : true }
         }
       };
-var network = new vis.Network(container, data, options);
+// var network = new vis.Network(container, data, options);
 
-network.on("selectNode", function (params) {
-    polygonSelected.getSource().clear();
-    var node = dataNodes[params.nodes[0]-1];
-    var sector = node.value;
-    var center = sector.center;
-    var closestArc;
-    var min = Number.MAX_VALUE;
-    for (let arc of arcs) {
-        var d = euclideanDistance(center, arc.center);
-        if (d < min) {
-            min = d;
-            closestArc = arc;
-        }
-    }
-    polygonSelected.getSource().addFeature(new Feature(closestArc));
+// network.on("selectNode", function (params) {
+//     polygonSelected.getSource().clear();
+//     var node = dataNodes[params.nodes[0]-1];
+//     var sector = node.value;
+//     if (sector.firstPlane)
+//         var center = sector.firstPlane.center;
+//     else
+//         center = sector.center;
+//     var closestArc;
+//     var min = Number.MAX_VALUE;
+//     for (let arc of arcs) {
+//         var d = euclideanDistance(center, arc.center);
+//         if (d < min) {
+//             min = d;
+//             closestArc = arc;
+//         }
+//     }
+//    polygonSelected.getSource().addFeature(new Feature(closestArc));
 
-});
+// });
 
 map.on('click', function(event) {
     polygonFound.getSource().clear();
@@ -415,3 +442,6 @@ map.addLayer(polygon);
 map.addLayer(points);
 map.addLayer(polygonFound);
 map.addLayer(polygonSelected);
+
+var t = test(arcs, astree);
+console.log("Test=" + t);
