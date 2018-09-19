@@ -265,14 +265,17 @@ export default class ASTree {
     differenceAboveBelowPlane(plane, sectors, func) {
         var numberLeft = 0;
         var numberRight = 0;
+        var left = false, right = false;
         var plane2 = this.complementaryPlane(plane);
         for (let i = 0; i < sectors.length; i++) {
             var sector = sectors[i];
             if (plane.isSectorAbove(sector)) {
                 numberLeft++;
+                left = true;
             }
             if (plane2.isSectorAbove(sector, true)) {
-                numberRight++;
+                if (!left)
+                    numberRight++;
             }
         }
         return func(numberLeft, numberRight);

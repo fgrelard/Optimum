@@ -287,6 +287,7 @@ function generateRandomSectors(n) {
     var locations = addRandomLocations(extent, n);
     var arcs = addRandomArcs(locations);
     for (var i  = 0; i < arcs.length; i++) {
+        arcs[i].radius = 10000;
         arcs[i].computeGeometry();
         polygon.getSource().addFeature(new Feature(arcs[i]));
     }
@@ -345,7 +346,7 @@ function generateSectors() {
 
 points.getSource().addFeature(new Feature(new Point(stEtienneLonLatConv)));
 
-var arcs = sectorsStEtienne(50);
+var arcs = generateRandomSectors(100);
 var astree = new ASTree(arcs, 11);
 astree.load(true);
 

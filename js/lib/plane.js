@@ -14,8 +14,8 @@ export default class Plane {
 	    return (valueToCheckForPlane >= d);
     }
 
-    isSectorAbove(arc, isComplementary = false, isLine = false) {
-        var func = (isLine) ? halfLineIntersection : halfLineAndLineIntersection;
+    isSectorAbove(arc, isComplementary = false, isHalfLine = false) {
+        var func = (isHalfLine) ? halfLineIntersection : halfLineAndLineIntersection;
         var isPointAbove = this.isAbove(arc.center);
         if (isPointAbove) return true;
 
