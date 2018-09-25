@@ -18,3 +18,14 @@ export function boundingBox(positions) {
     }
     return [low, up];
 }
+
+export function centerOfMass(positions) {
+    var g = [0,0];
+    for (var p of positions) {
+        g[0] += p[0];
+        g[1] += p[1];
+    }
+    g[0] /= positions.length;
+    g[1] /= positions.length;
+    return g;
+}

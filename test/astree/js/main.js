@@ -19,10 +19,10 @@ import $ from 'jquery';
 import {getRandomArbitrary, addRandomArcs, addRandomLocations} from '../../../js/lib/randomfeatures.js';
 import Arc from '../../../js/lib/arc.js';
 import ASTree from '../../../js/lib/astree.js';
-import {angleToVector, boundingBox} from '../../../js/lib/geometry.js';
+import {angleToVector, boundingBox, centerOfMass} from '../../../js/lib/geometry.js';
 import rbush from 'rbush';
 
-var stEtienneLonLatConv = [0, 0];
+//var stEtienneLonLatConv = [0, 0];
 
 var polygonSource = new Vector();
 var polygon = new VectorLayer({
@@ -62,10 +62,6 @@ var points = new VectorLayer({
     source: pointSource
 });
 
-var map = new Map({ layers: [ new Group({ title: 'Cartes', layers:
-                                          [new TileLayer({ title:'OSM', type:'base', source: new OSM() })]
-                                        }) ], target: 'map', view: new View({ center: stEtienneLonLatConv,
-                                                                              zoom: 18 }) });
 
 function test(sectors, tree) {
     var cpt = 0;
@@ -280,8 +276,8 @@ function sectorsStEtienne() {
 
     var length = arcs.length;
     for (var i  = 0; i < length; i++) {
-        //arcs[i].center[0] -= 490000;
-        //arcs[i].center[1] -= 5687027;
+        // arcs[i].center[0] -= 490000;
+        // arcs[i].center[1] -= 5687027;
         arcs[i].computeGeometry();
         polygon.getSource().addFeature(new Feature(arcs[i]));
      }
@@ -347,22 +343,27 @@ function generateSectors() {
     return arcs;
 }
 
-function lineEquation(vector, center) {
-    if (Math.abs(vector[1]) === 1) vector = [(vector[0] < 0) ? -0.01 : 0.01,
-                                             (vector[1] < 0)? -0.99 : 0.99];
-    var x = center[0] + vector[1] / vector[0];
-    var y = center[1] - x * center[0];
+function lineEquation(vector, center, g) {
+    if (Math.abs(vector[1]) === 1) return null;
+        // vector = [(vector[0] < 0) ? -0.01 : 0.01,
+    //           (vector[1] < 0)? -0.99 : 0.99];
+    var centerNorm = [center[0] - g[0],
+                      center[1] - g[1]];
+    console.log(centerNorm);
+    var x =  vector[1] / vector[0];
+    var y = centerNorm[1] - x * centerNorm[0];
     return [x, -y];
 }
 
 
-function dualRepresentation(arcs) {
+function dualRepresentation(arcs, g) {
     var dual = [];
     for (var arc of arcs) {
         var firstVector = angleToVector(arc.alpha);
         var secondVector = angleToVector(arc.omega);
-        var firstLine = lineEquation(firstVector, arc.center);
-        var secondLine = lineEquation(secondVector, arc.center);
+        var firstLine = lineEquation(firstVector, arc.center, g);
+        var secondLine = lineEquation(secondVector, arc.center, g);
+        if (!firstLine || !secondLine) continue;
         points.getSource().addFeature(new Feature(new Point(firstLine)));
         points.getSource().addFeature(new Feature(new Point(secondLine)));
         var positions = [firstLine, secondLine];
@@ -414,12 +415,21 @@ console.log(intersectionLineRectangle([4,-1], {minX: 0.5,
                                                maxX: 3,
                                                maxY: 0}));
 
-points.getSource().addFeature(new Feature(new Point(stEtienneLonLatConv)));
 
 var arcs = sectorsStEtienne(30);
+var g = centerOfMass(arcs.map(function(a) {
+    return a.center;
+}));
+
+var map = new Map({ layers: [ new Group({ title: 'Cartes', layers:[new TileLayer({ title:'OSM', type:'base', source: new OSM() })]}) ],
+                    target: 'map',
+                    view: new View({ center: g,
+                                     zoom: 18 }) });
+
+points.getSource().addFeature(new Feature(new Point(g)));
 
 
-var dual = dualRepresentation(arcs);
+var dual = dualRepresentation(arcs, g);
 var rtree = rbush(5);
 rtree.load(dual);
 console.log(rtree);
@@ -436,7 +446,7 @@ map.on('click', function(event) {
     // }
 
     var p = event.coordinate;
-    var l = [p[0], -p[1]];
+    var l = [p[0] - g[0], -p[1] + g[1]];
     var hits = [];
     console.log(l);
     var number = {cpt: 0};
@@ -448,6 +458,9 @@ map.on('click', function(event) {
 
         polygonFound.getSource().addFeature(new Feature(polyFound));
     }
+    var data = rtree.data;
+    var mainTree = new Polygon([[[data.minX, data.minY], [data.maxX, data.minY], [data.maxX, data.maxY], [data.minX, data.maxY]]]);
+    polygonFound.getSource().addFeature(new Feature(mainTree));
 });
 
 map.addLayer(polygon);
