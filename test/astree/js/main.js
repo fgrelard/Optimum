@@ -280,8 +280,8 @@ function sectorsStEtienne() {
 
     var length = arcs.length;
     for (var i  = 0; i < length; i++) {
-        arcs[i].center[0] -= 490000;
-        arcs[i].center[1] -= 5687027;
+        //arcs[i].center[0] -= 490000;
+        //arcs[i].center[1] -= 5687027;
         arcs[i].computeGeometry();
         polygon.getSource().addFeature(new Feature(arcs[i]));
      }
@@ -350,7 +350,7 @@ function generateSectors() {
 function lineEquation(vector, center) {
     if (Math.abs(vector[1]) === 1) vector = [(vector[0] < 0) ? -0.01 : 0.01,
                                              (vector[1] < 0)? -0.99 : 0.99];
-    var x = vector[1] / vector[0];
+    var x = center[0] + vector[1] / vector[0];
     var y = center[1] - x * center[0];
     return [x, -y];
 }
@@ -391,7 +391,8 @@ function intersectionLineRectangle(line, rectangle) {
     return condition;
 }
 
-function searchLineRTreeRecursive(hits, node, line) {
+function searchLineRTreeRecursive(hits, node, line, number = {cpt: 0}) {
+    number.cpt++;
     if (node.leaf) {
         hits.push(...node.children);
         return;
@@ -402,7 +403,7 @@ function searchLineRTreeRecursive(hits, node, line) {
                          maxX: child.maxX,
                          maxY: child.maxY};
         if (intersectionLineRectangle(line, rectangle)) {
-            searchLineRTreeRecursive(hits, child, line);
+            searchLineRTreeRecursive(hits, child, line, number);
         }
     }
     return;
@@ -416,15 +417,43 @@ console.log(intersectionLineRectangle([4,-1], {minX: 0.5,
 points.getSource().addFeature(new Feature(new Point(stEtienneLonLatConv)));
 
 var arcs = sectorsStEtienne(30);
-// var astree = new ASTree(arcs, 5);
-// astree.load(true);
-
 
 
 var dual = dualRepresentation(arcs);
 var rtree = rbush(5);
 rtree.load(dual);
 console.log(rtree);
+
+
+map.on('click', function(event) {
+    polygonFound.getSource().clear();
+    points.getSource().clear();
+    points.getSource().addFeature(new Feature(new Point(event.coordinate)));
+    // var found = astree.search(event.coordinate);
+    // for (let i = 0; i < found.length; i++) {
+    //     var polyFound = found[i];
+    //     polygonFound.getSource().addFeature(new Feature(polyFound));
+    // }
+
+    var p = event.coordinate;
+    var l = [p[0], -p[1]];
+    var hits = [];
+    console.log(l);
+    var number = {cpt: 0};
+    searchLineRTreeRecursive(hits, rtree.data, l, number);
+    console.log(number.cpt);
+    console.log(hits);
+    for (let i = 0; i < hits.length; i++) {
+        var polyFound = hits[i].feature;
+
+        polygonFound.getSource().addFeature(new Feature(polyFound));
+    }
+});
+
+map.addLayer(polygon);
+map.addLayer(points);
+map.addLayer(polygonFound);
+map.addLayer(polygonSelected);
 
 // arcs.map(function(element) {
 //     console.log("new Arc(["+ element.center + "], 100," + element.alpha + ", " + element.omega +"),");
@@ -503,47 +532,5 @@ console.log(rtree);
 //    polygonSelected.getSource().addFeature(new Feature(closestArc));
 
 // });
-
-
-map.on('click', function(event) {
-    polygonFound.getSource().clear();
-    points.getSource().clear();
-    points.getSource().addFeature(new Feature(new Point(event.coordinate)));
-    // var found = astree.search(event.coordinate);
-    // for (let i = 0; i < found.length; i++) {
-    //     var polyFound = found[i];
-    //     polygonFound.getSource().addFeature(new Feature(polyFound));
-    // }
-
-    var p = event.coordinate;
-    var l = [p[0], -p[1]];
-    var hits = [];
-    console.log(l);
-    searchLineRTreeRecursive(hits, rtree.data, l);
-    console.log(hits);
-    for (let i = 0; i < hits.length; i++) {
-        var polyFound = hits[i].feature;
-
-        polygonFound.getSource().addFeature(new Feature(polyFound));
-    }
-    // var v = p[0] * -1000 + p[1];
-    // var v2 = p[0] * 1000 + p[1];
-    // var m = Math.min(v, v2);
-    // var M = Math.max(v, v2);
-    // var req = {minX: -1000,
-    //            minY: m,
-    //            maxX: 1000,
-    //            maxY: M};
-    // var rep = rtree.search(req);
-    // for (var r of rep) {
-    //     console.log(r.feature.alpha +  " " + r.feature.omega);
-    // }
-});
-
-map.addLayer(polygon);
-map.addLayer(points);
-map.addLayer(polygonFound);
-map.addLayer(polygonSelected);
-
 // var t = test(arcs, astree);
 // console.log("Test=" + t);
