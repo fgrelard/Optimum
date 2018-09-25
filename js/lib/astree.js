@@ -231,7 +231,7 @@ export default class ASTree {
         var func = (isMinDifference) ? absDiffPositive : absDiff;
         var difference = (isMinDifference) ? -1 : Number.MAX_VALUE;
 
-
+        var arrayDiff = [];
         var bestPlane;
         var bestSector;
         for (let i = 0; i < sectors.length; i++) {
@@ -245,9 +245,9 @@ export default class ASTree {
                         return sector.equals(op);
                     });
                     found = this.findPlaneInParents(node, plane);
-                    // parents.findIndex(function(op) {
-                    //     return plane.equals(op);
-                    // });
+                    if (!found) {
+                        arrayDiff.push(number);
+                    }
                     var condition = (isMinDifference) ? number > difference : number < difference;
                     if (condition && !found) {
                         difference = number;
@@ -257,28 +257,48 @@ export default class ASTree {
                 }
             }
         }
-        if (bestPlane)
-            this.addedSectors.push(bestSector);
-        return {plane: bestPlane, sector: bestSector};
+        arrayDiff.sort(function(a,b) {
+            var diff = func(a.l, a.r) - func(b.l, b.r);
+            return diff;
+        });
+        arrayDiff.sort(function(a,b) {
+            var diff = func(a.l, a.r) - func(b.l, b.r);
+            var diffI = func(a.i, b.i);
+            return (diff === 0) ? diffI : 0;
+        });
+        if (arrayDiff.length > 0) {
+            bestPlane = arrayDiff[0].p;
+        }
+        return {plane: bestPlane};
     }
 
     differenceAboveBelowPlane(plane, sectors, func) {
         var numberLeft = 0;
         var numberRight = 0;
+        var numberIntersection = 0;
         var left = false, right = false;
         var plane2 = this.complementaryPlane(plane);
         for (let i = 0; i < sectors.length; i++) {
             var sector = sectors[i];
-            if (plane.isSectorAbove(sector)) {
+            if (plane.isAbove(sector.center)) {
                 numberLeft++;
                 left = true;
             }
-            if (plane2.isSectorAbove(sector, true)) {
-                if (!left)
+            else if (plane2.isAbove(sector.center)) {
+                // if (!left)
                     numberRight++;
             }
+            if (plane.isSectorAbove(sector) &&
+                plane2.isSectorAbove(sector, true)){
+                numberIntersection++;
+            }
+
         }
-        return func(numberLeft, numberRight);
+        // return func(numberLeft, numberRight);
+        return {p: plane,
+                l: numberLeft,
+                r: numberRight,
+                i: numberIntersection};
     }
 
 
@@ -465,7 +485,6 @@ export default class ASTree {
         var plane = bestSeparation.plane;
         if (!plane) return;
         var plane2 = this.complementaryPlane(plane);
-        var associatedSector = bestSeparation.sector;
         var splitPlanes = [plane, plane2];
         for (let j = 0; j < splitPlanes.length; j++) {
             let splitPlane = splitPlanes[j];
@@ -521,9 +540,9 @@ export default class ASTree {
             p2 = tmp;
         }
 
-        if (!i2 && i3) {
-            p2 = f.slice();
-        }
+        // if (!i2 && i3) {
+        //     p2 = f.slice();
+        // }
         return {i1: p1,
                 i2: p2,
                 f: f};
@@ -550,12 +569,23 @@ export default class ASTree {
     numberIntersectionLocal(intersection, f) {
         var max = 0;
         var shown = false;
+        console.log("numberIntersectionLocal");
+        var indexI = 0;
         for (var i of intersection) {
-            if (this.arraysEqual(i.i1, f)) continue;
+            var indexJ = 0;
+            if (this.arraysEqual(i.i1, f)){
+                indexI++;
+                continue;
+            }
             var nb = 1;
             var lowerBound = {i1: i.i1.slice(),
                               i2: i.i2.slice()};
+
             for (var j of intersection) {
+                if (indexJ <= indexI) {
+                    indexJ++;
+                    continue;
+                }
                 if (this.arraysEqual(j.i1, f)) continue;
                 if (euclideanDistance(lowerBound.i1, f) <= euclideanDistance(j.i1, f) && euclideanDistance(lowerBound.i2, f) > euclideanDistance(j.i1, f)) {
                     nb++;
@@ -569,6 +599,7 @@ export default class ASTree {
                 if (j.i2[0] < lowerBound.i2[0]) {
                     lowerBound.i2 = j.i2.slice();
                 }
+
                 lowerBound.i1 = j.i1.slice();
             }
         }
@@ -609,6 +640,7 @@ export default class ASTree {
         var inters2 = this.intersections(this.sectors, false);
         if (useHeuristic) {
             this.maxNumberLeaves = Math.max(this.maxNumberIntersectionLocal(inters), this.maxNumberIntersectionLocal(inters2));
+            this.maxNumberLeaves = this.maxNumberSelfIntersections(elements);
             console.log(this.maxNumberLeaves);
         }
 

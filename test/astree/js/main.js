@@ -19,6 +19,8 @@ import $ from 'jquery';
 import {getRandomArbitrary, addRandomArcs, addRandomLocations} from '../../../js/lib/randomfeatures.js';
 import Arc from '../../../js/lib/arc.js';
 import ASTree from '../../../js/lib/astree.js';
+import {angleToVector, boundingBox} from '../../../js/lib/geometry.js';
+import rbush from 'rbush';
 
 var stEtienneLonLatConv = [0, 0];
 
@@ -277,7 +279,9 @@ function sectorsStEtienne() {
 
 
     var length = arcs.length;
-     for (var i  = 0; i < length; i++) {
+    for (var i  = 0; i < length; i++) {
+        arcs[i].center[0] -= 490000;
+        arcs[i].center[1] -= 5687027;
         arcs[i].computeGeometry();
         polygon.getSource().addFeature(new Feature(arcs[i]));
      }
@@ -314,26 +318,16 @@ function generateSectors() {
                 new Arc([-20,20], 100, 250, 290)
                ];
 
-    // arcs = [new Arc([1963.0608605225577,7957.874212265062], 100,124.39497950345265, 139.09290292360666),
-    //         new Arc([2344.6697222992884,1691.0811851001095], 100,7.045371909506182, 24.287886995379687),
-    //         new Arc([5787.417890761797,7064.850566603171], 100,231.66134498686847, 250.90326977162835),
-    //         new Arc([3026.4932263104974,6276.769621267011], 100,202.70472855092603, 222.37438079561727),
-    //         new Arc([3732.9864949538533,6027.55690273146], 100,337.362744099554, 348.68752287148664),
-    //         new Arc([8165.901073665949,5049.686970229881], 100,175.2452976196485, 189.23374076168815),
-    //         new Arc([8326.383059964255,7128.674140338831], 100,250.21560154921627, 266.710402168734),
-    //         new Arc([3587.4510293395783,4335.995191798014], 100,304.7664569148943, 322.0883725897182),
-    //         new Arc([7606.755463303727,7156.3795666310125], 100,237.78406709673143, 257.52493989875484),
-    //         new Arc([3988.087356929321,8131.183329366368], 100,330.77818098250737, 343.5924581992027),
-    //         new Arc([4264.233464574102,6544.889901980767], 100,217.83793345817986, 230.60842039818124),
-    //         new Arc([7854.638039286165,7136.5408779695645], 100,149.7640466691495, 160.0142719168303),
-    //         new Arc([7303.696597771188,5970.944949518313], 100,164.81113140018903, 180.44472995133168),
-    //         new Arc([7663.127328982742,6994.107055100576], 100,190.00695296167777, 201.81085774567083),
-    //         new Arc([6315.151273068706,3844.383120171383], 100,177.9377340526766, 190.65952606340394),
-    //         new Arc([8158.496188068568,2553.416424202548], 100,183.24669014561954, 199.37717366116203),
-    //         new Arc([3029.0470401813127,6998.160534655768], 100,261.97751784493454, 281.33322186123377),
-    //         new Arc([7229.123939175481,5583.74795730048], 100,303.6522737133702, 317.3806406310329),
-    //         new Arc([6984.164628707002,2105.3382018106704], 100,170.81142906098452, 190.6500243794766),
-    //         new Arc([2514.1684691563605,5246.7311660052565], 100,104.32259228743628, 118.09583149706002)];
+    // arcs = [new Arc([7413.534606607684,5824.853140709478], 10000,262.2417390459634, 272.1130602285505),
+    //         new Arc([6009.726319840105,7168.520944193531], 10000,283.68752658494964, 293.1743702503799),
+    //         new Arc([7734.042676005991,6849.194304440693], 10000,203.25597070078535, 209.54456500763442),
+    //         new Arc([1796.9171424588988,4096.561882144149], 10000,102.0497961727957, 109.63930170217839),
+    //         new Arc([4092.16086498841,6723.830122021069], 10000,257.3059602239052, 264.9183099509074),
+    //         new Arc([4404.291656871323,4485.493731387805], 10000,136.82705401018737, 144.51908108000106),
+    //         new Arc([4608.1363015032675,5373.1355344241365], 10000,213.68722156967962, 218.82368038533392),
+    //         new Arc([5023.56533005735,6895.081609798261], 10000,212.4891404274605, 219.28105944921225),
+    //         new Arc([3222.4982079734405,8174.600503922358], 10000,220.74506002064007, 228.27483143657753),
+    //         new Arc([6107.27393415442,5449.996542786361], 10000,67.67024747791251, 75.41705916763611)];
 
     // arcs = [new Arc([700,500], 10000, 340, 380),
     //         new Arc([300,500], 10000, 160, 200),
@@ -353,68 +347,140 @@ function generateSectors() {
     return arcs;
 }
 
+function lineEquation(vector, center) {
+    if (Math.abs(vector[1]) === 1) vector = [(vector[0] < 0) ? -0.01 : 0.01,
+                                             (vector[1] < 0)? -0.99 : 0.99];
+    var x = vector[1] / vector[0];
+    var y = center[1] - x * center[0];
+    return [x, -y];
+}
+
+
+function dualRepresentation(arcs) {
+    var dual = [];
+    for (var arc of arcs) {
+        var firstVector = angleToVector(arc.alpha);
+        var secondVector = angleToVector(arc.omega);
+        var firstLine = lineEquation(firstVector, arc.center);
+        var secondLine = lineEquation(secondVector, arc.center);
+        points.getSource().addFeature(new Feature(new Point(firstLine)));
+        points.getSource().addFeature(new Feature(new Point(secondLine)));
+        var positions = [firstLine, secondLine];
+        var bbox = boundingBox(positions);
+        var bboxCoordinates = {minX: bbox[0][0],
+                               minY: bbox[0][1],
+                               maxX: bbox[1][0],
+                               maxY: bbox[1][1],
+                               feature: arc};
+        dual.push(bboxCoordinates);
+    }
+    return dual;
+}
+
+function intersectionLineRectangle(line, rectangle) {
+    var a = line[0];
+    var b = line[1];
+    var low = [rectangle.minX, rectangle.minY];
+    var up = [rectangle.maxX, rectangle.maxY];
+    var lowI = [(low[1] - b) / a, a * low[0] + b];
+    var upI = [(up[1] - b) / a, a * up[0] + b];
+    var condition = ((lowI[0] >= low[0] && lowI[0] <= up[0]) ||
+                     (upI[0] >= low[0] && upI[0] <= up[0]) ||
+                     (lowI[1] >= low[1] && lowI[1] <= up[1]) ||
+                     (upI[1] >= low[1] && upI[1] <= up[1]));
+    return condition;
+}
+
+function searchLineRTreeRecursive(hits, node, line) {
+    if (node.leaf) {
+        hits.push(...node.children);
+        return;
+    }
+    for (var child of node.children) {
+        var rectangle = {minX: child.minX,
+                         minY: child.minY,
+                         maxX: child.maxX,
+                         maxY: child.maxY};
+        if (intersectionLineRectangle(line, rectangle)) {
+            searchLineRTreeRecursive(hits, child, line);
+        }
+    }
+    return;
+}
+
+console.log(intersectionLineRectangle([4,-1], {minX: 0.5,
+                                               minY: -2,
+                                               maxX: 3,
+                                               maxY: 0}));
 
 points.getSource().addFeature(new Feature(new Point(stEtienneLonLatConv)));
 
-var arcs = generateSectors(10);
-var astree = new ASTree(arcs, 4);
-astree.load(true);
+var arcs = sectorsStEtienne(30);
+// var astree = new ASTree(arcs, 5);
+// astree.load(true);
 
-arcs.map(function(element) {
-    console.log("new Arc(["+ element.center + "], 100," + element.alpha + ", " + element.omega +"),");
-});
-var found = astree.search(stEtienneLonLatConv);
-for (let i = 0; i < found.length; i++) {
-    var polyFound = found[i];
-    polygonFound.getSource().addFeature(new Feature(polyFound));
-}
 
-/* Visualization */
-var dataNodes = [];
-var dataEdges = [];
-var index = 1;
-var fifo = [astree.tree];
-while (fifo.length > 0) {
-    var node = fifo.shift();
-    if (!node.value) continue;
-    if (node.value.hasOwnProperty("alpha")) {
-        dataNodes.push({id: index++, label: Math.round(node.value.alpha) + "°-" + Math.round(node.value.omega)+"°", color: 'rgb(255,168,7)'});
-    } else {
-        var label = node.value.toString();
-        dataNodes.push({id: index++, label: label, value: node.value});
-    }
-    if (node.parentIndex)
-        dataEdges.push({from: node.parentIndex, to: index-1, arrows:"to"});
-    for (let i = 0; i < node.children.length; i++) {
-        var nodeChild = node.children[i];
-        nodeChild.parentIndex = index-1;
-        fifo.push(nodeChild);
-    }
-}
 
-var nodes = new vis.DataSet(dataNodes);
+var dual = dualRepresentation(arcs);
+var rtree = rbush(5);
+rtree.load(dual);
+console.log(rtree);
 
-// create an array with edges
-var edges = new vis.DataSet(dataEdges);
+// arcs.map(function(element) {
+//     console.log("new Arc(["+ element.center + "], 100," + element.alpha + ", " + element.omega +"),");
+// });
+// var found = astree.search(stEtienneLonLatConv);
+// for (let i = 0; i < found.length; i++) {
+//     var polyFound = found[i];
+//     polygonFound.getSource().addFeature(new Feature(polyFound));
+// }
 
-// create a network
-var container = document.getElementById('mynetwork');
-var data = {
-    nodes: nodes,
-    edges: edges
-};
+// /* Visualization */
+// var dataNodes = [];
+// var dataEdges = [];
+// var index = 1;
+// var fifo = [astree.tree];
+// while (fifo.length > 0) {
+//     var node = fifo.shift();
+//     if (!node.value) continue;
+//     if (node.value.hasOwnProperty("alpha")) {
+//         dataNodes.push({id: index++, label: Math.round(node.value.alpha) + "°-" + Math.round(node.value.omega)+"°", color: 'rgb(255,168,7)'});
+//     } else {
+//         var label = node.value.toString();
+//         dataNodes.push({id: index++, label: label, value: node.value});
+//     }
+//     if (node.parentIndex)
+//         dataEdges.push({from: node.parentIndex, to: index-1, arrows:"to"});
+//     for (let i = 0; i < node.children.length; i++) {
+//         var nodeChild = node.children[i];
+//         nodeChild.parentIndex = index-1;
+//         fifo.push(nodeChild);
+//     }
+// }
 
-var options = {
-        layout: {
-          hierarchical: {
-            sortMethod: "directed"
-          }
-        },
-        edges: {
-          smooth: true,
-          arrows: {to : true }
-        }
-      };
+// var nodes = new vis.DataSet(dataNodes);
+
+// // create an array with edges
+// var edges = new vis.DataSet(dataEdges);
+
+// // create a network
+// var container = document.getElementById('mynetwork');
+// var data = {
+//     nodes: nodes,
+//     edges: edges
+// };
+
+// var options = {
+//         layout: {
+//           hierarchical: {
+//             sortMethod: "directed"
+//           }
+//         },
+//         edges: {
+//           smooth: true,
+//           arrows: {to : true }
+//         }
+//       };
 // var network = new vis.Network(container, data, options);
 
 // network.on("selectNode", function (params) {
@@ -438,15 +504,40 @@ var options = {
 
 // });
 
+
 map.on('click', function(event) {
     polygonFound.getSource().clear();
     points.getSource().clear();
     points.getSource().addFeature(new Feature(new Point(event.coordinate)));
-    var found = astree.search(event.coordinate);
-    for (let i = 0; i < found.length; i++) {
-        var polyFound = found[i];
+    // var found = astree.search(event.coordinate);
+    // for (let i = 0; i < found.length; i++) {
+    //     var polyFound = found[i];
+    //     polygonFound.getSource().addFeature(new Feature(polyFound));
+    // }
+
+    var p = event.coordinate;
+    var l = [p[0], -p[1]];
+    var hits = [];
+    console.log(l);
+    searchLineRTreeRecursive(hits, rtree.data, l);
+    console.log(hits);
+    for (let i = 0; i < hits.length; i++) {
+        var polyFound = hits[i].feature;
+
         polygonFound.getSource().addFeature(new Feature(polyFound));
     }
+    // var v = p[0] * -1000 + p[1];
+    // var v2 = p[0] * 1000 + p[1];
+    // var m = Math.min(v, v2);
+    // var M = Math.max(v, v2);
+    // var req = {minX: -1000,
+    //            minY: m,
+    //            maxX: 1000,
+    //            maxY: M};
+    // var rep = rtree.search(req);
+    // for (var r of rep) {
+    //     console.log(r.feature.alpha +  " " + r.feature.omega);
+    // }
 });
 
 map.addLayer(polygon);
@@ -454,5 +545,5 @@ map.addLayer(points);
 map.addLayer(polygonFound);
 map.addLayer(polygonSelected);
 
-var t = test(arcs, astree);
-console.log("Test=" + t);
+// var t = test(arcs, astree);
+// console.log("Test=" + t);
