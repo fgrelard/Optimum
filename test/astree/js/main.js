@@ -21,6 +21,7 @@ import Arc from '../../../js/lib/arc.js';
 import ASTree from '../../../js/lib/astree.js';
 import {angleToVector, boundingBox, centerOfMass} from '../../../js/lib/geometry.js';
 import rbush from 'rbush';
+import draw from './viz.js';
 
 //var stEtienneLonLatConv = [0, 0];
 
@@ -349,7 +350,6 @@ function lineEquation(vector, center, g) {
     //           (vector[1] < 0)? -0.99 : 0.99];
     var centerNorm = [center[0] - g[0],
                       center[1] - g[1]];
-    console.log(centerNorm);
     var x =  vector[1] / vector[0];
     var y = centerNorm[1] - x * centerNorm[0];
     return [x, -y];
@@ -361,6 +361,8 @@ function dualRepresentation(arcs, g) {
     for (var arc of arcs) {
         var firstVector = angleToVector(arc.alpha);
         var secondVector = angleToVector(arc.omega);
+        var middleVector = [firstVector[0] + secondVector[0],
+                            firstVector[1] + secondVector[1]];
         var firstLine = lineEquation(firstVector, arc.center, g);
         var secondLine = lineEquation(secondVector, arc.center, g);
         if (!firstLine || !secondLine) continue;
@@ -383,12 +385,14 @@ function intersectionLineRectangle(line, rectangle) {
     var b = line[1];
     var low = [rectangle.minX, rectangle.minY];
     var up = [rectangle.maxX, rectangle.maxY];
+
     var lowI = [(low[1] - b) / a, a * low[0] + b];
     var upI = [(up[1] - b) / a, a * up[0] + b];
+
     var condition = ((lowI[0] >= low[0] && lowI[0] <= up[0]) ||
-                     (upI[0] >= low[0] && upI[0] <= up[0]) ||
-                     (lowI[1] >= low[1] && lowI[1] <= up[1]) ||
-                     (upI[1] >= low[1] && upI[1] <= up[1]));
+                              (upI[0] >= low[0] && upI[0] <= up[0]) ||
+                              (lowI[1] >= low[1] && lowI[1] <= up[1]) ||
+                              (upI[1] >= low[1] && upI[1] <= up[1]));
     return condition;
 }
 
@@ -416,7 +420,14 @@ console.log(intersectionLineRectangle([4,-1], {minX: 0.5,
                                                maxY: 0}));
 
 
-var arcs = sectorsStEtienne(30);
+var arcs = generateRandomSectors(1000);
+
+// var arcs = [];
+// var arc = new Arc([-10,10], 100, 185, 215);
+// arc.computeGeometry();
+// polygon.getSource().addFeature(new Feature(arc));
+// arcs.push(arc);
+
 var g = centerOfMass(arcs.map(function(a) {
     return a.center;
 }));
@@ -434,6 +445,7 @@ var rtree = rbush(5);
 rtree.load(dual);
 console.log(rtree);
 
+draw(rtree);
 
 map.on('click', function(event) {
     polygonFound.getSource().clear();
@@ -447,15 +459,18 @@ map.on('click', function(event) {
 
     var p = event.coordinate;
     var l = [p[0] - g[0], -p[1] + g[1]];
+    var m = g[0] - 50;
+    var M = g[0] + 50;
+    var line = new Polygon([[[m, l[0] * m + l[1]], [M, l[0] * M + l[1]]]]);
+    polygonFound.getSource().addFeature(new Feature(line));
+
     var hits = [];
-    console.log(l);
     var number = {cpt: 0};
     searchLineRTreeRecursive(hits, rtree.data, l, number);
     console.log(number.cpt);
     console.log(hits);
     for (let i = 0; i < hits.length; i++) {
         var polyFound = hits[i].feature;
-
         polygonFound.getSource().addFeature(new Feature(polyFound));
     }
     var data = rtree.data;
