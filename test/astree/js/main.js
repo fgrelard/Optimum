@@ -293,7 +293,7 @@ function generateRandomSectors(n) {
     var locations = addRandomLocations(extent, n);
     var arcs = addRandomArcs(locations);
     for (var i  = 0; i < arcs.length; i++) {
-        arcs[i].radius = 10000;
+        arcs[i].radius = 10000000;
         arcs[i].computeGeometry();
         polygon.getSource().addFeature(new Feature(arcs[i]));
     }
@@ -366,27 +366,18 @@ function lineEquation(vector, center, g) {
     return [theta, rho];
 }
 
-function drawSinusoid(coefficients) {
-    var m = -180;
-    var M = 180;
-    var pointsSinusoid = [];
-    for (var i = m; i < M; i+=0.1) {
-        var y = coefficients[0] * Math.cos(i * Math.PI / 180) + coefficients[1] * Math.sin(i * Math.PI / 180);
-        var point = [i, y];
-        pointsSinusoid.push(point);
-    }
-    var line = new Polygon([pointsSinusoid]);
-    polygon.getSource().addFeature(new Feature(line));
-}
 
 
 function pointHoughToLine(p, g) {
     var theta = p[0] + g[0];
-    var rho = p[1] + g[0];
+    var rho = p[1] + g[1];
     var x = rho * Math.cos(theta);
     var y = rho * Math.sin(theta);
     var vortho = [x, y];
     var vline = [vortho[1], -vortho[0]];
+
+    x += g[0];
+    y += g[1];
 
     var f = [x + vline[0] * 50, y + vline[1] * 50];
     var l = [x - vline[0] * 50, y - vline[1] * 50];
@@ -421,10 +412,25 @@ function dualRepresentation(arcs, g) {
                                maxY: bbox[1][1]
                                ,
                                feature: arc};
+
         dual.push(bboxCoordinates);
     }
     return dual;
 }
+
+function drawSinusoid(coefficients) {
+    var m = -Math.PI;
+    var M = Math.PI;
+    var pointsSinusoid = [];
+    for (var i = m; i < M; i+=0.1) {
+        var y = coefficients[0] * Math.cos(i) + coefficients[1] * Math.sin(i);
+        var point = [i, y];
+        pointsSinusoid.push(point);
+    }
+    var line = new Polygon([pointsSinusoid]);
+    polygon.getSource().addFeature(new Feature(line));
+}
+
 
 function intersectionLineRectangle(line, rectangle) {
     var a = line[0];
@@ -448,11 +454,19 @@ function intersectionSinusoidRectangle(sinusoid, rectangle) {
     var low = [rectangle.minX, rectangle.minY];
     var up = [rectangle.maxX, rectangle.maxY];
 
+    var rho = (x) => a * Math.cos(x) + b * Math.sin(x);
+
+    for (var i = low[0]; i < up[0]; i+=0.01) {
+        if (rho(i) >= low[1] && rho(i) <= up[1]) {
+            return true;
+        }
+    }
+    return false;
+
     var R = Math.sqrt(a*a + b*b);
     var alphaC = Math.atan(b / a);
 
     var theta = (y) => Math.acos(y / R) + alphaC;
-    var rho = (x) => a * Math.cos(x) + b * Math.sin(x);
     var lowI = [theta(low[1]), rho(low[0])];
     var upI = [theta(up[1]), rho(up[0])];
 
@@ -481,13 +495,8 @@ function searchLineRTreeRecursive(hits, node, line, number = {cpt: 0}) {
     return;
 }
 
-console.log(intersectionLineRectangle([4,-1], {minX: 0.5,
-                                               minY: -2,
-                                               maxX: 3,
-                                               maxY: 0}));
 
-
-var arcs = generateSectors(100);
+var arcs = generateRandomSectors(100);
 
 var g = centerOfMass(arcs.map(function(a) {
     return a.center;
@@ -503,8 +512,28 @@ points.getSource().addFeature(new Feature(new Point([0,0])));
 
 
 var dual = dualRepresentation(arcs, g);
-var rtree = rbush(5);
+var rtree = rbush(2);
 rtree.load(dual);
+
+var node = rtree.data;
+var fifo = [rtree.data];
+while (fifo.length > 0) {
+    node = fifo.shift();
+    var minX = node.minX;
+    var minY = node.minY;
+    var maxX = node.maxX;
+    var maxY = node.maxY;
+    var p1 = [minX, minY];
+    var p2 = [maxX, minY];
+    var p3 = [maxX, maxY];
+    var p4 = [minX, maxY];
+    points.getSource().addFeature(new Feature(new Polygon([[p1, p2, p3, p4]])));
+    if (!node.leaf) {
+        for (var child of node.children) {
+            fifo.push(child);
+        }
+    }
+}
 console.log(rtree);
 
 draw(rtree);
@@ -522,8 +551,8 @@ map.on('click', function(event) {
     var p = event.coordinate;
     var l = [p[0] - g[0], p[1] - g[1]];
 
-    pointHoughToLine(l, g);
-    //drawSinusoid(l);
+    //pointHoughToLine(l, g);
+    drawSinusoid(l);
 
     var hits = [];
     var number = {cpt: 0};
