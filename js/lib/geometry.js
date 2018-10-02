@@ -29,3 +29,12 @@ export function centerOfMass(positions) {
     g[1] /= positions.length;
     return g;
 }
+
+
+export function project( p, a, b ) {
+    var x1=a[0], y1=a[1], x2=b[0], y2=b[1], x3=p[0], y3=p[1];
+    var px = x2-x1, py = y2-y1, dAB = px*px + py*py;
+    var u = ((x3 - x1) * px + (y3 - y1) * py) / dAB;
+    var x = x1 + u * px, y = y1 + u * py;
+    return [x, y];
+}
