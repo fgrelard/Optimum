@@ -303,16 +303,16 @@ function generateRandomSectors(n) {
 function generateSectors() {
     var extent = [0,0, 10, 10];
 
-    var arcs = [new Arc([5,5], 100, 200, 250),
-                new Arc([2,2], 100, 190, 230),
-                new Arc([3,3], 100, 215, 260),
-                new Arc([2,7], 100, 180, 200),
-                new Arc([6,6], 100, 0, 45),
-                new Arc([-50,-20], 100, -20, 20),
-                new Arc([6,4], 100, 290, 330),
-                new Arc([7,8], 100, 130, 180),
-                new Arc([10,0], 100, 270, 310),
-                new Arc([-20,20], 100, 250, 290)
+    var arcs = [new Arc([5,5], 1000, 200, 250),
+                new Arc([2,2], 1000, 190, 230),
+                new Arc([3,3], 1000, 215, 260),
+                new Arc([2,7], 1000, 180, 200),
+                new Arc([6,6], 1000, 0, 45),
+                new Arc([-50,-20], 1000, -20, 20),
+                new Arc([6,4], 1000, 290, 330),
+                new Arc([7,8], 1000, 130, 180),
+                new Arc([10,0], 1000, 270, 310),
+                new Arc([-20,20], 1000, 250, 290)
                ];
 
     // arcs = [new Arc([7413.534606607684,5824.853140709478], 10000,262.2417390459634, 272.1130602285505),
@@ -353,6 +353,8 @@ function lineEquation(vector, center, g) {
                       center[1] - g[1]];
     var x =  vector[1] / vector[0];
     var y = centerNorm[1] - x * centerNorm[0];
+    // return [x, -y];
+
     var x0 = g[0];
     var y0 = g[1];
 
@@ -362,7 +364,7 @@ function lineEquation(vector, center, g) {
     var rho = euclideanDistance(projection, g);
     var theta = Math.acos((projection[0] - g[0]) / rho);
     theta = (projection[1] - g[1] < 0) ? -theta : theta;
-    //console.log([theta, rho]);
+
     return [theta, rho];
 }
 
@@ -398,6 +400,9 @@ function dualRepresentation(arcs, g) {
         var max = Math.sqrt(Math.pow((arc.center[0] - g[0]), 2) +
                             Math.pow((arc.center[1] - g[1]), 2));
         var min = -max;
+
+
+
         if (!firstLine || !secondLine) continue;
         var fl360 = [firstLine[0] * 180 / Math.PI, firstLine[1]];
         var sl360 = [secondLine[0] * 180 / Math.PI, secondLine[1]];
@@ -405,6 +410,8 @@ function dualRepresentation(arcs, g) {
 //        points.getSource().addFeature(new Feature(new Point(secondLine)));
         var positions = [firstLine, secondLine];
         var bbox = boundingBox(positions);
+
+
         var bboxCoordinates = {minX: bbox[0][0],
                                minY: bbox[0][1]
                                ,
@@ -454,23 +461,27 @@ function intersectionSinusoidRectangle(sinusoid, rectangle) {
     var low = [rectangle.minX, rectangle.minY];
     var up = [rectangle.maxX, rectangle.maxY];
 
-    var rho = (x) => a * Math.cos(x) + b * Math.sin(x);
 
-    for (var i = low[0]; i < up[0]; i+=0.01) {
-        if (rho(i) >= low[1] && rho(i) <= up[1]) {
-            return true;
-        }
-    }
-    return false;
 
     var R = Math.sqrt(a*a + b*b);
     var alphaC = Math.atan(b / a);
 
-    var theta = (y) => Math.acos(y / R) + alphaC;
+    var rho = (x) => a * Math.cos(x) + b * Math.sin(x);
+    var theta = (y) => ((y < 0) ? -1 : 1) * (Math.acos(Math.abs(y) % Math.PI / R) + alphaC);
+
+    if (rectangle.minX === -1.396263401595464) {
+        console.log(theta(low[1]));
+        console.log(rectangle);
+    }
+
     var lowI = [theta(low[1]), rho(low[0])];
     var upI = [theta(up[1]), rho(up[0])];
 
-    var condition = ((lowI[0] >= low[0] && lowI[0] <= up[0]) ||
+    var condition = ((lowI[0] - Math.PI >= low[0] && lowI[0] - Math.PI<= up[0]) ||
+                     (upI[0] - Math.PI >= low[0] && upI[0] - Math.PI <= up[0]) ||
+                     (lowI[0] + Math.PI >= low[0] && lowI[0] + Math.PI<= up[0]) ||
+                     (upI[0] + Math.PI >= low[0] && upI[0] + Math.PI <= up[0]) ||
+                     (lowI[0] >= low[0] && lowI[0] <= up[0]) ||
                      (upI[0] >= low[0] && upI[0] <= up[0]) ||
                      (lowI[1] >= low[1] && lowI[1] <= up[1]) ||
                      (upI[1] >= low[1] && upI[1] <= up[1]));
@@ -512,7 +523,7 @@ points.getSource().addFeature(new Feature(new Point([0,0])));
 
 
 var dual = dualRepresentation(arcs, g);
-var rtree = rbush(2);
+var rtree = rbush(5);
 rtree.load(dual);
 
 var node = rtree.data;
@@ -540,16 +551,10 @@ draw(rtree);
 
 map.on('click', function(event) {
     polygonFound.getSource().clear();
-//    points.getSource().clear();
-//    points.getSource().addFeature(new Feature(new Point(event.coordinate)));
-    // var found = astree.search(event.coordinate);
-    // for (let i = 0; i < found.length; i++) {
-    //     var polyFound = found[i];
-    //     polygonFound.getSource().addFeature(new Feature(polyFound));
-    // }
 
     var p = event.coordinate;
     var l = [p[0] - g[0], p[1] - g[1]];
+    //l = [p[0] - g[0], -p[1] + g[1]];
 
     //pointHoughToLine(l, g);
     drawSinusoid(l);
