@@ -344,32 +344,6 @@ function generateSectors() {
     return arcs;
 }
 
-function lineEquation(vector, center, g) {
-//    if (Math.abs(vector[1]) === 1) return null;
-        // vector = [(vector[0] < 0) ? -0.01 : 0.01,
-    //           (vector[1] < 0)? -0.99 : 0.99];
-
-    var centerNorm = [center[0] - g[0],
-                      center[1] - g[1]];
-    var x =  vector[1] / vector[0];
-    var y = centerNorm[1] - x * centerNorm[0];
-    // return [x, -y];
-
-    var x0 = g[0];
-    var y0 = g[1];
-
-    var secondPoint = [center[0] + vector[0]*5,
-                       center[1] + vector[1]*5];
-    var projection = project(g, center, secondPoint);
-    var rho = euclideanDistance(projection, g);
-    var theta = Math.acos((projection[0] - g[0]) / rho);
-    theta = (projection[1] - g[1] < 0) ? -theta : theta;
-
-    return [theta, rho];
-}
-
-
-
 function pointHoughToLine(p, g) {
     var theta = p[0] + g[0];
     var rho = p[1] + g[1];
@@ -387,25 +361,40 @@ function pointHoughToLine(p, g) {
 }
 
 
-function dualRepresentation(arcs, g) {
+function lineEquation(vector, center, g, vertical = false) {
+
+    var centerNorm = [center[0] - g[0],
+                      center[1] - g[1]];
+    var x =  (vertical) ? vector[0] / vector[1] : vector[1] / vector[0];
+    var y = (vertical) ? centerNorm[0] - x * centerNorm[1] : centerNorm[1] - x * centerNorm[0];
+    return [x, -y];
+
+    var x0 = g[0];
+    var y0 = g[1];
+
+    var secondPoint = [center[0] + vector[0]*5,
+                       center[1] + vector[1]*5];
+    var projection = project(g, center, secondPoint);
+    var rho = euclideanDistance(projection, g);
+    var theta = Math.acos((projection[0] - g[0]) / rho);
+    theta = (projection[1] - g[1] < 0) ? -theta : theta;
+
+    return [theta, rho];
+}
+
+
+
+function dualRepresentation(arcs, g, vertical = false) {
     var dual = [];
     for (var arc of arcs) {
         var firstVector = angleToVector(arc.alpha);
         var secondVector = angleToVector(arc.omega);
         var middleVector = [firstVector[0] + secondVector[0],
                             firstVector[1] + secondVector[1]];
-        var firstLine = lineEquation(firstVector, arc.center, g);
-        var secondLine = lineEquation(secondVector, arc.center, g);
-
-        var max = Math.sqrt(Math.pow((arc.center[0] - g[0]), 2) +
-                            Math.pow((arc.center[1] - g[1]), 2));
-        var min = -max;
-
-
+        var firstLine = lineEquation(firstVector, arc.center, g, vertical);
+        var secondLine = lineEquation(secondVector, arc.center, g, vertical);
 
         if (!firstLine || !secondLine) continue;
-        var fl360 = [firstLine[0] * 180 / Math.PI, firstLine[1]];
-        var sl360 = [secondLine[0] * 180 / Math.PI, secondLine[1]];
         points.getSource().addFeature(new Feature(new LineString([firstLine, secondLine])));
 //        points.getSource().addFeature(new Feature(new Point(secondLine)));
         var positions = [firstLine, secondLine];
@@ -413,11 +402,9 @@ function dualRepresentation(arcs, g) {
 
 
         var bboxCoordinates = {minX: bbox[0][0],
-                               minY: bbox[0][1]
-                               ,
+                               minY: bbox[0][1],
                                maxX: bbox[1][0],
-                               maxY: bbox[1][1]
-                               ,
+                               maxY: bbox[1][1],
                                feature: arc};
 
         dual.push(bboxCoordinates);
@@ -467,20 +454,16 @@ function intersectionSinusoidRectangle(sinusoid, rectangle) {
     var alphaC = Math.atan(b / a);
 
     var rho = (x) => a * Math.cos(x) + b * Math.sin(x);
-    var theta = (y) => ((y < 0) ? -1 : 1) * (Math.acos(Math.abs(y) % Math.PI / R) + alphaC);
+    var theta = (y) => (Math.acos(y % Math.PI / R) + alphaC);
+    var thetaRange = (y) => (theta(y) > rectangle.maxX) ? theta(y) - Math.PI : ((theta(y) < rectangle.minX) ? theta(y) + Math.PI : theta(y));
 
-    if (rectangle.minX === -1.396263401595464) {
-        console.log(theta(low[1]));
-        console.log(rectangle);
-    }
+    var lowI = [thetaRange(low[1]), rho(low[0])];
+    var upI = [thetaRange(up[1]), rho(up[0])];
 
-    var lowI = [theta(low[1]), rho(low[0])];
-    var upI = [theta(up[1]), rho(up[0])];
-
-    var condition = ((lowI[0] - Math.PI >= low[0] && lowI[0] - Math.PI<= up[0]) ||
-                     (upI[0] - Math.PI >= low[0] && upI[0] - Math.PI <= up[0]) ||
-                     (lowI[0] + Math.PI >= low[0] && lowI[0] + Math.PI<= up[0]) ||
-                     (upI[0] + Math.PI >= low[0] && upI[0] + Math.PI <= up[0]) ||
+    var condition = (// (lowI[0] - Math.PI >= low[0] && lowI[0] - Math.PI<= up[0]) ||
+                     // (upI[0] - Math.PI >= low[0] && upI[0] - Math.PI <= up[0]) ||
+                     // (lowI[0] + Math.PI >= low[0] && lowI[0] + Math.PI<= up[0]) ||
+                     // (upI[0] + Math.PI >= low[0] && upI[0] + Math.PI <= up[0]) ||
                      (lowI[0] >= low[0] && lowI[0] <= up[0]) ||
                      (upI[0] >= low[0] && upI[0] <= up[0]) ||
                      (lowI[1] >= low[1] && lowI[1] <= up[1]) ||
@@ -499,11 +482,28 @@ function searchLineRTreeRecursive(hits, node, line, number = {cpt: 0}) {
                          minY: child.minY,
                          maxX: child.maxX,
                          maxY: child.maxY};
-        if (intersectionSinusoidRectangle(line, rectangle)) {
+        if (intersectionLineRectangle(line, rectangle)) {
             searchLineRTreeRecursive(hits, child, line, number);
         }
     }
     return;
+}
+
+function divideArcsWithSlope(arcs) {
+    var arcsX = [];
+    var arcsY = [];
+    for (var arc of arcs) {
+        var alpha = Math.abs(arc.alpha) % 360;
+        if ((alpha >= 0 && alpha < 45) ||
+            (alpha > 315 && alpha <= 360) ||
+            (alpha > 135 && alpha < 225)) {
+            arcsX.push(arc);
+        }
+        else {
+            arcsY.push(arc);
+        }
+    }
+    return [arcsX, arcsY];
 }
 
 
@@ -521,47 +521,59 @@ var map = new Map({ layers: [ new Group({ title: 'Cartes', layers:[new TileLayer
 points.getSource().addFeature(new Feature(new Point(g)));
 points.getSource().addFeature(new Feature(new Point([0,0])));
 
-
-var dual = dualRepresentation(arcs, g);
-var rtree = rbush(5);
-rtree.load(dual);
-
-var node = rtree.data;
-var fifo = [rtree.data];
-while (fifo.length > 0) {
-    node = fifo.shift();
-    var minX = node.minX;
-    var minY = node.minY;
-    var maxX = node.maxX;
-    var maxY = node.maxY;
-    var p1 = [minX, minY];
-    var p2 = [maxX, minY];
-    var p3 = [maxX, maxY];
-    var p4 = [minX, maxY];
-    points.getSource().addFeature(new Feature(new Polygon([[p1, p2, p3, p4]])));
-    if (!node.leaf) {
-        for (var child of node.children) {
-            fifo.push(child);
-        }
-    }
+var dividedArcs = divideArcsWithSlope(arcs);
+for (let arc of dividedArcs[1]) {
+    polygonFound.getSource().addFeature(new Feature(arc));
 }
-console.log(rtree);
+var dualX = dualRepresentation(dividedArcs[0], g);
+var dualY = dualRepresentation(dividedArcs[1], g, true);
 
-draw(rtree);
+var nb = 5;
+var rtreeX = rbush(nb);
+rtreeX.load(dualX);
+
+var rtreeY = rbush(nb);
+rtreeY.load(dualY);
+
+// var node = rtree.data;
+// var fifo = [rtree.data];
+// while (fifo.length > 0) {
+//     node = fifo.shift();
+//     var minX = node.minX;
+//     var minY = node.minY;
+//     var maxX = node.maxX;
+//     var maxY = node.maxY;
+//     var p1 = [minX, minY];
+//     var p2 = [maxX, minY];
+//     var p3 = [maxX, maxY];
+//     var p4 = [minX, maxY];
+//     points.getSource().addFeature(new Feature(new Polygon([[p1, p2, p3, p4]])));
+//     if (!node.leaf) {
+//         for (var child of node.children) {
+//             fifo.push(child);
+//         }
+//     }
+// }
+console.log(rtreeY);
+
+// draw(rtree);
 
 map.on('click', function(event) {
     polygonFound.getSource().clear();
 
     var p = event.coordinate;
     var l = [p[0] - g[0], p[1] - g[1]];
-    //l = [p[0] - g[0], -p[1] + g[1]];
+    l = [p[0] - g[0], -p[1] + g[1]];
 
     //pointHoughToLine(l, g);
-    drawSinusoid(l);
+    //drawSinusoid(l);
 
     var hits = [];
     var number = {cpt: 0};
-    searchLineRTreeRecursive(hits, rtree.data, l, number);
+    searchLineRTreeRecursive(hits, rtreeX.data, l, number);
+    l = [-l[1], -l[0]];
+    searchLineRTreeRecursive(hits, rtreeY.data, l, number);
+
     console.log(number.cpt);
     console.log(hits);
     for (let i = 0; i < hits.length; i++) {
