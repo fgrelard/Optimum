@@ -22,6 +22,7 @@ import ASTree from '../../../js/lib/astree.js';
 import {angleToVector, boundingBox, centerOfMass, project} from '../../../js/lib/geometry.js';
 import rbush from 'rbush';
 import draw from './viz.js';
+import Dual from '../../../js/lib/polardual.js';
 
 //var stEtienneLonLatConv = [0, 0];
 
@@ -361,44 +362,12 @@ function pointHoughToLine(p, g) {
 }
 
 
-function lineEquation(vector, center, g, vertical = false) {
-
-    var centerNorm = [center[0] - g[0],
-                      center[1] - g[1]];
-    var x =  (vertical) ? vector[0] / vector[1] : vector[1] / vector[0];
-    var y = (vertical) ? centerNorm[0] - x * centerNorm[1] : centerNorm[1] - x * centerNorm[0];
-    return [x, -y];
-
-    var x0 = g[0];
-    var y0 = g[1];
-
-    var secondPoint = [center[0] + vector[0]*5,
-                       center[1] + vector[1]*5];
-    var projection = project(g, center, secondPoint);
-    var rho = euclideanDistance(projection, g);
-    var theta = Math.acos((projection[0] - g[0]) / rho);
-    theta = (projection[1] - g[1] < 0) ? -theta : theta;
-
-    return [theta, rho];
-}
-
-
-
 function dualRepresentation(arcs, g, vertical = false) {
     var dual = [];
     for (var arc of arcs) {
-        var firstVector = angleToVector(arc.alpha);
-        var secondVector = angleToVector(arc.omega);
-        var middleVector = [firstVector[0] + secondVector[0],
-                            firstVector[1] + secondVector[1]];
-        var firstLine = lineEquation(firstVector, arc.center, g, vertical);
-        var secondLine = lineEquation(secondVector, arc.center, g, vertical);
-
-        if (!firstLine || !secondLine) continue;
-        points.getSource().addFeature(new Feature(new LineString([firstLine, secondLine])));
-//        points.getSource().addFeature(new Feature(new Point(secondLine)));
-        var positions = [firstLine, secondLine];
-        var bbox = boundingBox(positions);
+        var dualArc = Dual.dualCone(arc, g, vertical);
+        points.getSource().addFeature(new Feature(new LineString([dualArc[0], dualArc[1]])));
+        var bbox = boundingBox(dualArc);
 
 
         var bboxCoordinates = {minX: bbox[0][0],
@@ -416,6 +385,8 @@ function drawSinusoid(coefficients) {
     var m = -Math.PI;
     var M = Math.PI;
     var pointsSinusoid = [];
+    console.log(coefficients[0]);
+    console.log(coefficients[1]);
     for (var i = m; i < M; i+=0.1) {
         var y = coefficients[0] * Math.cos(i) + coefficients[1] * Math.sin(i);
         var point = [i, y];
@@ -426,50 +397,6 @@ function drawSinusoid(coefficients) {
 }
 
 
-function intersectionLineRectangle(line, rectangle) {
-    var a = line[0];
-    var b = line[1];
-    var low = [rectangle.minX, rectangle.minY];
-    var up = [rectangle.maxX, rectangle.maxY];
-
-    var lowI = [(low[1] - b) / a, a * low[0] + b];
-    var upI = [(up[1] - b) / a, a * up[0] + b];
-
-    var condition = ((lowI[0] >= low[0] && lowI[0] <= up[0]) ||
-                              (upI[0] >= low[0] && upI[0] <= up[0]) ||
-                              (lowI[1] >= low[1] && lowI[1] <= up[1]) ||
-                              (upI[1] >= low[1] && upI[1] <= up[1]));
-    return condition;
-}
-
-function intersectionSinusoidRectangle(sinusoid, rectangle) {
-    var a = sinusoid[0];
-    var b = sinusoid[1];
-    var low = [rectangle.minX, rectangle.minY];
-    var up = [rectangle.maxX, rectangle.maxY];
-
-
-
-    var R = Math.sqrt(a*a + b*b);
-    var alphaC = Math.atan(b / a);
-
-    var rho = (x) => a * Math.cos(x) + b * Math.sin(x);
-    var theta = (y) => (Math.acos(y % Math.PI / R) + alphaC);
-    var thetaRange = (y) => (theta(y) > rectangle.maxX) ? theta(y) - Math.PI : ((theta(y) < rectangle.minX) ? theta(y) + Math.PI : theta(y));
-
-    var lowI = [thetaRange(low[1]), rho(low[0])];
-    var upI = [thetaRange(up[1]), rho(up[0])];
-
-    var condition = (// (lowI[0] - Math.PI >= low[0] && lowI[0] - Math.PI<= up[0]) ||
-                     // (upI[0] - Math.PI >= low[0] && upI[0] - Math.PI <= up[0]) ||
-                     // (lowI[0] + Math.PI >= low[0] && lowI[0] + Math.PI<= up[0]) ||
-                     // (upI[0] + Math.PI >= low[0] && upI[0] + Math.PI <= up[0]) ||
-                     (lowI[0] >= low[0] && lowI[0] <= up[0]) ||
-                     (upI[0] >= low[0] && upI[0] <= up[0]) ||
-                     (lowI[1] >= low[1] && lowI[1] <= up[1]) ||
-                     (upI[1] >= low[1] && upI[1] <= up[1]));
-    return condition;
-}
 
 function searchLineRTreeRecursive(hits, node, line, number = {cpt: 0}) {
     number.cpt++;
@@ -482,7 +409,7 @@ function searchLineRTreeRecursive(hits, node, line, number = {cpt: 0}) {
                          minY: child.minY,
                          maxX: child.maxX,
                          maxY: child.maxY};
-        if (intersectionLineRectangle(line, rectangle)) {
+        if (Dual.intersectionRequestRectangle(line, rectangle)) {
             searchLineRTreeRecursive(hits, child, line, number);
         }
     }
@@ -507,7 +434,9 @@ function divideArcsWithSlope(arcs) {
 }
 
 
-var arcs = generateRandomSectors(100);
+
+
+var arcs = generateSectors(100);
 
 var g = centerOfMass(arcs.map(function(a) {
     return a.center;
@@ -521,19 +450,26 @@ var map = new Map({ layers: [ new Group({ title: 'Cartes', layers:[new TileLayer
 points.getSource().addFeature(new Feature(new Point(g)));
 points.getSource().addFeature(new Feature(new Point([0,0])));
 
-var dividedArcs = divideArcsWithSlope(arcs);
-for (let arc of dividedArcs[1]) {
-    polygonFound.getSource().addFeature(new Feature(arc));
-}
-var dualX = dualRepresentation(dividedArcs[0], g);
-var dualY = dualRepresentation(dividedArcs[1], g, true);
-
 var nb = 5;
-var rtreeX = rbush(nb);
-rtreeX.load(dualX);
+var divide = false;
+if (divide) {
+    var dividedArcs = divideArcsWithSlope(arcs);
+    for (let arc of dividedArcs[1]) {
+        polygonFound.getSource().addFeature(new Feature(arc));
+    }
+    var dualX = dualRepresentation(dividedArcs[0], g);
+    var dualY = dualRepresentation(dividedArcs[1], g, true);
 
-var rtreeY = rbush(nb);
-rtreeY.load(dualY);
+    var rtreeX = rbush(nb);
+    rtreeX.load(dualX);
+
+    var rtreeY = rbush(nb);
+    rtreeY.load(dualY);
+} else {
+    var rtree = rbush(nb);
+    var dual = dualRepresentation(arcs, g);
+    rtree.load(dual);
+}
 
 // var node = rtree.data;
 // var fifo = [rtree.data];
@@ -554,25 +490,26 @@ rtreeY.load(dualY);
 //         }
 //     }
 // }
-console.log(rtreeY);
 
-// draw(rtree);
+draw(rtree);
 
 map.on('click', function(event) {
     polygonFound.getSource().clear();
 
     var p = event.coordinate;
     var l = [p[0] - g[0], p[1] - g[1]];
-    l = [p[0] - g[0], -p[1] + g[1]];
-
     //pointHoughToLine(l, g);
-    //drawSinusoid(l);
+    drawSinusoid(l);
 
     var hits = [];
     var number = {cpt: 0};
-    searchLineRTreeRecursive(hits, rtreeX.data, l, number);
-    l = [-l[1], -l[0]];
-    searchLineRTreeRecursive(hits, rtreeY.data, l, number);
+    if (divide) {
+        searchLineRTreeRecursive(hits, rtreeX.data, l, number);
+        l = [l[1], l[0]];
+        searchLineRTreeRecursive(hits, rtreeY.data, l, number);
+    } else {
+        searchLineRTreeRecursive(hits, rtree.data, l, number);
+    }
 
     console.log(number.cpt);
     console.log(hits);
@@ -581,6 +518,8 @@ map.on('click', function(event) {
         polygonFound.getSource().addFeature(new Feature(polyFound));
     }
 });
+
+console.log(rtree);
 
 map.addLayer(polygon);
 map.addLayer(points);
