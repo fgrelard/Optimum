@@ -5,6 +5,13 @@ export function  angleToVector(angle) {
     return [x, y];
 }
 
+export function vectorToAngle(vector, vectorRef) {
+    var dot = vectorRef[0]*vector[0] + vectorRef[1]*vector[1];
+    var det = vectorRef[0]*vector[1] - vectorRef[1]*vector[0];
+    var angle = Math.atan2(det, dot);
+    return angle;
+}
+
 
 export function boundingBox(positions) {
     var low = [Number.MAX_VALUE, Number.MAX_VALUE];

@@ -10,17 +10,26 @@ export default class Dual {
         return [x, -y];
     }
 
-     static dualCone(arc, g, vertical = false) {
-         var dual = [];
-         var firstVector = angleToVector(arc.alpha);
-         var secondVector = angleToVector(arc.omega);
-         var middleVector = [firstVector[0] + secondVector[0],
-                             firstVector[1] + secondVector[1]];
-         var firstLine = this.dualLine(firstVector, arc.center, g, vertical);
-         var secondLine = this.dualLine(secondVector, arc.center, g, vertical);
+    static dualCone(arc, g, vertical = false) {
+        var dual = [];
+        var firstVector = angleToVector(arc.alpha);
+        var secondVector = angleToVector(arc.omega);
+        var firstLine = this.dualLine(firstVector, arc.center, g, vertical);
+        var secondLine = this.dualLine(secondVector, arc.center, g, vertical);
 
-         var positions = [firstLine, secondLine];
-         return positions;
+        var positions = [firstLine, secondLine];
+        return positions;
+    }
+
+    static dualBoundingRectangle(arc, g, vertical = false) {
+        var dualArc = this.dualCone(arc, g, vertical);
+        var bbox = boundingBox(dualArc);
+        var bboxCoordinates = {minX: bbox[0][0],
+                               minY: bbox[0][1],
+                               maxX: bbox[1][0],
+                               maxY: bbox[1][1],
+                               feature: arc};
+        return bboxCoordinates;
     }
 
     static intersectionRequestRectangle(point, rectangle) {

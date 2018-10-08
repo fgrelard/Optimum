@@ -19,10 +19,11 @@ import $ from 'jquery';
 import {getRandomArbitrary, addRandomArcs, addRandomLocations} from '../../../js/lib/randomfeatures.js';
 import Arc from '../../../js/lib/arc.js';
 import ASTree from '../../../js/lib/astree.js';
-import {angleToVector, boundingBox, centerOfMass, project} from '../../../js/lib/geometry.js';
+import {angleToVector, vectorToAngle, boundingBox, centerOfMass, project} from '../../../js/lib/geometry.js';
 import rbush from 'rbush';
 import draw from './viz.js';
-import Dual from '../../../js/lib/polardual.js';
+import Dual from '../../../js/lib/dual.js';
+import Select from 'ol/interaction/select';
 
 //var stEtienneLonLatConv = [0, 0];
 
@@ -290,7 +291,7 @@ function sectorsStEtienne() {
 
 
 function generateRandomSectors(n) {
-    var extent = [0,0, 10000, 10000];
+    var extent = [0,0, 10, 10];
     var locations = addRandomLocations(extent, n);
     var arcs = addRandomArcs(locations);
     for (var i  = 0; i < arcs.length; i++) {
@@ -356,9 +357,9 @@ function pointHoughToLine(p, g) {
     x += g[0];
     y += g[1];
 
-    var f = [x + vline[0] * 50, y + vline[1] * 50];
-    var l = [x - vline[0] * 50, y - vline[1] * 50];
-    points.getSource().addFeature(new Feature(new LineString([f, l])));
+    return {center:[x, y],
+            vector: vline};
+
 }
 
 
@@ -367,14 +368,7 @@ function dualRepresentation(arcs, g, vertical = false) {
     for (var arc of arcs) {
         var dualArc = Dual.dualCone(arc, g, vertical);
         points.getSource().addFeature(new Feature(new LineString([dualArc[0], dualArc[1]])));
-        var bbox = boundingBox(dualArc);
-
-
-        var bboxCoordinates = {minX: bbox[0][0],
-                               minY: bbox[0][1],
-                               maxX: bbox[1][0],
-                               maxY: bbox[1][1],
-                               feature: arc};
+        var bboxCoordinates = Dual.dualBoundingRectangle(arc, g, vertical);
 
         dual.push(bboxCoordinates);
     }
@@ -385,8 +379,6 @@ function drawSinusoid(coefficients) {
     var m = -Math.PI;
     var M = Math.PI;
     var pointsSinusoid = [];
-    console.log(coefficients[0]);
-    console.log(coefficients[1]);
     for (var i = m; i < M; i+=0.1) {
         var y = coefficients[0] * Math.cos(i) + coefficients[1] * Math.sin(i);
         var point = [i, y];
@@ -434,9 +426,7 @@ function divideArcsWithSlope(arcs) {
 }
 
 
-
-
-var arcs = generateSectors(100);
+var arcs = generateRandomSectors(1000);
 
 var g = centerOfMass(arcs.map(function(a) {
     return a.center;
@@ -451,7 +441,7 @@ points.getSource().addFeature(new Feature(new Point(g)));
 points.getSource().addFeature(new Feature(new Point([0,0])));
 
 var nb = 5;
-var divide = false;
+var divide = true;
 if (divide) {
     var dividedArcs = divideArcsWithSlope(arcs);
     for (let arc of dividedArcs[1]) {
@@ -471,35 +461,59 @@ if (divide) {
     rtree.load(dual);
 }
 
-// var node = rtree.data;
-// var fifo = [rtree.data];
-// while (fifo.length > 0) {
-//     node = fifo.shift();
-//     var minX = node.minX;
-//     var minY = node.minY;
-//     var maxX = node.maxX;
-//     var maxY = node.maxY;
-//     var p1 = [minX, minY];
-//     var p2 = [maxX, minY];
-//     var p3 = [maxX, maxY];
-//     var p4 = [minX, maxY];
-//     points.getSource().addFeature(new Feature(new Polygon([[p1, p2, p3, p4]])));
-//     if (!node.leaf) {
-//         for (var child of node.children) {
-//             fifo.push(child);
-//         }
-//     }
-// }
+function closestArc(arcs, angles) {
+    var min = Number.MAX_VALUE;
+    var closest;
+    var firstAngle = angles[0] * 180 / Math.PI + 180;
+    var secondAngle = angles[1] * 180 / Math.PI + 180;
+    var reflexiveFirst = (180+firstAngle) % 360;
+    var reflexiveSecond  = (180+secondAngle) % 360;
 
-draw(rtree);
+    for (var arc of arcs) {
+        var alpha = arc.alpha;
+        var omega = arc.omega;
+        var minAlpha = Math.min(Math.abs(alpha - firstAngle), Math.min(Math.abs(alpha - secondAngle), Math.min(Math.abs(alpha - reflexiveFirst), Math.abs(alpha - reflexiveSecond))));
+        var minOmega = Math.min(Math.abs(omega - firstAngle), Math.min(Math.abs(omega - secondAngle), Math.min(Math.abs(omega - reflexiveFirst), Math.abs(omega - reflexiveSecond))));
+        var sum = minOmega + minAlpha;
+        if (sum < min) {
+            min = sum;
+            closest = arc;
+        }
+    }
+    return closest;
+}
+
+// var select = new Select();
+// select.on('select', function(event) {
+//     event.selected.filter(function(feature) {
+//         polygonSelected.getSource().clear();
+//         var geom = feature.getGeometry().flatCoordinates;
+//         console.log(geom[0] +  " " + geom[2]);
+//         var f = [geom[0] - g[0], geom[1] - g[1]];
+//         var l = [geom[2] - g[0], geom[3] - g[1]];
+//         var lineF = pointHoughToLine(f, g);
+//         var lineL = pointHoughToLine(l, g);
+
+//         var angleF = vectorToAngle(lineF.vector, [1, 0]);
+//         var angleL = vectorToAngle(lineL.vector, [1, 0]);
+
+//         var arc = closestArc(arcs, [angleF, angleL]);
+//         polygonSelected.getSource().addFeature(new Feature(arc));
+
+//     });
+// });
+
+
+// draw(rtree);
+// console.log(rtree);
 
 map.on('click', function(event) {
     polygonFound.getSource().clear();
 
     var p = event.coordinate;
     var l = [p[0] - g[0], p[1] - g[1]];
-    //pointHoughToLine(l, g);
-    drawSinusoid(l);
+//    pointHoughToLine(l, g);
+//    drawSinusoid(l);
 
     var hits = [];
     var number = {cpt: 0};
@@ -519,12 +533,24 @@ map.on('click', function(event) {
     }
 });
 
-console.log(rtree);
+
+
+console.log(Dual.intersectionRequestRectangle([136 -g[0], -653 - g[1]], {
+    maxX: 3.141592653589793,
+    maxY: 12.900000000000002,
+    minX: 0.6981317007977319,
+    minY: -13.36637572418193
+}));
+
+points.setZIndex(1000);
 
 map.addLayer(polygon);
 map.addLayer(points);
 map.addLayer(polygonFound);
 map.addLayer(polygonSelected);
+
+//map.addInteraction(select);
+
 
 // arcs.map(function(element) {
 //     console.log("new Arc(["+ element.center + "], 100," + element.alpha + ", " + element.omega +"),");
