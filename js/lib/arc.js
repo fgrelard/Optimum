@@ -8,7 +8,8 @@
 import Polygon from 'ol/geom/polygon.js';
 import Point from 'ol/geom/point.js';
 import LineString from 'ol/geom/linestring.js';
-
+import {angleToVector, vectorToAngle} from './geometry.js';
+import {euclideanDistance} from './distance.js';
 
 export default class Arc {
 
@@ -61,6 +62,19 @@ export default class Arc {
         arrArc = [ftArc, ftArcPt0, ftArcPt1, ftArcSehne];
         this.fullGeometry = arrArc;
         this.geometry = arrArc[0];
+    }
+
+    intersects(p) {
+        var norm = euclideanDistance(p, this.center);
+        var vectorP = [(p[0] - this.center[0]) / norm,
+                       (p[1] - this.center[1]) / norm];
+
+        var angle = vectorToAngle(vectorP, [1, 0]) * 180 / Math.PI;
+        if (angle < 0) {
+            angle += 360;
+        }
+        return ((angle >= this.alpha && angle <= this.omega) ||
+                (angle - 360 >= this.alpha && angle -360 <= this.omega));
     }
 
     equals(other) {

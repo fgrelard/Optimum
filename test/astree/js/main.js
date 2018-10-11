@@ -426,11 +426,16 @@ function divideArcsWithSlope(arcs) {
 }
 
 
-var arcs = generateRandomSectors(1000);
-
+var arcs = generateSectors(100);
 var g = centerOfMass(arcs.map(function(a) {
     return a.center;
 }));
+// var histo = histogramAngles(arcs);
+// var uri = writeCsv(histo);
+// console.log(uri);
+var averageSectors = sectorsIntersected(arcs, 500, 0, 1000, g);
+console.log(averageSectors);
+
 
 var map = new Map({ layers: [ new Group({ title: 'Cartes', layers:[new TileLayer({ title:'OSM', type:'base', source: new OSM() })]}) ],
                     target: 'map',
@@ -483,6 +488,50 @@ function closestArc(arcs, angles) {
     return closest;
 }
 
+function histogramAngles(arcs) {
+    var length = 60;
+    var array = new Array(length).fill(0);
+    for (var arc of arcs) {
+        var angle = Math.round(arc.omega - arc.alpha);
+        array[angle]++;
+    }
+    writeCsv(array);
+    return array;
+}
+
+function writeCsv(histogram) {
+    let csvContent = "data:text/csv;charset=utf-8,";
+    for (var i = 0; i < histogram.length; i++) {
+        csvContent += i.toString() + "\t" + histogram[i] + "\n";
+    }
+    var encodedUri = encodeURI(csvContent);
+    return encodedUri;
+}
+
+function sectorsIntersected(sectors, n, dmin, radius, g) {
+    var extent = [g[0]- radius, g[1] - radius,
+                  g[0] + radius, g[1] + radius];
+    var locations = addRandomLocations(extent, n);
+    var sum = 0;
+    for (var p of locations) {
+        var norm = euclideanDistance(p, g);
+        var vector = [(p[0] - g[0]) / norm, (p[1] - g[1]) / norm];
+        var translation = [vector[0] * dmin, vector[1] * dmin];
+        p[0] += translation[0];
+        p[1] += translation[1];
+        points.getSource().addFeature(new Feature(new Point(p)));
+        var number = 0;
+        for (var s of sectors) {
+            if (s.intersects(p)) {
+                number++;
+            }
+        }
+        sum += number;
+    }
+    sum /= n;
+    return sum;
+}
+
 // var select = new Select();
 // select.on('select', function(event) {
 //     event.selected.filter(function(feature) {
@@ -525,11 +574,21 @@ map.on('click', function(event) {
         searchLineRTreeRecursive(hits, rtree.data, l, number);
     }
 
+    var cpt = 0;
+    for (var arc of arcs) {
+        if (arc.intersects(p)) {
+            cpt++;
+            polygonFound.getSource().addFeature(new Feature(arc));
+        }
+    }
+    console.log(p);
+    console.log("Number " + cpt);
+
     console.log(number.cpt);
     console.log(hits);
     for (let i = 0; i < hits.length; i++) {
         var polyFound = hits[i].feature;
-        polygonFound.getSource().addFeature(new Feature(polyFound));
+        //polygonFound.getSource().addFeature(new Feature(polyFound));
     }
 });
 
