@@ -276,6 +276,14 @@ function sectorsStEtienne() {
 
                 new Arc([489576.31765104656,5688245.955613515],100, 85.30999999999999, 85.31)];
 
+    var arcs2 = [];
+    for (var arc of arcs) {
+        if (arc.omega - arc.alpha > 1)
+            arcs2.push(arc);
+
+    }
+
+    arcs = arcs2;
 
     var length = arcs.length;
     for (var i  = 0; i < length; i++) {
@@ -365,14 +373,36 @@ function pointHoughToLine(p, g) {
 
 function dualRepresentation(arcs, g, vertical = false) {
     var dual = [];
+    var dualY = [];
     for (var arc of arcs) {
         var dualArc = Dual.dualCone(arc, g, vertical);
         points.getSource().addFeature(new Feature(new LineString([dualArc[0], dualArc[1]])));
-        var bboxCoordinates = Dual.dualBoundingRectangle(arc, g, vertical);
+        var bboxCoordinates = Dual.dualBoundingRectangle(arc, g, false);
+        if (vertical) {
+            var bboxCoordinatesVertical = Dual.dualBoundingRectangle(arc, g, true);
+            var rectangleH = [ [bboxCoordinates.minX, bboxCoordinates.minY],
+                               [bboxCoordinates.maxX, bboxCoordinates.maxY] ];
+            var rectangleV = [ [bboxCoordinatesVertical.minX, bboxCoordinatesVertical.minY],
+                               [bboxCoordinatesVertical.maxX, bboxCoordinatesVertical.maxY] ];
 
-        dual.push(bboxCoordinates);
+            var dH = euclideanDistance(rectangleH[0], rectangleH[1]);
+            var dV = euclideanDistance(rectangleV[0], rectangleV[1]);
+
+            if (dH < dV) {
+                dual.push(bboxCoordinates);
+            }
+            else {
+                dualY.push(bboxCoordinatesVertical);
+            }
+        }
+        else {
+            dual.push(bboxCoordinates);
+        }
+
     }
-    return dual;
+    if (vertical)
+        return [dual, dualY];
+    return [dual];
 }
 
 function drawSinusoid(coefficients) {
@@ -425,45 +455,50 @@ function divideArcsWithSlope(arcs) {
     return [arcsX, arcsY];
 }
 
-
-var arcs = generateSectors(100);
-var g = centerOfMass(arcs.map(function(a) {
-    return a.center;
-}));
-// var histo = histogramAngles(arcs);
-// var uri = writeCsv(histo);
-// console.log(uri);
-var averageSectors = sectorsIntersected(arcs, 500, 0, 1000, g);
-console.log(averageSectors);
-
-
-var map = new Map({ layers: [ new Group({ title: 'Cartes', layers:[new TileLayer({ title:'OSM', type:'base', source: new OSM() })]}) ],
-                    target: 'map',
-                    view: new View({ center: g,
-                                     zoom: 18 }) });
-
-points.getSource().addFeature(new Feature(new Point(g)));
-points.getSource().addFeature(new Feature(new Point([0,0])));
-
-var nb = 5;
-var divide = true;
-if (divide) {
-    var dividedArcs = divideArcsWithSlope(arcs);
-    for (let arc of dividedArcs[1]) {
-        polygonFound.getSource().addFeature(new Feature(arc));
+function histogramAngles(arcs) {
+    var length = 60;
+    var array = new Array(length).fill(0);
+    for (var arc of arcs) {
+        var angle = Math.round(arc.omega - arc.alpha);
+        array[angle]++;
     }
-    var dualX = dualRepresentation(dividedArcs[0], g);
-    var dualY = dualRepresentation(dividedArcs[1], g, true);
+    var histo = [];
+    for (var i = 0; i < length; i++) {
+        histo.push({x: i, y: array[i]});
+    }
+    return histo;
+}
 
-    var rtreeX = rbush(nb);
-    rtreeX.load(dualX);
+function writeCsv(array) {
+    let csvContent = "data:text/csv;charset=utf-8,";
+    for (var i = 0; i < array.length; i++) {
+        csvContent += array[i].x.toString() + "\t" + array[i].y.toString() + "\n";
+    }
+    var encodedUri = encodeURI(csvContent);
+    return encodedUri;
+}
 
-    var rtreeY = rbush(nb);
-    rtreeY.load(dualY);
-} else {
-    var rtree = rbush(nb);
-    var dual = dualRepresentation(arcs, g);
-    rtree.load(dual);
+function sectorsIntersected(sectors, n, dmin, radius, g) {
+    var extent = [g[0]- radius, g[1] - radius,
+                  g[0] + radius, g[1] + radius];
+    var locations = addRandomLocations(extent, n);
+    var sum = 0;
+    for (var p of locations) {
+        var norm = euclideanDistance(p, g);
+        var vector = [(p[0] - g[0]) / norm, (p[1] - g[1]) / norm];
+        var translation = [vector[0] * dmin, vector[1] * dmin];
+        p[0] += translation[0];
+        p[1] += translation[1];
+        var number = 0;
+        for (var s of sectors) {
+            if (s.intersects(p)) {
+                number++;
+            }
+        }
+        sum += number;
+    }
+    sum /= n;
+    return sum;
 }
 
 function closestArc(arcs, angles) {
@@ -488,49 +523,71 @@ function closestArc(arcs, angles) {
     return closest;
 }
 
-function histogramAngles(arcs) {
-    var length = 60;
-    var array = new Array(length).fill(0);
-    for (var arc of arcs) {
-        var angle = Math.round(arc.omega - arc.alpha);
-        array[angle]++;
+function intersectionNbPoints(arcs, g, dmax, nbMin, nbMax, step) {
+    var array = [];
+    for (var i = nbMin; i < nbMax; i+=step) {
+        var n = sectorsIntersected(arcs, i, 0, dmax, g);
+        array.push({x: i, y: n});
     }
-    writeCsv(array);
     return array;
 }
 
-function writeCsv(histogram) {
-    let csvContent = "data:text/csv;charset=utf-8,";
-    for (var i = 0; i < histogram.length; i++) {
-        csvContent += i.toString() + "\t" + histogram[i] + "\n";
+function intersectionDistance(arcs, g, dmin, dmax, step) {
+    var array = [];
+    for (var i = dmin; i < dmax; i+=step) {
+        var n = sectorsIntersected(arcs, 50000, i-step, i, g);
+        array.push({x: i, y: n});
     }
-    var encodedUri = encodeURI(csvContent);
-    return encodedUri;
+    return array;
 }
 
-function sectorsIntersected(sectors, n, dmin, radius, g) {
-    var extent = [g[0]- radius, g[1] - radius,
-                  g[0] + radius, g[1] + radius];
-    var locations = addRandomLocations(extent, n);
-    var sum = 0;
-    for (var p of locations) {
-        var norm = euclideanDistance(p, g);
-        var vector = [(p[0] - g[0]) / norm, (p[1] - g[1]) / norm];
-        var translation = [vector[0] * dmin, vector[1] * dmin];
-        p[0] += translation[0];
-        p[1] += translation[1];
-        points.getSource().addFeature(new Feature(new Point(p)));
-        var number = 0;
-        for (var s of sectors) {
-            if (s.intersects(p)) {
-                number++;
-            }
-        }
-        sum += number;
+var arcs = generateRandomSectors(1000);
+var g = centerOfMass(arcs.map(function(a) {
+    return a.center;
+}));
+// var histo = histogramAngles(arcs);
+// var uri = writeCsv(histo);
+// console.log(uri);
+//var averageSectors = sectorsIntersected(arcs, 500, 0, 1000, g);
+//console.log(averageSectors);
+// var curve =intersectionNbPoints(arcs, g, 2000, 0, 100000, 1000);
+//var curve =intersectionDistance(arcs, g, 1000, 20000, 1000);
+// points.getSource().addFeature(new Feature(new Polygon([ [ [g[0] - 10000, g[1] - 10000], [g[0] + 10000, g[1] - 10000], [g[0] + 10000, g[1] + 10000], [g[0] - 10000, g[1] + 10000] ] ])));
+// var uri = writeCsv(curve);
+// console.log(uri);
+
+var map = new Map({ layers: [ new Group({ title: 'Cartes', layers:[new TileLayer({ title:'OSM', type:'base', source: new OSM() })]}) ],
+                    target: 'map',
+                    view: new View({ center: g,
+                                     zoom: 18 }) });
+
+points.getSource().addFeature(new Feature(new Point(g)));
+points.getSource().addFeature(new Feature(new Point([0,0])));
+
+var nb = 5;
+var divide = true;
+if (divide) {
+    var dividedArcs = divideArcsWithSlope(arcs);
+    for (let arc of dividedArcs[1]) {
+        polygonFound.getSource().addFeature(new Feature(arc));
     }
-    sum /= n;
-    return sum;
+    var dual = dualRepresentation(arcs, g, true);
+    var dualX = dual[0];
+    var dualY = dual[1];
+//    var dualY = dualRepresentation(dividedArcs[1], g, true);
+
+    var rtreeX = rbush(nb);
+    rtreeX.load(dualX);
+
+    var rtreeY = rbush(nb);
+    rtreeY.load(dualY);
+} else {
+    var rtree = rbush(nb);
+    var dual = dualRepresentation(arcs, g)[0];
+    rtree.load(dual);
 }
+
+
 
 // var select = new Select();
 // select.on('select', function(event) {
@@ -574,21 +631,11 @@ map.on('click', function(event) {
         searchLineRTreeRecursive(hits, rtree.data, l, number);
     }
 
-    var cpt = 0;
-    for (var arc of arcs) {
-        if (arc.intersects(p)) {
-            cpt++;
-            polygonFound.getSource().addFeature(new Feature(arc));
-        }
-    }
-    console.log(p);
-    console.log("Number " + cpt);
-
     console.log(number.cpt);
     console.log(hits);
     for (let i = 0; i < hits.length; i++) {
         var polyFound = hits[i].feature;
-        //polygonFound.getSource().addFeature(new Feature(polyFound));
+        polygonFound.getSource().addFeature(new Feature(polyFound));
     }
 });
 
@@ -610,83 +657,3 @@ map.addLayer(polygonSelected);
 
 //map.addInteraction(select);
 
-
-// arcs.map(function(element) {
-//     console.log("new Arc(["+ element.center + "], 100," + element.alpha + ", " + element.omega +"),");
-// });
-// var found = astree.search(stEtienneLonLatConv);
-// for (let i = 0; i < found.length; i++) {
-//     var polyFound = found[i];
-//     polygonFound.getSource().addFeature(new Feature(polyFound));
-// }
-
-// /* Visualization */
-// var dataNodes = [];
-// var dataEdges = [];
-// var index = 1;
-// var fifo = [astree.tree];
-// while (fifo.length > 0) {
-//     var node = fifo.shift();
-//     if (!node.value) continue;
-//     if (node.value.hasOwnProperty("alpha")) {
-//         dataNodes.push({id: index++, label: Math.round(node.value.alpha) + "°-" + Math.round(node.value.omega)+"°", color: 'rgb(255,168,7)'});
-//     } else {
-//         var label = node.value.toString();
-//         dataNodes.push({id: index++, label: label, value: node.value});
-//     }
-//     if (node.parentIndex)
-//         dataEdges.push({from: node.parentIndex, to: index-1, arrows:"to"});
-//     for (let i = 0; i < node.children.length; i++) {
-//         var nodeChild = node.children[i];
-//         nodeChild.parentIndex = index-1;
-//         fifo.push(nodeChild);
-//     }
-// }
-
-// var nodes = new vis.DataSet(dataNodes);
-
-// // create an array with edges
-// var edges = new vis.DataSet(dataEdges);
-
-// // create a network
-// var container = document.getElementById('mynetwork');
-// var data = {
-//     nodes: nodes,
-//     edges: edges
-// };
-
-// var options = {
-//         layout: {
-//           hierarchical: {
-//             sortMethod: "directed"
-//           }
-//         },
-//         edges: {
-//           smooth: true,
-//           arrows: {to : true }
-//         }
-//       };
-// var network = new vis.Network(container, data, options);
-
-// network.on("selectNode", function (params) {
-//     polygonSelected.getSource().clear();
-//     var node = dataNodes[params.nodes[0]-1];
-//     var sector = node.value;
-//     if (sector.firstPlane)
-//         var center = sector.firstPlane.center;
-//     else
-//         center = sector.center;
-//     var closestArc;
-//     var min = Number.MAX_VALUE;
-//     for (let arc of arcs) {
-//         var d = euclideanDistance(center, arc.center);
-//         if (d < min) {
-//             min = d;
-//             closestArc = arc;
-//         }
-//     }
-//    polygonSelected.getSource().addFeature(new Feature(closestArc));
-
-// });
-// var t = test(arcs, astree);
-// console.log("Test=" + t);
