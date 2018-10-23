@@ -376,7 +376,7 @@ function dualRepresentation(arcs, g, vertical = false) {
     var dualY = [];
     for (var arc of arcs) {
         var dualArc = Dual.dualCone(arc, g, vertical);
-        points.getSource().addFeature(new Feature(new LineString([dualArc[0], dualArc[1]])));
+        // points.getSource().addFeature(new Feature(new LineString([dualArc[0], dualArc[1]])));
         var bboxCoordinates = Dual.dualBoundingRectangle(arc, g, false);
         if (vertical) {
             var bboxCoordinatesVertical = Dual.dualBoundingRectangle(arc, g, true);
@@ -545,6 +545,11 @@ var arcs = generateRandomSectors(1000);
 var g = centerOfMass(arcs.map(function(a) {
     return a.center;
 }));
+
+var bbox = boundingBox(arcs.map(function(a) {
+    return a.center;
+}));
+g = bbox[0];
 // var histo = histogramAngles(arcs);
 // var uri = writeCsv(histo);
 // console.log(uri);
@@ -568,9 +573,6 @@ var nb = 5;
 var divide = true;
 if (divide) {
     var dividedArcs = divideArcsWithSlope(arcs);
-    for (let arc of dividedArcs[1]) {
-        polygonFound.getSource().addFeature(new Feature(arc));
-    }
     var dual = dualRepresentation(arcs, g, true);
     var dualX = dual[0];
     var dualY = dual[1];
@@ -584,6 +586,7 @@ if (divide) {
 } else {
     var rtree = rbush(nb);
     var dual = dualRepresentation(arcs, g)[0];
+    console.log(dual);
     rtree.load(dual);
 }
 
