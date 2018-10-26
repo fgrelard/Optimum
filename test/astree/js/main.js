@@ -22,8 +22,9 @@ import ASTree from '../../../js/lib/astree.js';
 import {angleToVector, vectorToAngle, boundingBox, centerOfMass, project} from '../../../js/lib/geometry.js';
 import rbush from 'rbush';
 import draw from './viz.js';
-import Dual from '../../../js/lib/dual.js';
+import Dual from '../../../js/lib/polardual.js';
 import Select from 'ol/interaction/select';
+import {RBush3D} from 'rbush-3d';
 
 //var stEtienneLonLatConv = [0, 0];
 
@@ -287,8 +288,6 @@ function sectorsStEtienne() {
 
     var length = arcs.length;
     for (var i  = 0; i < length; i++) {
-        // arcs[i].center[0] -= 490000;
-        // arcs[i].center[1] -= 5687027;
         arcs[i].computeGeometry();
         polygon.getSource().addFeature(new Feature(arcs[i]));
      }
@@ -376,7 +375,6 @@ function dualRepresentation(arcs, g, vertical = false) {
     var dualY = [];
     for (var arc of arcs) {
         var dualArc = Dual.dualCone(arc, g, vertical);
-        // points.getSource().addFeature(new Feature(new LineString([dualArc[0], dualArc[1]])));
         var bboxCoordinates = Dual.dualBoundingRectangle(arc, g, false);
         if (vertical) {
             var bboxCoordinatesVertical = Dual.dualBoundingRectangle(arc, g, true);
@@ -541,7 +539,7 @@ function intersectionDistance(arcs, g, dmin, dmax, step) {
     return array;
 }
 
-var arcs = generateRandomSectors(1000);
+var arcs = generateRandomSectors(100);
 var g = centerOfMass(arcs.map(function(a) {
     return a.center;
 }));
@@ -549,7 +547,7 @@ var g = centerOfMass(arcs.map(function(a) {
 var bbox = boundingBox(arcs.map(function(a) {
     return a.center;
 }));
-g = bbox[0];
+//g = bbox[0];
 // var histo = histogramAngles(arcs);
 // var uri = writeCsv(histo);
 // console.log(uri);
@@ -570,7 +568,7 @@ points.getSource().addFeature(new Feature(new Point(g)));
 points.getSource().addFeature(new Feature(new Point([0,0])));
 
 var nb = 5;
-var divide = true;
+var divide = false;
 if (divide) {
     var dividedArcs = divideArcsWithSlope(arcs);
     var dual = dualRepresentation(arcs, g, true);
@@ -585,6 +583,7 @@ if (divide) {
     rtreeY.load(dualY);
 } else {
     var rtree = rbush(nb);
+    //rtree = new RBush3D(nb);
     var dual = dualRepresentation(arcs, g)[0];
     console.log(dual);
     rtree.load(dual);
@@ -614,7 +613,7 @@ if (divide) {
 
 
 // draw(rtree);
-// console.log(rtree);
+console.log(rtree);
 
 map.on('click', function(event) {
     polygonFound.getSource().clear();
