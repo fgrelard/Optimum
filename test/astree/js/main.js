@@ -24,7 +24,6 @@ import rbush from 'rbush';
 import draw from './viz.js';
 import Dual from '../../../js/lib/polardual.js';
 import Select from 'ol/interaction/select';
-import {RBush3D} from 'rbush-3d';
 
 //var stEtienneLonLatConv = [0, 0];
 
@@ -376,6 +375,7 @@ function dualRepresentation(arcs, g, vertical = false) {
     for (var arc of arcs) {
         var dualArc = Dual.dualCone(arc, g, vertical);
         var bboxCoordinates = Dual.dualBoundingRectangle(arc, g, false);
+
         if (vertical) {
             var bboxCoordinatesVertical = Dual.dualBoundingRectangle(arc, g, true);
             var rectangleH = [ [bboxCoordinates.minX, bboxCoordinates.minY],
@@ -539,7 +539,22 @@ function intersectionDistance(arcs, g, dmin, dmax, step) {
     return array;
 }
 
-var arcs = generateRandomSectors(100);
+function drawTreeOSM(tree) {
+    var data = tree.data;
+    var fifo = [];
+    fifo.push(data);
+    while (fifo.length) {
+        data = fifo.shift();
+        points.getSource().addFeature(new Feature(new Polygon([[[data.minX, data.minY], [data.maxX, data.minY], [data.maxX, data.maxY], [data.minX, data.maxY]]])));
+
+        if (!data.leaf) {
+            fifo = fifo.concat(data.children);
+        }
+
+    }
+}
+
+var arcs = generateRandomSectors(1000);
 var g = centerOfMass(arcs.map(function(a) {
     return a.center;
 }));
@@ -567,7 +582,7 @@ var map = new Map({ layers: [ new Group({ title: 'Cartes', layers:[new TileLayer
 points.getSource().addFeature(new Feature(new Point(g)));
 points.getSource().addFeature(new Feature(new Point([0,0])));
 
-var nb = 5;
+var nb = 8;
 var divide = false;
 if (divide) {
     var dividedArcs = divideArcsWithSlope(arcs);
@@ -583,7 +598,6 @@ if (divide) {
     rtreeY.load(dualY);
 } else {
     var rtree = rbush(nb);
-    //rtree = new RBush3D(nb);
     var dual = dualRepresentation(arcs, g)[0];
     console.log(dual);
     rtree.load(dual);
@@ -612,7 +626,8 @@ if (divide) {
 // });
 
 
-// draw(rtree);
+draw(rtree);
+drawTreeOSM(rtree);
 console.log(rtree);
 
 map.on('click', function(event) {
@@ -621,7 +636,7 @@ map.on('click', function(event) {
     var p = event.coordinate;
     var l = [p[0] - g[0], p[1] - g[1]];
 //    pointHoughToLine(l, g);
-//    drawSinusoid(l);
+    drawSinusoid(l);
 
     var hits = [];
     var number = {cpt: 0};
