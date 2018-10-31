@@ -24,7 +24,7 @@ import rbush from 'rbush';
 import draw from './viz.js';
 import Dual from '../../../js/lib/polardual.js';
 import Select from 'ol/interaction/select';
-
+import DualRtree from '../../../js/lib/dualrtree.js';
 //var stEtienneLonLatConv = [0, 0];
 
 var polygonSource = new Vector();
@@ -361,39 +361,6 @@ function pointHoughToLine(p, g) {
 }
 
 
-function dualRepresentation(arcs, g, vertical = false) {
-    var dual = [];
-    var dualY = [];
-    for (var arc of arcs) {
-        var dualArc = Dual.dualCone(arc, g, vertical);
-        var bboxCoordinates = Dual.dualBoundingRectangle(arc, g, false);
-
-        if (vertical) {
-            var bboxCoordinatesVertical = Dual.dualBoundingRectangle(arc, g, true);
-            var rectangleH = [ [bboxCoordinates.minX, bboxCoordinates.minY],
-                               [bboxCoordinates.maxX, bboxCoordinates.maxY] ];
-            var rectangleV = [ [bboxCoordinatesVertical.minX, bboxCoordinatesVertical.minY],
-                               [bboxCoordinatesVertical.maxX, bboxCoordinatesVertical.maxY] ];
-
-            var dH = euclideanDistance(rectangleH[0], rectangleH[1]);
-            var dV = euclideanDistance(rectangleV[0], rectangleV[1]);
-
-            if (dH < dV) {
-                dual.push(bboxCoordinates);
-            }
-            else {
-                dualY.push(bboxCoordinatesVertical);
-            }
-        }
-        else {
-            dual.push(bboxCoordinates);
-        }
-
-    }
-    if (vertical)
-        return [dual, dualY];
-    return [dual];
-}
 
 function drawSinusoid(coefficients) {
     var m = -Math.PI;
@@ -409,24 +376,6 @@ function drawSinusoid(coefficients) {
 }
 
 
-
-function searchLineRTreeRecursive(hits, node, line, number = {cpt: 0}) {
-    number.cpt++;
-    if (node.leaf) {
-        hits.push(...node.children);
-        return;
-    }
-    for (var child of node.children) {
-        var rectangle = {minX: child.minX,
-                         minY: child.minY,
-                         maxX: child.maxX,
-                         maxY: child.maxY};
-        if (Dual.intersectionRequestRectangle(line, rectangle)) {
-            searchLineRTreeRecursive(hits, child, line, number);
-        }
-    }
-    return;
-}
 
 function divideArcsWithSlope(arcs) {
     var arcsX = [];
@@ -603,11 +552,9 @@ function drawTreeOSM(tree) {
 }
 
 var arcs = generateRandomSectors(100);
-var g = centerOfMass(arcs.map(function(a) {
-    return a.center;
+var g = centerOfMass(arcs.map(function(arc) {
+    return arc.center;
 }));
-
-
 
 // var histo = histogramAngles(arcs);
 // var uri = writeCsv(histo);
@@ -628,46 +575,18 @@ var map = new Map({ layers: [ new Group({ title: 'Cartes', layers:[new TileLayer
 points.getSource().addFeature(new Feature(new Point(g)));
 points.getSource().addFeature(new Feature(new Point([0,0])));
 
-var nb = 2;
-var divide = false;
-if (divide) {
-    var dividedArcs = divideArcsWithSlope(arcs);
-    var dual = dualRepresentation(arcs, g, true);
-    var dualX = dual[0];
-    var dualY = dual[1];
+var dualRtree = new DualRtree(Dual, 5);
+dualRtree.load(arcs);
 
-    var rtreeX = rbush(nb);
-    rtreeX.load(dualX);
-
-    var rtreeY = rbush(nb);
-    rtreeY.load(dualY);
-} else {
-    var rtree = rbush(nb);
-    var dual = dualRepresentation(arcs, g)[0];
-    console.log(dual);
-    rtree.load(dual);
-}
-
-
-draw(rtree);
-console.log(rtree);
+console.log(dualRtree.dataStructure());
+draw(dualRtree.rtree);
 
 map.on('click', function(event) {
     polygonFound.getSource().clear();
-
     var p = event.coordinate;
-    var l = [p[0] - g[0], p[1] - g[1]];
-
-    var hits = [];
-    var number = {cpt: 0};
-    if (divide) {
-        searchLineRTreeRecursive(hits, rtreeX.data, l, number);
-        l = [l[1], l[0]];
-        searchLineRTreeRecursive(hits, rtreeY.data, l, number);
-    } else {
-        searchLineRTreeRecursive(hits, rtree.data, l, number);
-    }
-
+    var result = dualRtree.search(p);
+    var hits = result.hits;
+    var number = result.number;
     console.log(number.cpt);
     console.log(hits);
     for (let i = 0; i < hits.length; i++) {
