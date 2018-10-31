@@ -67,51 +67,48 @@ export default class PolarDual extends Dual {
         return bboxCoordinates;
     }
 
-    static intersectionRequestRectangle(point, rectangle) {
+    static intersectionRequestRectangle(point, rectangle, display = false) {
         var a = point[0];
         var b = point[1];
-
-
+        var rho = (x) => a * Math.cos(x) + b * Math.sin(x);
+        var theta = (y, shift) => (a < 0) ? Math.acos(-y / R) + shift :Math.acos(y / R) + shift;
+        var thetaCounterClockwise = (y, shift) => (a < 0) ? -Math.acos(-y / R) + shift : -Math.acos(y / R) + shift;
+        var between = (a, b, c) => (b >= a && b <= c);
         var low = [rectangle.minX, rectangle.minY];
         var up = [rectangle.maxX, rectangle.maxY];
 
         var R = Math.sqrt(a*a + b*b);
-        var alphaC = Math.atan(b / a);
-        // if (alphaC < 0) {
-        //     alphaC += Math.PI;
-        // }
-
-        var rho = (x) => a * Math.cos(x) + b * Math.sin(x);
-        var theta = function(y) {
-            var image = Math.acos(y / R) + alphaC;
-            // if (image < 0 || image > Math.PI) {
-            //     image = -Math.acos(y / R) + alphaC;
-            // }
-            return image;
-        }
-        var thetaMinus = (y) => (-Math.acos(y / R) - alphaC + Math.PI) % (Math.PI);
-        var thetaRange = (y) => (theta(y) > rectangle.maxX) ? theta(y) - Math.PI : ((theta(y) < rectangle.minX) ? theta(y) + Math.PI : theta(y));
+        var alpha = Math.atan(b / a);
+        var alphaN = alpha + 2*Math.PI;
         var m = rectangle.minY;
         var M = rectangle.maxY;
 
-        for (var i = rectangle.minX; i < rectangle.maxX; i+=0.00001) {
-            var rhoI = rho(i);
-            var rhoPI = rho(Math.PI - i);
-            if ((rhoI >= m && rhoI <= M) // ||
-                // (rhoPI >= m && rhoPI <= M)
-               ) {
-                return true;
-            }
+
+        if (display) {
+            console.log(a);
+            console.log(b);
         }
-        return false;
 
         var lowI = [theta(low[1]), rho(low[0])];
         var upI = [theta(up[1]), rho(up[0])];
-        var condition = (
-            (lowI[0] >= low[0] && lowI[0] <= up[0]) ||
-                (upI[0] >= low[0] && upI[0] <= up[0]) ||
-                (lowI[1] >= low[1] && lowI[1] <= up[1]) ||
-                (upI[1] >= low[1] && upI[1] <= up[1]));
+        var thetaLPS = theta(low[1], alpha);
+        var thetaLNS = theta(low[1], alphaN);
+        var thetaLPC = thetaCounterClockwise(low[1], alpha);
+        var thetaLNC = thetaCounterClockwise(low[1], alphaN);
+        var thetaUPS = theta(up[1], alpha);
+        var thetaUNS = theta(up[1], alphaN);
+        var thetaUPC = thetaCounterClockwise(up[1], alpha);
+        var thetaUNC = thetaCounterClockwise(up[1], alphaN);
+        var condition = (between(low[0], thetaLPS, up[0]) ||
+                         between(low[0], thetaLNS, up[0]) ||
+                         between(low[0], thetaLPC, up[0]) ||
+                         between(low[0], thetaLNC, up[0]) ||
+                         between(low[0], thetaUPS, up[0]) ||
+                         between(low[0], thetaUNS, up[0]) ||
+                         between(low[0], thetaUPC, up[0]) ||
+                         between(low[0], thetaUNC, up[0]) ||
+                         between(low[1], lowI[1], up[1]) ||
+                         between(low[1], upI[1], up[1]));
         return condition;
     }
 }

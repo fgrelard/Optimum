@@ -308,7 +308,7 @@ function generateRandomSectors(n) {
     return arcs;
 }
 
-function generateSectors() {
+function generateSectors(nb) {
     var extent = [0,0, 10, 10];
 
     var arcs = [new Arc([5,5], 1000, 200, 250),
@@ -343,6 +343,20 @@ function generateSectors() {
     //         new Arc([400,600], 10000, 115, 155),
     //         new Arc([600,400], 10000, 295, 335)
     //        ];
+
+
+    arcs = [];
+    var stepAngle = 360/nb;
+    var locations = [];
+    var stepX = (extent[2] - extent[0]) / nb;
+    var stepY = (extent[3] - extent[1]) / nb;
+    for (var i = 0; i < nb; i++) {
+        locations.push([extent[0] + i * stepX, extent[3] - i * stepY]);
+    }
+    for (var i = 0; i < nb; i++) {
+        var arc = new Arc(locations[i], 10000, i*stepAngle+1, (i+1)*stepAngle);
+        arcs.push(arc);
+    }
 
     for (var i  = 0; i < arcs.length; i++) {
         arcs[i].computeGeometry();
@@ -499,6 +513,62 @@ function sectorsIntersected(sectors, n, dmin, radius, g) {
     return sum;
 }
 
+function findSectorInRtree(rtree, sector) {
+    var data = rtree.data.children;
+    var fifo = [data];
+    while (fifo.length > 0) {
+        data = fifo.shift();
+        for (var node of data) {
+            if (node.leaf) {
+                var children = node.children;
+                for (var c of children) {
+                    if (c.feature.alpha === sector.alpha &&
+                        c.feature.omega === sector.omega)
+                        return node;
+                }
+            }
+            else {
+                fifo.push(node.children);
+            }
+        }
+
+    }
+    return false;
+}
+
+function discrepanciesRtree(rtree, sectors, n, dmin, radius, g) {
+    var extent = [g[0]- radius, g[1] - radius,
+                  g[0] + radius, g[1] + radius];
+    var locations = addRandomLocations(extent, n);
+    var sum = 0;
+    for (var p of locations) {
+        var norm = euclideanDistance(p, g);
+        var vector = [(p[0] - g[0]) / norm, (p[1] - g[1]) / norm];
+        var translation = [vector[0] * dmin, vector[1] * dmin];
+        p[0] += translation[0];
+        p[1] += translation[1];
+        var number = 0;
+        var hits = [];
+        searchLineRTreeRecursive(hits, rtree.data, [p[0] - g[0], p[1] - g[1]]);
+        hits = hits.map(function(obj)  {
+            return obj.feature;
+        });
+        for (var s of sectors) {
+            if (s.intersects(p) && hits.indexOf(s) === -1) {
+                // console.log("false sector");
+                // console.log(findSectorInRtree(rtree, s));
+                // console.log(p);
+                // console.log(s);
+                points.getSource().addFeature(new Feature(new Point(p)));
+                number++;
+            }
+        }
+        sum += number;
+    }
+    sum /= n;
+    return sum;
+}
+
 function closestArc(arcs, angles) {
     var min = Number.MAX_VALUE;
     var closest;
@@ -554,15 +624,13 @@ function drawTreeOSM(tree) {
     }
 }
 
-var arcs = generateRandomSectors(1000);
+var arcs = generateSectors(50);
 var g = centerOfMass(arcs.map(function(a) {
     return a.center;
 }));
 
-var bbox = boundingBox(arcs.map(function(a) {
-    return a.center;
-}));
-//g = bbox[0];
+
+
 // var histo = histogramAngles(arcs);
 // var uri = writeCsv(histo);
 // console.log(uri);
@@ -582,14 +650,13 @@ var map = new Map({ layers: [ new Group({ title: 'Cartes', layers:[new TileLayer
 points.getSource().addFeature(new Feature(new Point(g)));
 points.getSource().addFeature(new Feature(new Point([0,0])));
 
-var nb = 8;
+var nb = 2;
 var divide = false;
 if (divide) {
     var dividedArcs = divideArcsWithSlope(arcs);
     var dual = dualRepresentation(arcs, g, true);
     var dualX = dual[0];
     var dualY = dual[1];
-//    var dualY = dualRepresentation(dividedArcs[1], g, true);
 
     var rtreeX = rbush(nb);
     rtreeX.load(dualX);
@@ -603,8 +670,8 @@ if (divide) {
     rtree.load(dual);
 }
 
-
-
+discrepanciesRtree(rtree, arcs, 1000, 0, 100, g);
+console.log(Dual.intersectionRequestRectangle( [-1.551243651899597 - g[0], -10.073795085916238-g[1] ], {maxX: 2.7017696820872215, maxY: -1.5404955865192744, minX: 2.2165681500327983, minY: -2.3367527294970367}, true));
 // var select = new Select();
 // select.on('select', function(event) {
 //     event.selected.filter(function(feature) {
@@ -656,14 +723,6 @@ map.on('click', function(event) {
     }
 });
 
-
-
-console.log(Dual.intersectionRequestRectangle([136 -g[0], -653 - g[1]], {
-    maxX: 3.141592653589793,
-    maxY: 12.900000000000002,
-    minX: 0.6981317007977319,
-    minY: -13.36637572418193
-}));
 
 points.setZIndex(1000);
 
