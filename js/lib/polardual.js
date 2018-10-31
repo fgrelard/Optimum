@@ -18,8 +18,6 @@ export default class PolarDual extends Dual {
         else {
             theta = Math.acos((projection[0] - g[0]) / rho);
         }
-        // theta = (projection[1] - g[1] < 0) ?  Math.PI- theta : theta;
-
         return [theta, rho];
     }
 
@@ -67,7 +65,7 @@ export default class PolarDual extends Dual {
         return bboxCoordinates;
     }
 
-    static intersectionRequestRectangle(point, rectangle, display = false) {
+    static intersectionRequestRectangle(point, rectangle) {
         var a = point[0];
         var b = point[1];
         var rho = (x) => a * Math.cos(x) + b * Math.sin(x);
@@ -82,12 +80,6 @@ export default class PolarDual extends Dual {
         var alphaN = alpha + 2*Math.PI;
         var m = rectangle.minY;
         var M = rectangle.maxY;
-
-
-        if (display) {
-            console.log(a);
-            console.log(b);
-        }
 
         var lowI = [theta(low[1]), rho(low[0])];
         var upI = [theta(up[1]), rho(up[0])];

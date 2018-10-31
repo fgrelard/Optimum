@@ -66,24 +66,7 @@ var points = new VectorLayer({
 });
 
 
-function test(sectors, tree) {
-    var cpt = 0;
-    var sum = 0;
-    for (var sector of sectors) {
-        var c = sector.center;
-        var angle = (sector.alpha + sector.omega) / 2;
-        var vector = tree.angleToVector(angle);
-        var p = [c[0] + vector[0] * 50,
-                 c[1] + vector[1] * 50];
-        var number = {cpt : -1};
-        var hits = tree.search(p, number);
-        sum += number.cpt;
-        cpt += (hits.length > 0) ? 1 : 0;
-    }
-    sum /= sectors.length;
-    console.log("Average = " + sum);
-    return (cpt === sectors.length);
-}
+
 
 function sectorsStEtienne() {
     var arcs = [new Arc([490530.2638429834,5689709.625998666],100, 65.42000000000003, 65.4729),
@@ -347,12 +330,7 @@ function generateSectors(nb) {
 
     arcs = [];
     var stepAngle = 360/nb;
-    var locations = [];
-    var stepX = (extent[2] - extent[0]) / nb;
-    var stepY = (extent[3] - extent[1]) / nb;
-    for (var i = 0; i < nb; i++) {
-        locations.push([extent[0] + i * stepX, extent[3] - i * stepY]);
-    }
+    var locations = addRandomLocations(extent, nb);
     for (var i = 0; i < nb; i++) {
         var arc = new Arc(locations[i], 10000, i*stepAngle+1, (i+1)*stepAngle);
         arcs.push(arc);
@@ -555,10 +533,10 @@ function discrepanciesRtree(rtree, sectors, n, dmin, radius, g) {
         });
         for (var s of sectors) {
             if (s.intersects(p) && hits.indexOf(s) === -1) {
-                // console.log("false sector");
-                // console.log(findSectorInRtree(rtree, s));
-                // console.log(p);
-                // console.log(s);
+                console.log("false sector");
+                console.log(findSectorInRtree(rtree, s));
+                console.log(p);
+                console.log(s);
                 points.getSource().addFeature(new Feature(new Point(p)));
                 number++;
             }
@@ -624,7 +602,7 @@ function drawTreeOSM(tree) {
     }
 }
 
-var arcs = generateSectors(50);
+var arcs = generateRandomSectors(100);
 var g = centerOfMass(arcs.map(function(a) {
     return a.center;
 }));
@@ -670,31 +648,8 @@ if (divide) {
     rtree.load(dual);
 }
 
-discrepanciesRtree(rtree, arcs, 1000, 0, 100, g);
-console.log(Dual.intersectionRequestRectangle( [-1.551243651899597 - g[0], -10.073795085916238-g[1] ], {maxX: 2.7017696820872215, maxY: -1.5404955865192744, minX: 2.2165681500327983, minY: -2.3367527294970367}, true));
-// var select = new Select();
-// select.on('select', function(event) {
-//     event.selected.filter(function(feature) {
-//         polygonSelected.getSource().clear();
-//         var geom = feature.getGeometry().flatCoordinates;
-//         console.log(geom[0] +  " " + geom[2]);
-//         var f = [geom[0] - g[0], geom[1] - g[1]];
-//         var l = [geom[2] - g[0], geom[3] - g[1]];
-//         var lineF = pointHoughToLine(f, g);
-//         var lineL = pointHoughToLine(l, g);
-
-//         var angleF = vectorToAngle(lineF.vector, [1, 0]);
-//         var angleL = vectorToAngle(lineL.vector, [1, 0]);
-
-//         var arc = closestArc(arcs, [angleF, angleL]);
-//         polygonSelected.getSource().addFeature(new Feature(arc));
-
-//     });
-// });
-
 
 draw(rtree);
-drawTreeOSM(rtree);
 console.log(rtree);
 
 map.on('click', function(event) {
@@ -702,8 +657,6 @@ map.on('click', function(event) {
 
     var p = event.coordinate;
     var l = [p[0] - g[0], p[1] - g[1]];
-//    pointHoughToLine(l, g);
-    drawSinusoid(l);
 
     var hits = [];
     var number = {cpt: 0};
@@ -730,6 +683,3 @@ map.addLayer(polygon);
 map.addLayer(points);
 map.addLayer(polygonFound);
 map.addLayer(polygonSelected);
-
-//map.addInteraction(select);
-
