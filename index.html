@@ -8,18 +8,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
     <link href="css/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="./node_modules/ol-ext/dist/ol-ext.css" />
+    <link rel="stylesheet" href="css/ol-ext.css" />
     <link rel="stylesheet" href="css/main.css" />
   </head>
   <body class="homepage">
     <div id="page_wrapper">
-      <div id="header-wrapper">
-        <header id="header" class="container">
-          <div id="logo">
-            <h1>Optimum </h1>
-          </div>
-      </div>
-      </header>
       <div id="banner-wrapper">
 		<div id="banner">
 
@@ -121,6 +114,12 @@
         </div>
       </div>
     </div>
+    <script src="seamless.child.min.js"></script>
+    <script type="text/javascript">
+      // Connect to the parent page.
+      window.seamless.connect();
+    </script>
+
     <script src="bundle.js"></script>
   </body>
 </html>
