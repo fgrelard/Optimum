@@ -3,7 +3,7 @@ import proj from 'ol/proj';
 import OSMXML from 'ol/format/osmxml';
 import View from 'ol/view';
 
-var urlDB = "http://159.84.143.179:8080/";
+var urlDB = "http://159.84.143.100:8080/";
 
 export function pollDB(path, url2) {
     var t0Image = fetch(urlDB + url2, {

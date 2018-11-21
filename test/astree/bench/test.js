@@ -5,6 +5,7 @@ import Arc from '../../../js/lib/arc.js';
 import ASTree from '../../../js/lib/astree.js';
 import {angleToVector, vectorToAngle, boundingBox, centerOfMass, project} from '../../../js/lib/geometry.js';
 import rbush from 'rbush';
+import {rectanglesIntersect} from '../../../js/lib/lineintersection.js';
 import Dual from '../../../js/lib/polardual.js';
 import DualEuclidean from '../../../js/lib/dual.js';
 import Select from 'ol/interaction/select';
@@ -372,6 +373,7 @@ function writeCsv(array) {
     return encodedUri;
 }
 
+
 function sectorsIntersected(sectors, n, dmin, radius, g) {
     var locations = addRandomInputPoints(sectors, radius, n);
     var sum = 0;
@@ -457,6 +459,7 @@ function intersectionNbPoints(arcs, g, dmax, nbMin, nbMax, step) {
     return array;
 }
 
+
 function intersectionDistance(arcs, g, dmin, dmax, step) {
     var array = [];
     for (var i = dmin; i < dmax; i+=step) {
@@ -466,7 +469,89 @@ function intersectionDistance(arcs, g, dmin, dmax, step) {
     return array;
 }
 
+function area(rectangle) {
+    var w = rectangle.maxX - rectangle.minX;
+    var h = rectangle.maxY - rectangle.minY;
+    return w*h;
+}
 
+function coverage(parent, children) {
+    var areaParent = area(parent);
+    var sumAreaChildren = 0;
+    for (var child of children) {
+        var a = area(child);
+        sumAreaChildren += a;
+    }
+    return areaParent / sumAreaChildren;
+}
+
+function overlap(parent, children) {
+    var areaParent = area(parent);
+    var sumArea = 0;
+    for (var i=0; i<children.length; i++) {
+        var sumIntersection = 0;
+        for (var j=0; j < children.length; j++) {
+            if (i === j) continue;
+            var intersection = rectanglesIntersect(children[i], children[j]);
+            if (intersection) {
+                sumIntersection += area(intersection);
+            }
+        }
+        sumArea += sumIntersection / area(children[i]);
+    }
+    return sumArea / children.length;
+}
+
+function characteristicsTree(tree, firstCols) {
+    var data;
+    var fifo = [tree];
+    var str="";
+    while (fifo.length > 0) {
+        data = fifo.shift();
+        var h = data.height;
+        var c = coverage(data, data.children);
+        if (h === 1) {
+            console.log("node");
+            console.log(data);
+            console.log(data.children);
+            console.log(c);
+        }
+        var o = overlap(data, data.children);
+        str += firstCols +  h + "\t" + c + "\t" + o + "\n";
+        if (!data.leaf) {
+            for (var child of data.children) {
+                if (child.leaf) continue;
+                fifo.push(child);
+            }
+        }
+    }
+    return str;
+}
+
+function compareCharacteristics(arcs, b) {
+
+    var dualRtree = new DualRtree(Dual, b);
+    dualRtree.load(arcs);
+
+    var rtree = rbush(b);
+    var geometries = arcs.map(function(arc) {
+        var polygonExtent = arc.geometry.getExtent();
+        var polygonBBox = {minX: polygonExtent[0],
+                           minY: polygonExtent[1],
+                           maxX: polygonExtent[2],
+                           maxY: polygonExtent[3],
+                           feature : arc};
+        return polygonBBox;
+    });
+    rtree.load(geometries);
+
+    var firstCols = arcs.length + "\t" + b + "\t";
+
+    var charDualRtree = characteristicsTree(dualRtree.rtree.data, firstCols + "Dual R-tree\t");
+    var charRtree = characteristicsTree(rtree.data, firstCols + "R-tree\t");
+    return charDualRtree + charRtree;
+
+}
 
 function polarVsEuclideanDualities(arcs, nbPoints) {
     var g = centerOfMass(arcs.map((arc) => arc.center));
@@ -493,14 +578,7 @@ function polarVsEuclideanDualities(arcs, nbPoints) {
 
 }
 
-function compareDualities(min, max, step, nbPoints) {
-    var array = [];
-    for (var i = min; i < max; i+=step) {
-        var arcs = generateRandomSectors(i);
-        array.push(polarVsEuclideanDualities(arcs, nbPoints));
-    }
-    return array;
-}
+
 
 function searchLinear(arcs, points) {
     var hits = [];
@@ -555,16 +633,55 @@ function standardDeviation(array) {
 	return Math.sqrt(variance(array));
 }
 
+function compareDualities(arcs, b, nbPoints, radius) {
+    //console.log(b);
+    var locations = addRandomInputPoints(arcs, radius, nbPoints);
+
+    var t0 = performance.now();
+    var dualRtree = new DualRtree(Dual, b);
+    dualRtree.load(arcs);
+    var t1 = performance.now();
+    var timeInitDual = t1-t0;
+
+    t0 = performance.now();
+    var dualRtreeEuclidean = new DualRtree(DualEuclidean, b, true);
+    dualRtreeEuclidean.load(arcs);
+    t1 = performance.now();
+    var timeInitDualE = t1-t0;
+
+    var firstCols = arcs.length + "\t" + b + "\t" + nbPoints + "\t" + radius + "\t";
+    t0 = performance.now();
+    var resultDualRtree = searchDualRtree(dualRtree, locations);
+    t1 = performance.now();
+    var timeDualRtree = t1 - t0;
+
+    t0 = performance.now();
+    var resultDualRtreeE = searchDualRtree(dualRtreeEuclidean, locations);
+    t1 = performance.now();
+    var timeDualRtreeE = t1 - t0;
+
+    var hits = resultDualRtree.map((res) => res.hits.length);
+    var access = resultDualRtree.map((res) => res.number.cpt);
+    var hitsE = resultDualRtreeE.map((res) => res.hits.length);
+    var accessE = resultDualRtreeE.map((res) => res.number.cpt);
+
+    var data = firstCols + timeInitDual + "\t" + timeDualRtree + "\t" + mean(hits) + "\t" + standardDeviation(hits) + "\t" + mean(access) + "\t" +standardDeviation(access) + "\t" + dualRtree.rtree.data.height +"\tPolar\n";
+
+    var dataE = firstCols + timeInitDualE + "\t" + timeDualRtreeE + "\t" + mean(hitsE) + "\t" + standardDeviation(hitsE) + "\t" + mean(accessE) + "\t" +standardDeviation(accessE) + "\t"+ dualRtreeEuclidean.rtree.data.height + "\tEuclidean\n";
+    return dataE+data;
+}
+
 function compareSearchTime(arcs, b, nbPoints, radius) {
     //console.log(b);
     var locations = addRandomInputPoints(arcs, radius, nbPoints);
 
-    console.time("init DualRtree");
+    var t0 = performance.now();
     var dualRtree = new DualRtree(Dual, b);
     dualRtree.load(arcs);
-    console.timeEnd("init DualRtree");
+    var t1 = performance.now();
+    var timeInitDual = t1-t0;
 
-    console.time("init rtree");
+    t0 = performance.now();
     var rtree = rbush(b);
     var geometries = arcs.map(function(arc) {
         var polygonExtent = arc.geometry.getExtent();
@@ -576,47 +693,58 @@ function compareSearchTime(arcs, b, nbPoints, radius) {
         return polygonBBox;
     });
     rtree.load(geometries);
-    console.timeEnd("init rtree");
+    t1 = performance.now();
+    var timeInitRtree = t1-t0;
 
-    console.time("search linear");
+    t0 = performance.now();
     var resultLinear = searchLinear(arcs, locations);
-    console.timeEnd("search linear");
+    t1 = performance.now();
+    var timeLinear = t1-t0;
+    var firstCols = arcs.length + "\t" + b + "\t" + nbPoints + "\t" + radius + "\t";
+    var linear = firstCols + 0 + "\t" + timeLinear + "\t" + "0\t0\t0\t0\tLinear\n";
 
-    console.time("search rtree");
+    t0 = performance.now();
     var resultRtree = searchRtree(rtree, locations);
-    console.timeEnd("search rtree");
+    t1 = performance.now();
+    var timeRtree = t1 - t0;
 
     var hitsR = resultRtree.map((res) => res.hits.length);
     var accessR = resultRtree.map((res) => res.number);
-    var dataR = mean(hitsR) + "\t" + standardDeviation(hitsR) + "\t" + mean(accessR) + "\t" +standardDeviation(accessR);
+    var dataR = firstCols + timeInitRtree + "\t" + timeRtree + "\t" + mean(hitsR) + "\t" + standardDeviation(hitsR) + "\t" + mean(accessR) + "\t" +standardDeviation(accessR)+"\tR-tree\n" ;
 
-    console.time("search DualRtree");
+    t0 = performance.now();
     var resultDualRtree = searchDualRtree(dualRtree, locations);
-    console.timeEnd("search DualRtree");
+    t1 = performance.now();
+    var timeDualRtree = t1 - t0;
 
     var hits = resultDualRtree.map((res) => res.hits.length);
     var access = resultDualRtree.map((res) => res.number.cpt);
-    var data = dataR + "\t" + mean(hits) + "\t" + standardDeviation(hits) + "\t" + mean(access) + "\t" +standardDeviation(access);
-    console.log(data);
+    var data = firstCols + timeInitDual + "\t" + timeDualRtree + "\t" + mean(hits) + "\t" + standardDeviation(hits) + "\t" + mean(access) + "\t" +standardDeviation(access) + "\tDual R-tree\n";
+
+    return linear+dataR+data;
 
 }
 
+/* Compare characteristics */
 var cpt = 0;
-for (var i = 500; i <= 1000000; i=i*((cpt % 2 === 0) ? 5 : 2)) {
+let csvContent = "data:text/csv;charset=utf-8,";
+for (var i = 500000; i <= 500000; i=i*((cpt % 2 === 0) ? 5 : 2)) {
     var ar = generateRandomSectors(i);
-    compareSearchTime(ar, 7, 50000, 5000);
+    //var res = compareCharacteristics(ar, 7);
+    var res = compareSearchTime(ar, 7, 5000, 5000);
+    csvContent += res;
     cpt++;
 }
+var encodedUri = encodeURI(csvContent);
+var link = document.createElement("a");
+link.setAttribute("href", encodedUri);
+link.setAttribute("download", "my_data.csv");
+document.body.appendChild(link);
+link.click(); // This will download the data file named "my_data.csv".
 
-
-
-// var array = compareDualities(0, 10000, 500, 1000);
-// var uri = writeCsv(array);
-// console.log(uri);
-
-var arcs = sectorsStEtienne();
-var g = centerOfMass(arcs.map((arc) => arc.center));
-
+/* Real data */
+// var arcs = sectorsStEtienne();
+// var g = centerOfMass(arcs.map((arc) => arc.center));
 // var histo = histogramAngles(arcs);
 // var uri = writeCsv(histo);
 // console.log(uri);
