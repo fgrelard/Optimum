@@ -147,7 +147,6 @@ function visibilityPolygon(data, center, radius) {
     var anglesToSegments = data[0].slice();
     var freeVisionAngles = data[1].slice();
     $.each(freeVisionAngles, function(i, arc) {
-        console.log("new Arc(["+ arc.center + "]," + 100 + ", " + arc.alpha + ", " + arc.omega + "),\n");
         var angle = new Arc(arc.center, radius || arc.radius, arc.alpha, arc.omega);
         if (angle.omega - angle.alpha < 0.5) return;
         angle.computeGeometry();
@@ -199,6 +198,8 @@ function computeIsovistForPicture(feature, signal) {
     var previousArc = feature.getProperties().arc;
     var arc = new Arc(previousArc.center, previousArc.radius, previousArc.alpha, previousArc.omega);
     return Polls.pollIsovist(feature.getProperties().arc, signal).then(function(data) {
+        if (!data[0].length && !data[1].length)
+            data[1].push(feature.getProperties().arc);
         var polygon = visibilityPolygon(data, arc.center, arc.radius);
         feature.set("visibilityAngles", data);
         feature.set("isovist", polygon);
