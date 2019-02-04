@@ -1,3 +1,7 @@
+import $ from 'jquery';
+window.$ = $;
+window.jQuery = $;
+
 import Map from 'ol/map';
 import View from 'ol/view';
 import Group from 'ol/layer/group';
@@ -25,7 +29,7 @@ import ControlOverlay from 'ol-ext/control/Overlay';
 import Toggle from 'ol-ext/control/Toggle';
 import LayerSwitcher from 'ol-ext/control/LayerSwitcher';
 
-import $ from 'jquery';
+
 import jsTree from 'jstree';
 import interact from 'interactjs';
 import rbush from 'rbush';
@@ -147,7 +151,7 @@ function visibilityPolygon(data, center, radius) {
     var anglesToSegments = data[0].slice();
     var freeVisionAngles = data[1].slice();
     $.each(freeVisionAngles, function(i, arc) {
-        console.log("new Arc(["+ arc.center + "]," + 100 + ", " + arc.alpha + ", " + arc.omega + "),\n");
+//        console.log("new Arc(["+ arc.center + "]," + 100 + ", " + arc.alpha + ", " + arc.omega + "),\n");
         var angle = new Arc(arc.center, radius || arc.radius, arc.alpha, arc.omega);
         if (angle.omega - angle.alpha < 0.5) return;
         angle.computeGeometry();
@@ -198,7 +202,7 @@ function getThumbnail(f) {
 function computeIsovistForPicture(feature, signal) {
     var previousArc = feature.getProperties().arc;
     var arc = new Arc(previousArc.center, previousArc.radius, previousArc.alpha, previousArc.omega);
-    return Polls.pollIsovist(feature.getProperties().arc, signal).then(function(data) {
+    return Polls.pollIsovist(feature.getProperties().filename, signal).then(function(data) {
         var polygon = visibilityPolygon(data, arc.center, arc.radius);
         feature.set("visibilityAngles", data);
         feature.set("isovist", polygon);

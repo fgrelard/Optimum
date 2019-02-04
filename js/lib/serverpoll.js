@@ -3,7 +3,7 @@ import proj from 'ol/proj';
 import OSMXML from 'ol/format/osmxml';
 import View from 'ol/view';
 
-var urlDB = "http://159.84.143.179:8080/";
+var urlDB = "http://159.84.143.100:8080/";
 
 export function pollDB(path, url2) {
     var t0Image = fetch(urlDB + url2, {
@@ -27,26 +27,47 @@ export function pollImages(path, size = 800, signal = null) {
         signal
     });
     var t1Image = t0Image.then(function (response) {
-        return response.blob();
+        return response.json();
     });
     var t2Image = t1Image.then(function(resultPost) {
+        var sliceSize = sliceSize || 512;
+
+        var byteCharacters = atob(resultPost);
+        var byteArrays = [];
+
+        for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+            var byteNumbers = new Array(slice.length);
+            for (var i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+
+            var byteArray = new Uint8Array(byteNumbers);
+
+            byteArrays.push(byteArray);
+        }
+
+        var b = new Blob(byteArrays, {type: "image/jpeg"});
         var urlCreator = window.URL || window.webkitURL;
-        var imageUrl = urlCreator.createObjectURL(resultPost);
+        var imageUrl = urlCreator.createObjectURL(b);
         return imageUrl;
     });
     return t2Image;
 }
 
-export function pollIsovist(angle, signal) {
-    var previousArc = angle;
-    var arc = new Arc(previousArc.center, previousArc.radius, previousArc.alpha, previousArc.omega);
+export function pollIsovist(path, signal) {
+
     var t0Image = fetch(urlDB + "isovist", {
         method: 'post',
-        body: JSON.stringify({arc: arc}),
+        body: JSON.stringify({str: path}),
         signal
     });
-    return t0Image.then(function (response) {
+    var t1Image = t0Image.then(function (response) {
         return response.json();
+    });
+    return t1Image.then(function(json) {
+        return json[0].Isovist;
     });
 }
 
