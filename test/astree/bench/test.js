@@ -615,7 +615,7 @@ for (var i = 1000000; i <= 1000000; i=i*((cpt % 2 === 0) ? 5 : 2)) {
     var ar = generateRandomSectors(i, 10000000, cumulHisto);
     //var res = compareDualities(ar, 7, 5000, 5000);
     //var res = compareSearchTime(ar, 7, 5000, 5000);
-    for (var b = 2; b < 50; b++) {
+    for (var b = 50; b <= 5000; b+=50) {
         var res = compareSearchTime(ar, b, 500, 5000);
         csvContent += res;
     }

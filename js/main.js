@@ -199,6 +199,7 @@ function computeIsovistForPicture(feature, signal) {
     var previousArc = feature.getProperties().arc;
     var arc = new Arc(previousArc.center, previousArc.radius, previousArc.alpha, previousArc.omega);
     return Polls.pollIsovist(feature.getProperties().arc, signal).then(function(data) {
+        console.log(data);
         if (!data[0].length && !data[1].length)
             data[1].push(feature.getProperties().arc);
         var polygon = visibilityPolygon(data, arc.center, arc.radius);
