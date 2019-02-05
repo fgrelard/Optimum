@@ -310,11 +310,11 @@ function featureToThumbnails(feature, signal) {
 
 function completeFeatures(signal) {
      //Clustering with cursor
-    var clusteringStrategy = new DistanceStrategy(pictures);
-    clusters = clusteringStrategy.computeClusters();
-    var dendro = new DendrogramStrategy(pictures);
-    dendrogram = dendro.computeClusters();
-    computeRangeSlider(dendrogram);
+    // var clusteringStrategy = new DistanceStrategy(pictures);
+    // clusters = clusteringStrategy.computeClusters();
+    // var dendro = new DendrogramStrategy(pictures);
+    // dendrogram = dendro.computeClusters();
+    // computeRangeSlider(dendrogram);
 
     //Display grid of image clusters
     var images = [];
@@ -324,21 +324,17 @@ function completeFeatures(signal) {
         var feature = pictures[i];
         var label = -1;
         var distance = -1;
-        for (var key in clusters) {
-            if (clusters[key].hasPicture(feature.getProperties()))
-                label = key;
-        }
-        for (var key2 in dendrogram) {
-            if (dendrogram[key2].hasPicture(feature.getProperties())) {
-                distance = dendrogram[key2].label;
-            }
-        }
+        // for (var key in clusters) {
+        //     if (clusters[key].hasPicture(feature.getProperties()))
+        //         label = key;
+        // }
+        // for (var key2 in dendrogram) {
+        //     if (dendrogram[key2].hasPicture(feature.getProperties())) {
+        //         distance = dendrogram[key2].label;
+        //     }
+        // }
 
         featureToThumbnails(feature, signal);
-
-        // Polls.pollImages(feature.getProperties().filename, signal).then(function(uri) {
-        //     Grid.loadImageAndFillGrid(grid, uri, images, {label:label, distance:distance}, count, pictures.length);
-        // });
 
         var promise = computeIsovistForPicture(feature, signal);
         promises.push(promise);
@@ -405,16 +401,16 @@ $('.layout-field').change(function() {
     Grid.changeLayout(grid);
 });
 
-$("#myRange").on("change", function(event) {
-    var sliderValue = event.target.value;
-    var filterFieldValue = $('.filter-field').val();
-    grid.filter(function (item) {
-        var element = item.getElement();
-        var isFilterMatch = !filterFieldValue ? true : (element.getAttribute('label') || filterFieldValue) === filterFieldValue;
-        var isSliderMatch = !sliderValue ? true : parseFloat(element.getAttribute('distance') || sliderValue) <= sliderValue;
-        return isFilterMatch && isSliderMatch;
-    });
-});
+// $("#myRange").on("change", function(event) {
+//     var sliderValue = event.target.value;
+//     var filterFieldValue = $('.filter-field').val();
+//     grid.filter(function (item) {
+//         var element = item.getElement();
+//         var isFilterMatch = !filterFieldValue ? true : (element.getAttribute('label') || filterFieldValue) === filterFieldValue;
+//         var isSliderMatch = !sliderValue ? true : parseFloat(element.getAttribute('distance') || sliderValue) <= sliderValue;
+//         return isFilterMatch && isSliderMatch;
+//     });
+// });
 
 
 
