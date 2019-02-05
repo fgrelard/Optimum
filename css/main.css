@@ -3160,7 +3160,16 @@ img.menuImage {
     background-position: center;
     background-color: rgba(0,60,136,.5);
     float: left;
+    font-size: 1.14em !important;
 }
+
+.ol-layerswitcher button::before, .ol-layerswitcher button::after {
+    -webkit-transform: scale(1.5) rotate(45deg);
+    transform: scale(1.5) rotate(45deg);
+    margin: 0.5em;
+}
+
+
 
 /* menu button */
 .ol-control.menu {

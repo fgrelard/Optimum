@@ -68,7 +68,7 @@ var layerSwitcher = new LayerSwitcher({
 });
 
 
-var menu = new ControlOverlay ({ closeBox : true, className: "slide-left menu", content: $("#menu") });
+var menu = new ControlOverlay ({ closeBox : true, className: "slide-left menu", content: $("#menu").get(0) });
 
 // A toggle control to show/hide the menu
 var t = new Toggle(
