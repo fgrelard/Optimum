@@ -289,3 +289,14 @@ export function segmentsEqual(s1, s2) {
             s1.getLastCoordinate()[0] === s2.getLastCoordinate()[0] &&
             s1.getLastCoordinate()[1] === s2.getLastCoordinate()[1]);
 }
+
+export function rectanglesIntersect(a, b) {
+    var x = Math.max(a.minX, b.minX);
+    var num1 = Math.min(a.maxX, b.maxX);
+    var y = Math.max(a.minY, b.minY);
+    var num2 = Math.min(a.maxY, b.maxY);
+    if (num1 >= x && num2 >= y)
+        return {minX: x, minY: y, maxX: num1, maxY:num2};
+    else
+        return false;
+}

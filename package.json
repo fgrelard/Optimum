@@ -27,6 +27,7 @@
     "ol-layerswitcher": "^2.0.0",
     "papaparse": "^4.3.7",
     "rbush": "^2.0.2",
+    "semver": "^5.6.0",
     "transpose": "0.0.2",
     "util": "^0.10.3"
   }

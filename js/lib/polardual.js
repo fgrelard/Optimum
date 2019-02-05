@@ -9,6 +9,7 @@ export default class PolarDual extends Dual {
                            center[1] + vector[1]*5];
         var projection = project(g, center, secondPoint);
         var rho = euclideanDistance(projection, g);
+        rho = (projection[1] - g[1] < 0) ? -rho : rho;
         if (center[0] === g[0] && center[1] === g[1]) {
             rho = euclideanDistance(vector, g);
             var theta = Math.acos((vector[0] - g[0]) / rho);
@@ -17,13 +18,19 @@ export default class PolarDual extends Dual {
         else {
             theta = Math.acos((projection[0] - g[0]) / rho);
         }
-        theta = (projection[1] - g[1] < 0) ? -theta : theta;
         return [theta, rho];
     }
 
 
     static dualCone(arc, g, vertical = false) {
-        return super.dualCone(arc, g, vertical);
+        var cone = super.dualCone(arc, g, vertical);
+        var x0 = cone[0][0];
+        var x1 = cone[1][0];
+        //For vertical lines
+        if (x0 > x1) {
+            cone[1][0] = Math.PI + x1;
+        }
+        return cone;
     }
 
     static dualBoundingRectangle(arc, g, vertical = false) {
@@ -41,15 +48,15 @@ export default class PolarDual extends Dual {
         if (theta < 0) {
             theta += Math.PI;
         }
-        // if (theta >= minX && theta <= maxX) {
-        //     var rho = coord[0] * Math.cos(theta) + coord[1] * Math.sin(theta);
-        //     if (rho < minY) {
-        //         minY = rho;
-        //     }
-        //     if (rho > maxX) {
-        //         maxY = rho;
-        //     }
-        // }
+        if (theta >= minX && theta <= maxX) {
+            var rho = coord[0] * Math.cos(theta) + coord[1] * Math.sin(theta);
+            if (rho < minY) {
+                minY = rho;
+            }
+            if (rho > maxY) {
+                maxY = rho;
+            }
+        }
         var bboxCoordinates = {minX: minX,
                                minY: minY,
                                maxX: maxX,
@@ -61,55 +68,39 @@ export default class PolarDual extends Dual {
     static intersectionRequestRectangle(point, rectangle) {
         var a = point[0];
         var b = point[1];
-
-
+        var rho = (x) => a * Math.cos(x) + b * Math.sin(x);
+        var theta = (y, shift) => (a < 0) ? Math.acos(-y / R) + shift :Math.acos(y / R) + shift;
+        var thetaCounterClockwise = (y, shift) => (a < 0) ? -Math.acos(-y / R) + shift : -Math.acos(y / R) + shift;
+        var between = (a, b, c) => (b >= a && b <= c);
         var low = [rectangle.minX, rectangle.minY];
         var up = [rectangle.maxX, rectangle.maxY];
 
         var R = Math.sqrt(a*a + b*b);
-        var alphaC = Math.atan(b / a);
-        if (alphaC < 0) {
-            alphaC += Math.PI;
-        }
-
-        var rho = (x) => a * Math.cos(x) + b * Math.sin(x);
-        var theta = (y) => (Math.acos(y / R) + alphaC) % (Math.PI);
-        var thetaRange = (y) => (theta(y) > rectangle.maxX) ? theta(y) - Math.PI : ((theta(y) < rectangle.minX) ? theta(y) + Math.PI : theta(y));
-
-        var rhom = rho(rectangle.minX);
-        var rhoM = rho(rectangle.maxX);
-        var rhoMiddle = rho(rectangle.minX + 0.01);
-
-        if (rhoMiddle < rhom) {
-            R = -R;
-        }
+        var alpha = Math.atan(b / a);
+        var alphaN = alpha + 2*Math.PI;
         var m = rectangle.minY;
         var M = rectangle.maxY;
 
-        var inters = false;
-        for (var i = rectangle.minX; i < rectangle.maxX; i+=0.00001) {
-            var rhoI = rho(i);
-            if (rhoI >= m && rhoI <= M) {
-                return true;
-            }
-        }
-        return inters;
-
-        return !((rhom > M && rhoM > M // && R > M
-                  && rhom > m && rhom > m // && R > m
-                 ) ||
-                 (rhom < m && rhoM < m // && R < m
-                  && rhom < M && rhom < M // && R < M
-                 ));
         var lowI = [theta(low[1]), rho(low[0])];
         var upI = [theta(up[1]), rho(up[0])];
-
-
-        var condition = (
-            (lowI[0] >= low[0] && lowI[0] <= up[0]) ||
-                (upI[0] >= low[0] && upI[0] <= up[0]) ||
-                (lowI[1] >= low[1] && lowI[1] <= up[1]) ||
-                (upI[1] >= low[1] && upI[1] <= up[1]));
+        var thetaLPS = theta(low[1], alpha);
+        var thetaLNS = theta(low[1], alphaN);
+        var thetaLPC = thetaCounterClockwise(low[1], alpha);
+        var thetaLNC = thetaCounterClockwise(low[1], alphaN);
+        var thetaUPS = theta(up[1], alpha);
+        var thetaUNS = theta(up[1], alphaN);
+        var thetaUPC = thetaCounterClockwise(up[1], alpha);
+        var thetaUNC = thetaCounterClockwise(up[1], alphaN);
+        var condition = (between(low[0], thetaLPS, up[0]) ||
+                         between(low[0], thetaLNS, up[0]) ||
+                         between(low[0], thetaLPC, up[0]) ||
+                         between(low[0], thetaLNC, up[0]) ||
+                         between(low[0], thetaUPS, up[0]) ||
+                         between(low[0], thetaUNS, up[0]) ||
+                         between(low[0], thetaUPC, up[0]) ||
+                         between(low[0], thetaUNC, up[0]) ||
+                         between(low[1], lowI[1], up[1]) ||
+                         between(low[1], upI[1], up[1]));
         return condition;
     }
 }
