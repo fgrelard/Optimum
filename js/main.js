@@ -110,6 +110,7 @@ function extractFileTree(json, firstString) {
         var year = photo.year;
         var month = photo.month;
         var ym = month.toString() + "/" + year.toString();
+
         var dateExists = data.find(function(existingDate) {
             return existingDate.id === ym;
         });
@@ -579,7 +580,25 @@ $(document).ready( function(event) {
                       "icon" : "glyphicon glyphicon-folder-open"
                   }
               },
-              'plugins' : ["checkbox", "types", "sort"]});
+              'plugins' : ["checkbox", "types", "sort"],
+              'sort': function(a, b) {
+                  let a1 = this.get_node(a);
+                  let b1 = this.get_node(b);
+                  let ym1 = a1.id;
+                  let ym2 = b1.id;
+                  let t1 = ym1.split("/");
+                  let t2 = ym2.split("/");
+                  let m1 = parseInt(t1[0]);
+                  let m2 = parseInt(t2[0]);
+                  let y1 = parseInt(t1[1]);
+                  let y2 = parseInt(t2[1]);
+                  if (y1 == y2){
+                      return (m1 > m2) ? 1 : -1;
+                  } else {
+                      return (y1 > y2) ? 1 : -1;
+                  }
+              }
+            });
     });
 
 });
