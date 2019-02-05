@@ -5,6 +5,28 @@ import View from 'ol/view';
 
 var urlDB = "http://159.84.143.100:8080/";
 
+function jsonToBlob(json) {
+    var sliceSize = sliceSize || 512;
+
+    var byteCharacters = atob(json);
+    var byteArrays = [];
+
+    for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+        var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+        var byteNumbers = new Array(slice.length);
+        for (var i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+        }
+
+        var byteArray = new Uint8Array(byteNumbers);
+
+        byteArrays.push(byteArray);
+    }
+    var blob = new Blob(byteArrays, {type: "image/jpeg"});
+    return blob;
+}
+
 export function pollDB(path, url2) {
     var t0Image = fetch(urlDB + url2, {
         method: 'post',
@@ -20,37 +42,38 @@ export function pollDB(path, url2) {
 }
 
 
-export function pollImages(path, size = 800, signal = null) {
+export function pollImages(path, signal = null) {
     var t0Image = fetch(urlDB + "images", {
         method: 'post',
-        body: JSON.stringify({str: path, size:size}),
+        body: JSON.stringify({str: path}),
         signal
     });
     var t1Image = t0Image.then(function (response) {
         return response.json();
     });
     var t2Image = t1Image.then(function(resultPost) {
-        var sliceSize = sliceSize || 512;
-
-        var byteCharacters = atob(resultPost);
-        var byteArrays = [];
-
-        for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-            var slice = byteCharacters.slice(offset, offset + sliceSize);
-
-            var byteNumbers = new Array(slice.length);
-            for (var i = 0; i < slice.length; i++) {
-                byteNumbers[i] = slice.charCodeAt(i);
-            }
-
-            var byteArray = new Uint8Array(byteNumbers);
-
-            byteArrays.push(byteArray);
-        }
-
-        var b = new Blob(byteArrays, {type: "image/jpeg"});
+        var blob = jsonToBlob(resultPost);
         var urlCreator = window.URL || window.webkitURL;
-        var imageUrl = urlCreator.createObjectURL(b);
+        var imageUrl = urlCreator.createObjectURL(blob);
+        return imageUrl;
+    });
+    return t2Image;
+}
+
+
+export function pollThumbnails(path, signal = null) {
+    var t0Image = fetch(urlDB + "thumbnails", {
+        method: 'post',
+        body: JSON.stringify({str: path}),
+        signal
+    });
+    var t1Image = t0Image.then(function (response) {
+        return response.json();
+    });
+    var t2Image = t1Image.then(function(resultPost) {
+        var blob = jsonToBlob(resultPost);
+        var urlCreator = window.URL || window.webkitURL;
+        var imageUrl = urlCreator.createObjectURL(blob);
         return imageUrl;
     });
     return t2Image;

@@ -183,7 +183,7 @@ function visibilityPolygon(data, center, radius) {
 
 }
 
-function getThumbnail(f) {
+function getImage(f) {
     if (f.get('image')) {
         var image = f.get('image');
         var img = $("<img>").attr("src", image);
@@ -192,9 +192,9 @@ function getThumbnail(f) {
  	    $(".data").html(content);
     }
     else {
-        Polls.pollImages(f.getProperties().filename, 400).then(function(uri) {
+        Polls.pollImages(f.getProperties().filename).then(function(uri) {
             f.set('image', uri);
-            getThumbnail(f);
+            getImage(f);
         });
     }
 }
@@ -301,10 +301,11 @@ function loadPictures(metadataJSON) {
 }
 
 function featureToThumbnails(feature, signal) {
-      Polls.pollImages(feature.getProperties().filename, 75, signal).then(function(uri) {
-          feature.set('thumbnail', uri);
-      });
+    Polls.pollThumbnails(feature.getProperties().filename, signal).then(function(uri) {
+        feature.set('thumbnail', uri);
+    });
 }
+
 
 function completeFeatures(signal) {
      //Clustering with cursor
@@ -334,9 +335,9 @@ function completeFeatures(signal) {
 
         featureToThumbnails(feature, signal);
 
-        Polls.pollImages(feature.getProperties().filename, 800, signal).then(function(uri) {
-            Grid.loadImageAndFillGrid(grid, uri, images, {label:label, distance:distance}, count, pictures.length);
-        });
+        // Polls.pollImages(feature.getProperties().filename, signal).then(function(uri) {
+        //     Grid.loadImageAndFillGrid(grid, uri, images, {label:label, distance:distance}, count, pictures.length);
+        // });
 
         var promise = computeIsovistForPicture(feature, signal);
         promises.push(promise);
@@ -492,7 +493,7 @@ select.on('select', function(e) {
             arc.computeGeometry();
             arcs.getSource().addFeature(new Feature(arc));
             getIsovist(f);
-            getThumbnail(f);
+            getImage(f);
         }
     });
 
@@ -524,9 +525,9 @@ $("#fileTree").on('changed.jstree', function (e, data) {
     //Query DB and generate objects
     Polls.pollDB(r, "fullDocs").then(function(metadataJSON) {
         loadPictures(metadataJSON);
+
         if (pictures.length === 0) {
             grid.remove(grid.getItems(), {removeElements:true});
-            document.body.className = 'images-loaded';
         }
 
         var promises = completeFeatures(signal);
@@ -534,6 +535,7 @@ $("#fileTree").on('changed.jstree', function (e, data) {
         //r-tree bulk loading
         Promise.all(promises).then(function(polygons) {
             loadRTree();
+            document.body.className = 'images-loaded';
         });
 
         for (var i = 0; i < clusters.length; i++) {
