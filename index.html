@@ -15,95 +15,12 @@
     <div id="page_wrapper">
       <div id="banner-wrapper">
 		<div id="banner">
-          
-          
-          <div class="container box">
 
-            <div id="map" class="map">
-            </div>
-            <div class="options">
-	        </div>
-            <!-- Content of the menu -->
-	        <div id="menu">
-		      <p class="defaultParagraph">
-			    Description des photographies
-		      </p>
-		      <div class="data"></div>
-              <hr>
-              
-              <div id="isovistCaption">
-                <p class="defaultParagraph">Légende</p>
-                <ul class="polygonIntersection">
-                  <li><span class="floatLeft">0</span></li>
-                  <li><span id="maxIntersection" class="floatRight">?</span></li>
-                </ul>
-              </div>
-            </div>
 
-            <div class="loading">
-              <div id="loaderIsovist"> </div>
-              <div id="isovist"> </div>
-            </div>
-            <hr>
-
-            <div id="wrapTree">
-              <h5>Photographies</h5>
-              <div id="fileTree">
-              </div>
-            </div>
-          </div>
-
-          <div class="box container">
-            <h3> Grappes </h3>
-            
-            <div class="controls cf">
-              <!-- <div class="control search"> -->
-              <!--   <div class="control-icon"> -->
-              <!--     <i class="material-icons">&#xE8B6;</i> -->
-              <!--   </div> -->
-              <!--   <input class="control-field search-field form-control " type="text" name="search" placeholder="Rechercher..." /> -->
-              <!-- </div> -->
-              <!-- <div class="control filter"> -->
-              <!--   <div class="control-icon"> -->
-              <!--     <i class="material-icons">&#xE152;</i> -->
-              <!--   </div> -->
-              <!--   <div class="select-arrow"> -->
-              <!--     <i class="material-icons">&#xE313;</i> -->
-              <!--   </div> -->
-              <!--   <select id="selectPosition" class="control-field filter-field form-control"> -->
-              <!--     <option value="" selected>Position</option> -->
-              <!--   </select> -->
-              <!-- </div> -->
-              <div class="control layout">
-                <div class="control-icon">
-                  <i class="material-icons">&#xE871;</i>
-                </div>
-                <div class="select-arrow">
-                  <i class="material-icons">&#xE313;</i>
-                </div>
-                <select class="control-field layout-field form-control">
-                  <option value="" selected>Deux colonnes</option>
-                  <option value="3col">Trois colonnes</option>
-                  <option value="4col">Quatre colonnes</option>
-                </select>
-              </div>
-            </div>
-            <!-- <div class="slidecontainer"> Distance -->
-            <!--   <input type="range" value="0" class="slider" id="myRange"> -->
-            <!-- </div> -->
-            <div class="loading">
-              <p id="clusterText"> En attente de données... </p>
-            </div>
-            <div class="grid">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="container">
+          <div class="container" id="modeEmploi">
             <div class="wrap-collapsible">
               <input id="collapsible" class="toggle" type="checkbox">
-              <label for="collapsible" class="lbl-toggle">Comment utiliser cet outil ?</label>
+              <label for="collapsible" class="lbl-toggle">Mode d'emploi</label>
               <div class="collapsible-content">
                 <div class="content-inner">
                   <h5>Présentation</h5>
@@ -148,6 +65,92 @@
               </div>
             </div>
           </div>
+          
+          <div class="container box">
+            <h3> Carte de Saint-Étienne </h3>
+            Sélectionner une zone en appuyant sur la touche Maj <a href="#modeEmploi"><i class="fa fa-question-circle"></i></a>
+            <div id="map" class="map">
+            </div>
+            <div class="options">
+	        </div>
+            <!-- Content of the menu -->
+	        <div id="menu">
+		      <p class="defaultParagraph">
+			    Description des photographies
+		      </p>
+		      <div class="data"></div>
+              <hr>
+              
+              <div id="isovistCaption">
+                <p class="defaultParagraph">Légende</p>
+                <ul class="polygonIntersection">
+                  <li><span class="floatLeft">0</span></li>
+                  <li><span id="maxIntersection" class="floatRight">?</span></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="loading">
+              <div id="loaderIsovist"> </div>
+              <div id="isovist"> </div>
+            </div>
+            <hr>
+
+            <div id="wrapTree">
+              <!-- <h5>Photographies</h5> -->
+              <div id="fileTree">
+              </div>
+            </div>
+          </div>
+
+          <div class="box container">
+            <h3> Photographies sélectionnées </h3>
+            
+            <div class="controls cf">
+              <!-- <div class="control search"> -->
+              <!--   <div class="control-icon"> -->
+              <!--     <i class="material-icons">&#xE8B6;</i> -->
+              <!--   </div> -->
+              <!--   <input class="control-field search-field form-control " type="text" name="search" placeholder="Rechercher..." /> -->
+              <!-- </div> -->
+              <!-- <div class="control filter"> -->
+              <!--   <div class="control-icon"> -->
+              <!--     <i class="material-icons">&#xE152;</i> -->
+              <!--   </div> -->
+              <!--   <div class="select-arrow"> -->
+              <!--     <i class="material-icons">&#xE313;</i> -->
+              <!--   </div> -->
+              <!--   <select id="selectPosition" class="control-field filter-field form-control"> -->
+              <!--     <option value="" selected>Position</option> -->
+              <!--   </select> -->
+              <!-- </div> -->
+              <!-- <div class="control layout"> -->
+              <!--   <div class="control-icon"> -->
+              <!--     <i class="material-icons">&#xE871;</i> -->
+              <!--   </div> -->
+              <!--   <div class="select-arrow"> -->
+              <!--     <i class="material-icons">&#xE313;</i> -->
+              <!--   </div> -->
+              <!--   <select class="control-field layout-field form-control"> -->
+              <!--     <option value="" selected>Deux colonnes</option> -->
+              <!--     <option value="3col">Trois colonnes</option> -->
+              <!--     <option value="4col">Quatre colonnes</option> -->
+              <!--   </select> -->
+              <!-- </div> -->
+            </div>
+            <!-- <div class="slidecontainer"> Distance -->
+            <!--   <input type="range" value="0" class="slider" id="myRange"> -->
+            <!-- </div> -->
+            <div class="loading">
+              <p id="clusterText"> En attente de données... </p>
+            </div>
+            <div class="grid">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
 
     </div>
     <script src="seamless.child.min.js"></script>
