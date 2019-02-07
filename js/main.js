@@ -110,12 +110,16 @@ function extractFileTree(json, firstString) {
         var year = photo.year;
         var month = photo.month;
         var ym = month.toString() + "/" + year.toString();
+        var monthArray = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai',
+                          'Juin', 'Juillet', 'Août', 'Septembre',
+                          'Octobre', 'Novembre', 'Décembre'];
+        var monthString = monthArray[month-1] + " " + year.toString();
 
         var dateExists = data.find(function(existingDate) {
             return existingDate.id === ym;
         });
         if (!dateExists)
-            data.push({ "id" : ym, "parent": firstString, "text": ym, type: "default"});
+            data.push({ "id" : ym, "parent": firstString, "text": monthString, type: "default"});
         data.push({ "id" : photo.filename, "parent": ym, "text": photo.filename, type: "child"});
     });
     return data;
