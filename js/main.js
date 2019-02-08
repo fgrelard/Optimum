@@ -574,6 +574,10 @@ $(document).ready( function(event) {
         var data = extractFileTree(json, "Photographies de Guillaume Bonnel");
         $("#fileTree").jstree(
             { 'core' : {
+                'themes': {
+                    'name': 'proton',
+                    'responsive': true
+                },
                 'data' : data
             },
               'types' : {
