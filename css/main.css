@@ -3143,7 +3143,7 @@ img.menuImage {
 }
 
 .ol-control.ol-layerswitcher {
-    top: 4.5em;
+    top: 2.5em;
     left: 0.5em;
     bottom: auto;
     right: auto;
@@ -3151,9 +3151,9 @@ img.menuImage {
 }
 
 .ol-layerswitcher button {
-    width: 2.5em;
-    height: 2.5em;
-    background-size: 2em 2em;
+    width: 1.375em; 
+    height: 1.375em;
+    background-size: 1.25em 1.25em;
     background-position: center;
     background-color: rgba(0,60,136,.5);
     float: left;
@@ -3161,8 +3161,8 @@ img.menuImage {
 }
 
 .ol-layerswitcher button::before, .ol-layerswitcher button::after {
-                                      -webkit-transform: scale(1.5) rotate(45deg);
-                                      transform: scale(1.5) rotate(45deg);
+                                      -webkit-transform: scale(0.5) rotate(45deg);
+                                      transform: scale(0.5) rotate(45deg);
                                       margin: 0.5em;
                                   }
 
@@ -3181,8 +3181,8 @@ img.menuImage {
 }
 
 .ol-control.menu button{
-    width: 2.5em;
-    height: 2.5em;
+    /* width: 2.5em; */
+    /* height: 2.5em; */
 }
 
 .ol-overlay.menu
@@ -3225,6 +3225,7 @@ img.menuImage {
 
 
 .wrap-collapsible {
+    display: inline-block;
     margin-bottom: 1.2rem 0;
     width:100%;
 }
@@ -3234,23 +3235,24 @@ input[type='checkbox'] {
 }
 
 .lbl-toggle {
-    display: block;
-
+    float: right;
     font-weight: bold;
-    font-size: 1.2rem;
+    font-size: 1rem;
     /* font-variant:small-caps; */
     letter-spacing:1px;
     text-align: left;
-
-    padding: 0.33rem;
-    padding-left:30px;
+    
+    padding-top: 0.33rem;
+    padding-bottom: 0.33rem;
+    padding-left:10px;
+    padding-right: 10px;
     color: white;
     background: rgb(230, 0, 124);
 
     cursor: pointer;
 
     border-radius: 7px;
-    transition: all 0.25s ease-out;
+    transition: all 0.25s ease-in-out;
 }
 
 .lbl-toggle:hover {
@@ -3269,7 +3271,7 @@ input[type='checkbox'] {
   margin-right: .7rem;
   transform: translateY(-2px);
 
-  transition: transform .2s ease-out;
+  transition: transform .25s ease-in-out;
 }
 
 .toggle:checked + .lbl-toggle::before {
@@ -3277,9 +3279,10 @@ input[type='checkbox'] {
 }
 
 .collapsible-content {
+    display: inherit;
     max-height: 0px; 
     overflow: hidden;
-    transition: max-height .25s ease-in-out;
+    transition: max-height .1s ease-in-out;
 }
 
 .toggle:checked + .lbl-toggle + .collapsible-content {
