@@ -405,6 +405,10 @@ $('.layout-field').change(function() {
     Grid.changeLayout(grid);
 });
 
+$("#questionMark").click(function(event) {
+    $(".lbl-toggle").trigger('click');
+});
+
 // $("#myRange").on("change", function(event) {
 //     var sliderValue = event.target.value;
 //     var filterFieldValue = $('.filter-field').val();

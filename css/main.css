@@ -3256,24 +3256,24 @@ input[type='checkbox'] {
     color: #D8D8D8;
 }
 
-.lbl-toggle::after {
-    content:" \f128";
-	font-family:FontAwesome;
-    display: inline-block;
 
-    /* border-top: 5px solid transparent; */
-    /* border-bottom: 5px solid transparent; */
-    /* border-left: 5px solid currentColor; */
-    vertical-align: middle;
-    margin-right: .7rem;
-    transform: translateY(-2px);
+.lbl-toggle::before {
+  content: ' ';
+  display: inline-block;
 
-    transition: transform .2s ease-out;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 5px solid currentColor;
+  vertical-align: middle;
+  margin-right: .7rem;
+  transform: translateY(-2px);
+
+  transition: transform .2s ease-out;
 }
 
-/* .toggle:checked + .lbl-toggle::before { */
-/*     transform: rotate(90deg) translateX(-3px); */
-/* } */
+.toggle:checked + .lbl-toggle::before {
+    transform: rotate(90deg) translateX(-3px);
+}
 
 .collapsible-content {
     max-height: 0px; 
@@ -3291,7 +3291,7 @@ input[type='checkbox'] {
 }
 
 .collapsible-content .content-inner {
-    background:  rgb(230, 0, 124, .2);
+    background:  rgba(230, 0, 124, .2);
     border-bottom: 1px solid rgba(230, 0, 124, .45);
     line-height: 1.15em;
     border-bottom-left-radius: 7px;
