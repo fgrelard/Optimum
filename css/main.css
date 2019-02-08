@@ -2016,7 +2016,7 @@ ol.default li {
 
 #banner {
 	position: relative;
-	padding: 2.5em;
+	/*padding: 2.5em;*/
 }
 
 #banner h2 {
@@ -3225,7 +3225,7 @@ img.menuImage {
 
 
 .wrap-collapsible {
-    display: inline-block;
+    display: table;
     margin-bottom: 1.2rem 0;
     width:100%;
 }
@@ -3279,7 +3279,8 @@ input[type='checkbox'] {
 }
 
 .collapsible-content {
-    display: inherit;
+    float:right;
+    /* display: inherit; */
     max-height: 0px; 
     overflow: hidden;
     transition: max-height .1s ease-in-out;
