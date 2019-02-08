@@ -3268,7 +3268,11 @@ input[type='checkbox'] {
 }
 
 .toggle:checked + .lbl-toggle + .collapsible-content {
-     max-height: 1500px; 
+    max-height: 100%;
+}
+
+.content-inner p {
+    font-size:1em !important;
 }
 
 .toggle:checked + .lbl-toggle {
@@ -3287,7 +3291,7 @@ input[type='checkbox'] {
 
 .collapsible-content .content-inner p {
     margin-bottom: 1em !important;
-    text-align: justify;
+    text-align: left;
 }
 
 .collapsible-content .content-inner h5 {
