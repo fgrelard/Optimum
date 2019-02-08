@@ -53,7 +53,7 @@ export function loadImageAndFillGrid(grid, url, images, label, count, length) {
 
 export function fillGrid(grid, image, images, label, count, length) {
     var divItem = $("<div/>", {
-        class: "item" + $('.layout-field').val(),
+        class: "item" + ($('.layout-field').val() || ""),
         "label": label.label,
         "distance": label.distance
     });
