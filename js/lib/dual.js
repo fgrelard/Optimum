@@ -1,4 +1,4 @@
-import {angleToVector, boundingBox} from './geometry.js';
+import {angleToVector, boundingBox, bboxArrayToObject} from './geometry.js';
 
 export default class Dual {
 
@@ -24,12 +24,8 @@ export default class Dual {
     static dualBoundingRectangle(arc, g, vertical = false) {
         var dualArc = this.dualCone(arc, g, vertical);
         var bbox = boundingBox(dualArc);
-        var bboxCoordinates = {minX: bbox[0][0],
-                               minY: bbox[0][1],
-                               maxX: bbox[1][0],
-                               maxY: bbox[1][1],
-                               feature: arc};
-        return bboxCoordinates;
+        var bboxCoordinates = bboxArrayToObject(bbox, arc);
+        return [bboxCoordinates];
     }
 
     static intersectionRequestRectangle(point, rectangle) {

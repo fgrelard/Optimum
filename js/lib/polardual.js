@@ -1,5 +1,5 @@
 import Dual from './dual.js';
-import {project, boundingBox} from './geometry.js';
+import {project, boundingBox, bboxArrayToObject} from './geometry.js';
 import {euclideanDistance} from './distance.js';
 
 export default class PolarDual extends Dual {
@@ -27,9 +27,9 @@ export default class PolarDual extends Dual {
         var x0 = cone[0][0];
         var x1 = cone[1][0];
         //For vertical lines
-        if (x0 > x1) {
-            cone[1][0] = Math.PI + x1;
-        }
+        // if (x0 > x1) {
+        //     cone[1][0] = Math.PI + x1;
+        // }
         return cone;
     }
 
@@ -40,6 +40,8 @@ export default class PolarDual extends Dual {
         var minY = bbox[0][1];
         var maxX = bbox[1][0];
         var maxY = bbox[1][1];
+
+        //Finding local maximum
         var coord = [arc.center[0] - g[0],
                      arc.center[1] - g[1]];
         var max = Math.sqrt(Math.pow(coord[0], 2) +
@@ -57,19 +59,33 @@ export default class PolarDual extends Dual {
                 maxY = rho;
             }
         }
-        var bboxCoordinates = {minX: minX,
-                               minY: minY,
-                               maxX: maxX,
-                               maxY: maxY,
-                               feature: arc};
-        return bboxCoordinates;
+        var bboxCoordinates = bboxArrayToObject(boundingBox([[minX, minY], [maxX, maxY]]), arc);
+
+        //For vertical lines : two bounding rectangles
+        if (arc.omega%180 > 90 && arc.alpha%180 < 90) {
+            var first = dualArc[1];
+            var second = dualArc[0];
+            var rho1 = coord[0] * Math.cos(0) + coord[1] * Math.sin(0);
+            var rho2 = coord[0] * Math.cos(Math.PI) + coord[1] * Math.sin(1);
+            var bbox1 = boundingBox([[0, rho1], first]);
+            var bbox2 = boundingBox([second, [Math.PI, rho2]]);
+
+            var bboxCoordinates1 = bboxArrayToObject(bbox1, arc);
+            var bboxCoordinates2 = bboxArrayToObject(bbox2, arc);
+            console.log(arc.omega + " " + arc.alpha);
+            return [bboxCoordinates1, bboxCoordinates2];
+
+        }
+        else {
+            return [bboxCoordinates];
+        }
     }
 
     static intersectionRequestRectangle(point, rectangle) {
         var a = point[0];
         var b = point[1];
         var rho = (x) => a * Math.cos(x) + b * Math.sin(x);
-        var theta = (y, shift) => (a < 0) ? Math.acos(-y / R) + shift :Math.acos(y / R) + shift;
+        var theta = (y, shift) => (a < 0) ? Math.acos(-y / R) + shift : Math.acos(y / R) + shift;
         var thetaCounterClockwise = (y, shift) => (a < 0) ? -Math.acos(-y / R) + shift : -Math.acos(y / R) + shift;
         var between = (a, b, c) => (b >= a && b <= c);
         var low = [rectangle.minX, rectangle.minY];
@@ -77,9 +93,7 @@ export default class PolarDual extends Dual {
 
         var R = Math.sqrt(a*a + b*b);
         var alpha = Math.atan(b / a);
-        var alphaN = alpha + 2*Math.PI;
-        var m = rectangle.minY;
-        var M = rectangle.maxY;
+        var alphaN = alpha + 2 * Math.PI;
 
         var lowI = [theta(low[1]), rho(low[0])];
         var upI = [theta(up[1]), rho(up[0])];

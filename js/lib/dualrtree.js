@@ -20,27 +20,32 @@ export default class DualRtree {
         var dualVertical = [];
         for (var arc of arcs) {
             var bboxCoordinates = this.Duality.dualBoundingRectangle(arc, this.origin, false);
-            var bboxCoordinatesVertical;
             if (this.divide) {
-                bboxCoordinatesVertical = this.Duality.dualBoundingRectangle(arc, this.origin, true);
+                var bboxCoordinatesVertical = this.Duality.dualBoundingRectangle(arc, this.origin, true);
+                var bboxH = bboxCoordinates[0];
+                var bboxV = bboxCoordinates[1];
+                var rectangleH = [ [bboxH.minX, bboxH.minY],
+                                   [bboxH.maxX, bboxH.maxY] ];
+                var rectangleV = [ [bboxV.minX, bboxV.minY],
+                                   [bboxV.maxX, bboxV.maxY] ];
+
+                var dH = euclideanDistance(rectangleH[0], rectangleH[1]);
+                var dV = euclideanDistance(rectangleV[0], rectangleV[1]);
+
+                if (dH <= dV) {
+                    dual.push(bboxCoordinates);
+                }
+                else {
+                    dualVertical.push(bboxCoordinatesVertical);
+                }
             }
             else {
-                bboxCoordinatesVertical = bboxCoordinates;
+                for (let rect of bboxCoordinates) {
+                    dual.push(rect);
+                }
             }
-            var rectangleH = [ [bboxCoordinates.minX, bboxCoordinates.minY],
-                               [bboxCoordinates.maxX, bboxCoordinates.maxY] ];
-            var rectangleV = [ [bboxCoordinatesVertical.minX, bboxCoordinatesVertical.minY],
-                               [bboxCoordinatesVertical.maxX, bboxCoordinatesVertical.maxY] ];
 
-            var dH = euclideanDistance(rectangleH[0], rectangleH[1]);
-            var dV = euclideanDistance(rectangleV[0], rectangleV[1]);
 
-            if (dH <= dV) {
-                dual.push(bboxCoordinates);
-            }
-            else {
-                dualVertical.push(bboxCoordinatesVertical);
-            }
         }
         return [dual, dualVertical];
     }
@@ -84,7 +89,6 @@ export default class DualRtree {
         if (this.divide) {
             request = [request[1], request[0]];
             this.searchRecursive(hits, this.rtreeVertical.data, request, number);
-
         }
         return {hits: hits, number: number};
     }

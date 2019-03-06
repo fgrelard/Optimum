@@ -1,0 +1,28 @@
+{
+    "name": "optimum",
+    "version": "0.0.1",
+    "description": "Projet Optimum",
+    "scripts": {
+        "build": "rollup --config rollup.config.js",
+        "start": "rollup --config rollup.config.js --watch"
+    },
+    "devDependencies": {
+        "rollup": "^0.41.4",
+        "rollup-plugin-commonjs": "^7.0.0",
+        "rollup-plugin-node-builtins": "^2.1.2",
+        "rollup-plugin-node-resolve": "^2.1.1",
+        "rollup-plugin-uglify": "^1.0.2",
+        "rollup-plugin-uglify-es": "0.0.1",
+        "rollup-watch": "^4.3.1"
+    },
+    "dependencies": {
+        "cesium": "^1.54.0",
+        "exact-segment-intersect": "^2.0.0",
+        "jquery": "^3.3.1",
+        "jsts-es": "^1.5.4",
+        "mathjs": "^4.1.1",
+        "ol": "^5.0.0",
+        "olcs": "^2.7.2",
+        "osmbuildings": "^0.2.0-b"
+    }
+}

@@ -11,7 +11,6 @@ import Polygon from 'ol/geom/polygon';
 import * as Intersection from './lineintersection';
 import {euclideanDistance} from './distance';
 import Arc from './arc';
-import $ from 'jquery';
 
 class AngleToSegment {
     constructor(angle, segment) {
@@ -38,7 +37,7 @@ export default class IsoVist {
     }
 
     isInsideArc(segment) {
-        for (var i = 0; i < 1; i+=0.1) {
+        for (let i = 0; i < 1; i+=0.1) {
             if (this.arc.geometry.intersectsCoordinate(segment.getCoordinateAt(i))) {
                 return true;
             }
@@ -54,7 +53,7 @@ export default class IsoVist {
     segmentsFromPolygon(polygon, arc) {
         var segments = [];
         var polygonVertices = polygon.getCoordinates()[0];
-        for (var i = 0; i < polygonVertices.length-1; i++) {
+        for (let i = 0; i < polygonVertices.length-1; i++) {
             var p1 = polygonVertices[i];
             var p2 = polygonVertices[i+1];
             var segment = new LineString([p1, p2]);
@@ -72,9 +71,9 @@ export default class IsoVist {
         var geometryArc = this.arc.geometry;
         var extentArc = geometryArc.getExtent();
         var that = this;
-        $.each(this.segments, function(b, f) {
+        for (let f of this.segments) {
             var geometryFeature = f.getGeometry();
-            if (euclideanDistance(geometryFeature.getFirstCoordinate(), that.arc.center) > 2 * that.arc.radius) return;
+            if (euclideanDistance(geometryFeature.getFirstCoordinate(), that.arc.center) > 2 * that.arc.radius) continue;
             if (geometryArc.intersectsExtent(geometryFeature.getExtent()) &&
                 geometryFeature.intersectsExtent(extentArc)) {
                 if (geometryFeature.getType() === "Polygon") {
@@ -82,7 +81,7 @@ export default class IsoVist {
                     Array.prototype.push.apply(segments, segmentsPolygon);
                 }
             }
-        });
+        }
         return segments;
     }
 
@@ -104,9 +103,9 @@ export default class IsoVist {
 
         var toPush = false;
         var that = this;
-        $.each(segments, function(i, s) {
+        for (let s of segments) {
             if (Intersection.segmentsEqual(s, segment))
-                return true;
+                continue;
             var i1 = Intersection.segmentsIntersect(s1, s);
             var i2 = Intersection.segmentsIntersect(s2, s);
             if (i1 || i2) {
@@ -121,7 +120,7 @@ export default class IsoVist {
                         toPush = true;
                 }
             }
-        });
+        }
         return toPush;
     }
 
@@ -191,7 +190,7 @@ export default class IsoVist {
         var alpha = 0;
         var omega = 0;
 
-        for (var i = 0; i < array.length - 1; i++) {
+        for (let i = 0; i < array.length - 1; i++) {
             var current = array[i];
             var next = array[i+1];
 
@@ -282,7 +281,7 @@ export default class IsoVist {
         var ps1 = segment.getFirstCoordinate();
         var ps2 = segment.getLastCoordinate();
 
-        $.each(angles, function(i, angle) {
+        for (let angle of angles) {
             if (!angle.geometry)
                 angle.computeGeometry();
             var r = that.arc.radius;
@@ -316,7 +315,7 @@ export default class IsoVist {
                     visibleSegments.push(segment);
                 }
             }
-        });
+        }
 
         return (visibleSegments.length > 0) ? [segment, visibleSegments] : null;
     }
@@ -330,13 +329,13 @@ export default class IsoVist {
     blockingSegments(segments) {
         var blockingSegments = [];
         var that = this;
-        $.each(segments, function(i, segment) {
+        for (let segment of segments) {
             var nonBlocking = that.isNonBlocking(segment,
                                                  segments);
             if (!nonBlocking) {
                 blockingSegments.push(segment);
             }
-        });
+        }
         return  blockingSegments;
     }
 
@@ -350,19 +349,19 @@ export default class IsoVist {
         var blockingAngles = [];
         var freeSegments = [];
         var that = this;
-        $.each(blockingSegments, function(j, segment) {
+        for (let segment of blockingSegments) {
             var blockingAngle = that.visionBlockingArc(segment);
             blockingAngles.push(blockingAngle);
-        });
+        }
         var trimmedBlockingAngles = this.mergeOverlappingAngles(blockingAngles);
         var freeVisionAngles = this.freeAngles(trimmedBlockingAngles);
-        $.each(segments, function(j, segment) {
+        for (let segment of segments) {
             if (blockingSegments.indexOf(segment) === -1) {
                 var visibleSegment = that.partiallyVisibleSegments(freeVisionAngles, segment);
                 if (visibleSegment && that.isInsideArc(visibleSegment[0]))
                     freeSegments.push(visibleSegment);
             }
-        });
+        }
         return freeSegments;
     }
 
@@ -383,10 +382,10 @@ export default class IsoVist {
         var blockingAngles = [];
         var freeSegments = [];
         var freeVisionAngles = [this.arc];
-        $.each(blockingSegments, function(j, segment) {
+        for (let segment of blockingSegments) {
             var blockingAngle = that.visionBlockingArc(segment);
             var partial = false;
-            $.each(freeVisionAngles, function(i, angle) {
+            for (let angle of freeVisionAngles) {
                 if ((blockingAngle.alpha < angle.alpha && blockingAngle.omega <= angle.omega && blockingAngle.omega > angle.alpha) ||
                     (blockingAngle.omega > angle.omega && blockingAngle.alpha >= angle.alpha && blockingAngle.alpha < angle.omega)) {
                     var visibleSegment = that.partiallyVisibleSegments(freeVisionAngles, segment);
@@ -394,7 +393,7 @@ export default class IsoVist {
                         Array.prototype.push.apply(visibleSegments, visibleSegment[1]);
                     partial = true;
                 }
-            });
+            }
             var p1 = segment.getFirstCoordinate();
             var p2 = segment.getLastCoordinate();
             if (!partial && that.isInsideArc(segment))
@@ -405,7 +404,7 @@ export default class IsoVist {
             blockingAngles.push(blockingAngle);
             var trimmedBlockingAngles = that.mergeOverlappingAngles(blockingAngles);
             freeVisionAngles = that.freeAngles(trimmedBlockingAngles);
-        });
+        }
 
         return visibleSegments;
     }
@@ -416,10 +415,10 @@ export default class IsoVist {
         var anglesToSegments = [];
         var blockingAngles = [];
 
-        $.each(blockingSegments, function(i, segment) {
+        for (let segment of blockingSegments) {
             var blockingAngle = that.visionBlockingArc(segment);
-            var fc = segment.getFirstCoordinate();
-            var lc = segment.getLastCoordinate();
+            let fc = segment.getFirstCoordinate();
+            let lc = segment.getLastCoordinate();
             var angleFC = that.angleFromCoordinates(fc);
             var angleLC = that.angleFromCoordinates(lc);
             angleFC = (angleFC < that.arc.alpha - 1) ? angleFC+360 : angleFC;
@@ -427,20 +426,20 @@ export default class IsoVist {
             var first = (angleFC < angleLC) ? fc : lc;
             var last = (angleFC < angleLC) ? lc : fc;
             var orientedSegment = new LineString([first, last]);
-            var angleToSegment = new AngleToSegment(blockingAngle, orientedSegment);
+            let angleToSegment = new AngleToSegment(blockingAngle, orientedSegment);
             blockingAngles.push(blockingAngle);
             anglesToSegments.push(angleToSegment);
-        });
+        }
         var trimmedBlockingAngles = this.mergeOverlappingAngles(blockingAngles);
         var freeVisionAngles = this.freeAngles(trimmedBlockingAngles);
-        $.each(freeVisionAngles, function(i, angle) {
-            if (angle.omega - angle.alpha < 0.5) return;
+        for (let angle of freeVisionAngles) {
+            if (angle.omega - angle.alpha < 0.5) continue;
             angle.computeGeometry();
             var freeSegment = new LineString([angle.fullGeometry[1].getFlatCoordinates(),
                                               angle.fullGeometry[2].getFlatCoordinates()]);
-            var angleToSegment = new AngleToSegment(angle, freeSegment);
+            let angleToSegment = new AngleToSegment(angle, freeSegment);
             anglesToSegments.push(angleToSegment);
-        });
+        }
 
         anglesToSegments.sort(function(a,b) {
             if (a.angle.alpha === b.angle.alpha)
@@ -450,9 +449,9 @@ export default class IsoVist {
         if (anglesToSegments.length > 0) {
             polygon.push(this.arc.center);
             polygon.push(anglesToSegments[0].segment.getFirstCoordinate());
-            for (var i = 0; i < anglesToSegments.length; i++) {
-                var fc = anglesToSegments[i].segment.getFirstCoordinate();
-                var lc = anglesToSegments[i].segment.getLastCoordinate();
+            for (let i = 0; i < anglesToSegments.length; i++) {
+                let fc = anglesToSegments[i].segment.getFirstCoordinate();
+                let lc = anglesToSegments[i].segment.getLastCoordinate();
                 polygon.push(fc);
                 polygon.push(lc);
             }
@@ -491,9 +490,9 @@ export default class IsoVist {
         }
 
         if (this.isDisplayPartial) {
-            $.each(partiallyVisible, function(i, segments) {
+            for (let segments of partiallyVisible) {
                 Array.prototype.push.apply(visibleSegments, segments);
-            });
+            }
         } else {
             Array.prototype.push.apply(visibleSegments, blockingSegments);
         }

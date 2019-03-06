@@ -26,6 +26,16 @@ export function boundingBox(positions) {
     return [low, up];
 }
 
+export function bboxArrayToObject(array, feature) {
+    return {minX: array[0][0],
+            minY: array[0][1],
+            maxX: array[1][0],
+            maxY: array[1][1],
+            feature: feature
+           };
+
+}
+
 export function centerOfMass(positions) {
     var g = [0,0];
     for (var p of positions) {
