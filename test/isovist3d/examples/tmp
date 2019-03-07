@@ -1,0 +1,21 @@
+axisOrientation_: "enu"
+​
+canWrapX_: true
+​
+code_: "EPSG:3857"
+​
+defaultTileGrid_: null
+​
+extent_: Array(4) [ -20037508.342789244, -20037508.342789244, 20037508.342789244, … ]
+​
+getPointResolutionFunc_: function getPointResolution()
+​
+global_: true
+​
+metersPerUnit_: undefined
+​
+units_: "m"
+​
+worldExtent_: Array(4) [ -180, -85, 180, … ]
+​
+<prototype>: Object { constructor: EPSG3857Projection() }

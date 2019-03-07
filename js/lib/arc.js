@@ -37,31 +37,31 @@ export default class Arc {
      */
     computeGeometry() {
         var pointList=[];
-        var segments = 100;
-
-        pointList.push([this.center[0], this.center[1]]);
+        var segments = 1;
+        pointList.push(this.center);
         var dAngle= segments+1;
         for(var i=0;i<dAngle;i++)
         {
             var Angle = this.alpha - (this.alpha-this.omega)*i/(dAngle-1);
             var x = this.center[0] + this.radius*Math.cos(Angle*Math.PI/180);
             var y = this.center[1] + this.radius*Math.sin(Angle*Math.PI/180);
-
             var point = [x, y];
+            if (this.center.length > 2) {
+                var tiltAngle = (this.angle) || Math.PI/4;
+                var z = this.center[2] + (this.radius * Math.tan(tiltAngle));
+                point.push(z);
+            }
             pointList.push(point);
         }
-
-        pointList.push([this.center[0], this.center[1]]);
-
+        pointList.push(this.center);
         var ftArc = new Polygon([pointList]);
-        var arrArc = [ftArc];
         var ftArcPt0 = new Point(pointList[1]);
         var ftArcPt1 = new Point(pointList[pointList.length-2]);
         var ftArcSehne = new LineString([pointList[1], pointList[pointList.length-2]]);
 
-        arrArc = [ftArc, ftArcPt0, ftArcPt1, ftArcSehne];
+        var arrArc = [ftArc, ftArcPt0, ftArcPt1, ftArcSehne];
         this.fullGeometry = arrArc;
-        this.geometry = arrArc[0];
+        this.geometry = ftArc;
     }
 
     intersects(p) {
@@ -78,8 +78,10 @@ export default class Arc {
     }
 
     equals(other) {
-        return (this.center[0] === other.center[0] &&
-                this.center[1] === other.center[1] &&
+        var same_center = (this.center.length == other.center.length) && this.center.every(function(element, index) {
+            return element === other.center[index];
+        });
+        return (same_center &&
                 this.alpha === other.alpha &&
                 this.omega === other.omega);
     }

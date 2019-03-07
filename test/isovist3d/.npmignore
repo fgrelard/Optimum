@@ -1,0 +1,8 @@
+<<<<<<< HEAD
+.build
+examples/example-list.js
+=======
+/.build
+examples/example-list.js
+/openlayers_src
+>>>>>>> 45bad1999d7cacaac277b028fd4e6dacf448cc4a
