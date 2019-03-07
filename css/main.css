@@ -1,4 +1,4 @@
-@import url("font-awesome.min.css");
+@import url("https://use.fontawesome.com/releases/v5.2.0/css/all.css");
 @import url("https://fonts.googleapis.com/css?family=Oleo+Script:400|Open+Sans:300,300italic,600,600italic,800");
 
 /*
@@ -56,6 +56,7 @@ body {
 				 -webkit-box-sizing: border-box;
 				 box-sizing: border-box;
 			 }
+
 
 /* Containers */
 
@@ -1331,14 +1332,7 @@ body {
 }
 
 body {
-	background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0)), url("images/bg01.png");
-	background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0)), url("images/bg01.png");
-	background-image: -ms-linear-gradient(top, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0)), url("images/bg01.png");
-	background-image: linear-gradient(top, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0)), url("images/bg01.png");
-	background-color: #f7f7f7;
-	background-position: top left, top left;
-	background-repeat: repeat-x, repeat;
-	background-size: 100% 30em, auto;
+	background-color: #ececec;
 	font-family: 'Open Sans', sans-serif;
 	font-size: 13pt;
 	color: #696969;
@@ -1796,6 +1790,7 @@ ol.default li {
 	font-style: normal;
 	font-weight: normal;
 	text-transform: none !important;
+    text-rendering: optimizeLegibility;
 }
 
 .icon > .label {
@@ -2021,7 +2016,7 @@ ol.default li {
 
 #banner {
 	position: relative;
-	padding: 2.5em;
+	/*padding: 2.5em;*/
 }
 
 #banner h2 {
@@ -2343,6 +2338,7 @@ ol.default li {
 		display: inline-block;
 		font-family: FontAwesome;
 		text-decoration: none;
+        text-rendering: optimizeLegibility;
 		font-style: normal;
 		font-weight: normal;
 		-webkit-font-smoothing: antialiased;
@@ -2681,6 +2677,7 @@ ol.default li {
 #map {
     padding-bottom: 1em;
     height: 45vh;
+    max-height: 500px !important;
 }
 
 .grid {
@@ -3146,7 +3143,7 @@ img.menuImage {
 }
 
 .ol-control.ol-layerswitcher {
-    top: 4.5em;
+    top: 2.5em;
     left: 0.5em;
     bottom: auto;
     right: auto;
@@ -3154,9 +3151,9 @@ img.menuImage {
 }
 
 .ol-layerswitcher button {
-    width: 2.5em;
-    height: 2.5em;
-    background-size: 2em 2em;
+    width: 1.375em; 
+    height: 1.375em;
+    background-size: 1.25em 1.25em;
     background-position: center;
     background-color: rgba(0,60,136,.5);
     float: left;
@@ -3164,8 +3161,8 @@ img.menuImage {
 }
 
 .ol-layerswitcher button::before, .ol-layerswitcher button::after {
-                                      -webkit-transform: scale(1.5) rotate(45deg);
-                                      transform: scale(1.5) rotate(45deg);
+                                      -webkit-transform: scale(0.5) rotate(45deg);
+                                      transform: scale(0.5) rotate(45deg);
                                       margin: 0.5em;
                                   }
 
@@ -3184,8 +3181,8 @@ img.menuImage {
 }
 
 .ol-control.menu button{
-    width: 2.5em;
-    height: 2.5em;
+    /* width: 2.5em; */
+    /* height: 2.5em; */
 }
 
 .ol-overlay.menu
@@ -3206,6 +3203,10 @@ img.menuImage {
 .ol-overlay.menu .ol-closebox:before {
     content:"\f0c9";
 	font-family:FontAwesome;
+    font-style: normal;
+	font-weight: normal;
+	text-transform: none !important;
+    text-rendering: optimizeLegibility;
 }
 #menu
 {	padding-top: 1.5em;
@@ -3224,6 +3225,7 @@ img.menuImage {
 
 
 .wrap-collapsible {
+    display: table;
     margin-bottom: 1.2rem 0;
     width:100%;
 }
@@ -3233,23 +3235,24 @@ input[type='checkbox'] {
 }
 
 .lbl-toggle {
-    display: block;
-
+    float: right;
     font-weight: bold;
-    font-size: 1.2rem;
+    font-size: 1rem;
     /* font-variant:small-caps; */
     letter-spacing:1px;
     text-align: left;
-
-    padding: 0.33rem;
-    padding-left:30px;
+    
+    padding-top: 0.33rem;
+    padding-bottom: 0.33rem;
+    padding-left:10px;
+    padding-right: 10px;
     color: white;
     background: rgb(230, 0, 124);
 
     cursor: pointer;
 
     border-radius: 7px;
-    transition: all 0.25s ease-out;
+    transition: all 0.25s ease-in-out;
 }
 
 .lbl-toggle:hover {
@@ -3268,21 +3271,27 @@ input[type='checkbox'] {
   margin-right: .7rem;
   transform: translateY(-2px);
 
-  transition: transform .2s ease-out;
+  transition: transform .25s ease-in-out;
 }
 
 .toggle:checked + .lbl-toggle::before {
-    transform: rotate(90deg) translateX(-3px);
+  transform: rotate(90deg) translateX(-3px);
 }
 
 .collapsible-content {
+    float:right;
+    /* display: inherit; */
     max-height: 0px; 
     overflow: hidden;
-    transition: max-height .25s ease-in-out;
+    transition: max-height .1s ease-in-out;
 }
 
 .toggle:checked + .lbl-toggle + .collapsible-content {
-     max-height: 1500px; 
+    max-height: 100%;
+}
+
+.content-inner p {
+    font-size:1em !important;
 }
 
 .toggle:checked + .lbl-toggle {
@@ -3301,7 +3310,7 @@ input[type='checkbox'] {
 
 .collapsible-content .content-inner p {
     margin-bottom: 1em !important;
-    text-align: justify;
+    text-align: left;
 }
 
 .collapsible-content .content-inner h5 {
