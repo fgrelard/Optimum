@@ -33,10 +33,10 @@ import {defaults} from 'ol/control';
 import Select from 'ol/interaction/Select';
 import GeoJSON from 'ol/format/GeoJSON';
 import {bbox} from 'ol/loadingstrategy';
-import Arc from '../js/lib/arc';
+import Arc from '../../../js/lib/arc';
 //import IsoVist from '../../Optimum/js/lib/isovistsectors2d';
 import $ from 'jquery';
-import {segmentIntersection} from '../js/lib/lineintersection';
+import {segmentIntersection} from '../../../js/lib/lineintersection';
 
 var geojson;
 

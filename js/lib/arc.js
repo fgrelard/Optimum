@@ -5,9 +5,9 @@
  * @license
  */
 
-import Polygon from 'ol/geom/polygon.js';
-import Point from 'ol/geom/point.js';
-import LineString from 'ol/geom/linestring.js';
+import Polygon from 'ol/geom/Polygon.js';
+import Point from 'ol/geom/Point.js';
+import LineString from 'ol/geom/LineString.js';
 import {angleToVector, vectorToAngle} from './geometry.js';
 import {euclideanDistance} from './distance.js';
 
@@ -20,12 +20,14 @@ export default class Arc {
      * @param {} radius
      * @param {} alpha starting angle in degrees (0-360)
      * @param {} omega end angle in degrees
+     * @param {} aspectRatio ratio image width-height
      */
-    constructor(center, radius, alpha, omega) {
+    constructor(center, radius, alpha, omega, aspectRatio = 1.5) {
         this.center = center;
         this.radius = radius;
         this.alpha = alpha;
         this.omega = omega;
+        this.aspectRatio = aspectRatio;
         this.fullGeometry = null;
         this.geometry = null;
     }
@@ -37,7 +39,7 @@ export default class Arc {
      */
     computeGeometry() {
         var pointList=[];
-        var segments = 1;
+        var segments = 100;
         pointList.push(this.center);
         var dAngle= segments+1;
         for(var i=0;i<dAngle;i++)
@@ -47,8 +49,9 @@ export default class Arc {
             var y = this.center[1] + this.radius*Math.sin(Angle*Math.PI/180);
             var point = [x, y];
             if (this.center.length > 2) {
-                var tiltAngle = (this.angle) || Math.PI/4;
-                var z = this.center[2] + (this.radius * Math.tan(tiltAngle));
+                var fovV = (this.omega - this.alpha) * Math.PI / 180;
+                var fovH = 2 * Math.atan(Math.tan(fovV/2.0)/this.aspectRatio);
+                var z = this.center[2] + (this.radius * Math.tan(fovH));
                 point.push(z);
             }
             pointList.push(point);

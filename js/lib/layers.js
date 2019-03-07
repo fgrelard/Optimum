@@ -1,12 +1,12 @@
-import Vector from 'ol/source/vector';
-import VectorLayer from 'ol/layer/vector';
-import OLCluster from 'ol/source/cluster';
+import Vector from 'ol/source/Vector';
+import VectorLayer from 'ol/layer/Vector';
+import OLCluster from 'ol/source/Cluster';
 import VectorLayerColormap from './vectorlayercolormap';
-import Overlay from 'ol/overlay';
-import Group from 'ol/layer/group';
+import Overlay from 'ol/Overlay';
+import Group from 'ol/layer/Group';
 import * as styles from './styles';
-import OLImage from 'ol/layer/image';
-import ImageStatic from 'ol/source/imagestatic';
+import OLImage from 'ol/layer/Image';
+import ImageStatic from 'ol/source/ImageStatic';
 
 export var overlay = new Overlay({
     element: document.getElementById('none')

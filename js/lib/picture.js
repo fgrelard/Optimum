@@ -1,4 +1,4 @@
-import Point from 'ol/geom/point';
+import Point from 'ol/geom/Point';
 import IsoVist from './isovistsectors2d';
 export default class Picture {
     constructor(filename, position, arc) {

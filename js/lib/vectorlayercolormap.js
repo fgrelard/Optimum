@@ -1,7 +1,6 @@
-import ol from 'ol';
-import VectorLayer from 'ol/layer/vector.js';
-import obj from 'ol/obj.js';
-import Style from 'ol/style/style';
+import VectorLayer from 'ol/layer/Vector.js';
+import * as obj from 'ol/obj.js';
+import Style from 'ol/style/Style';
 
 var LayerType = {
     VectorHeatmap : 'VECTOR_COLORMAP'

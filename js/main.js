@@ -2,28 +2,28 @@ import $ from 'jquery';
 window.$ = $;
 window.jQuery = $;
 
-import Map from 'ol/map';
-import View from 'ol/view';
-import Group from 'ol/layer/group';
-import OSM from 'ol/source/osm';
-import TileLayer from 'ol/layer/tile';
-import proj from 'ol/proj';
-import Point from 'ol/geom/point';
-import Feature from 'ol/feature';
-import LineString from 'ol/geom/linestring';
-import Polygon from 'ol/geom/polygon';
-import extent from 'ol/extent';
-import Select from 'ol/interaction/select';
-import Projection from 'ol/proj/projection';
-import control from 'ol/control';
-import OSMXML from 'ol/format/osmxml';
-import GeoJSON from 'ol/format/geojson';
-import loadingstrategy from 'ol/loadingstrategy';
-import DragBox from 'ol/interaction/dragbox';
-import condition from 'ol/events/condition';
-import plugins from 'ol/plugins';
-import PluginType from 'ol/plugintype';
-import FullScreen from 'ol/control/fullscreen';
+import HeatMap from './lib/heatmap';
+import View from 'ol/View';
+import Group from 'ol/layer/Group';
+import OSM from 'ol/source/OSM';
+import TileLayer from 'ol/layer/Tile';
+import {fromLonLat} from 'ol/proj';
+import Point from 'ol/geom/Point';
+import Feature from 'ol/Feature';
+import LineString from 'ol/geom/LineString';
+import Polygon from 'ol/geom/Polygon';
+import * as extent from 'ol/extent';
+import Select from 'ol/interaction/Select';
+import Projection from 'ol/proj/Projection';
+import * as control from 'ol/control';
+import OSMXML from 'ol/format/OSMXML';
+import GeoJSON from 'ol/format/GeoJSON';
+import * as loadingstrategy from 'ol/loadingstrategy';
+import DragBox from 'ol/interaction/DragBox';
+import {shiftKeyOnly} from 'ol/events/condition';
+// import plugins from 'ol/plugins';
+// import PluginType from 'ol/plugintype';
+import FullScreen from 'ol/control/FullScreen';
 
 import ControlOverlay from 'ol-ext/control/Overlay';
 import Toggle from 'ol-ext/control/Toggle';
@@ -80,10 +80,10 @@ var t = new Toggle(
 
 
 var dragBox = new DragBox({
-    condition: condition.shiftKeyOnly
+    condition: shiftKeyOnly
 });
 
-var map = new Map({
+var map = new HeatMap({
     layers: [
         new Group({
             title: 'Cartes',
@@ -293,7 +293,7 @@ function loadPictures(metadataJSON) {
         if (photo.hasOwnProperty('ImageWidth')) {
             var position = getPosition(photo);
             if (position !== null) {
-                var positionProj = proj.fromLonLat(position);
+                var positionProj = fromLonLat(position);
                 var fileName = photo.SourceFile;
                 var cone = getOrientation(photo, positionProj);
                 var picture = new Picture(fileName, positionProj, cone);
@@ -612,7 +612,7 @@ $(document).ready( function(event) {
 });
 
 
-plugins.register(PluginType.LAYER_RENDERER, VectorLayerColormapRenderer);
+//plugins.register(PluginType.LAYER_RENDERER, VectorLayerColormapRenderer);
 
 overlayGroup.getLayers().push(olClusters);
 overlayGroup.getLayers().push(vectorLayerColormap);

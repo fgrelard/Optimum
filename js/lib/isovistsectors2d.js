@@ -6,8 +6,8 @@
  * @license
  */
 
-import LineString from 'ol/geom/linestring';
-import Polygon from 'ol/geom/polygon';
+import LineString from 'ol/geom/LineString';
+import Polygon from 'ol/geom/Polygon';
 import * as Intersection from './lineintersection';
 import {euclideanDistance} from './distance';
 import Arc from './arc';

@@ -8,7 +8,7 @@ import rbush from 'rbush';
 import {rectanglesIntersect} from '../../../js/lib/lineintersection.js';
 import Dual from '../../../js/lib/polardual.js';
 import DualEuclidean from '../../../js/lib/dual.js';
-import Select from 'ol/interaction/select';
+import Select from 'ol/interaction/Select';
 import DualRtree from '../../../js/lib/dualrtree.js';
 import {sectorsStEtienne2345_r1500, sectorsStEtienne2345_r300,
         sectorsStEtienne} from '../../../js/lib/datastetienne.js';

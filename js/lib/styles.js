@@ -1,16 +1,16 @@
-import Style  from 'ol/style/style';
-import Stroke  from 'ol/style/stroke';
-import Fill  from 'ol/style/fill';
-import Text  from 'ol/style/text';
-import Circle  from 'ol/style/circle';
-import has from 'ol/has';
-import extent from 'ol/extent';
-import ImageStatic from 'ol/source/imagestatic';
-import Overlay from 'ol/overlay';
-import Icon from 'ol/style/icon';
+import Style  from 'ol/style/Style';
+import Stroke  from 'ol/style/Stroke';
+import Fill  from 'ol/style/Fill';
+import Text  from 'ol/style/Text';
+import Circle  from 'ol/style/Circle';
+import {DEVICE_PIXEL_RATIO} from 'ol/has';
+import {getHeight, getWidth} from 'ol/extent';
+import ImageStatic from 'ol/source/ImageStatic';
+import Overlay from 'ol/Overlay';
+import Icon from 'ol/style/Icon';
 import * as Polls from './serverpoll';
 import Photo from 'ol-ext/style/Photo';
-import RegularShape from 'ol/style/regularshape';
+import RegularShape from 'ol/style/RegularShape';
 
 export var pointRadius = 20;
 var styleCache = {};
@@ -243,15 +243,15 @@ export function gradient(arc, resolution) {
     var extent2 = arc.getGeometry().getExtent();
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
-    var pixelRatio = has.DEVICE_PIXEL_RATIO;
+    var pixelRatio = DEVICE_PIXEL_RATIO;
     // Gradient starts on the left edge of each feature, and ends on the right.
     // Coordinate origin is the top-left corner of the extent of the geometry, so
     // we just divide the geometry's extent width by resolution and multiply with
     // pixelRatio to match the renderer's pixel coordinate system.
 
     var x1, x2, y1, y2;
-    var height = extent.getHeight(extent2) / resolution * pixelRatio;
-    var width = extent.getWidth(extent2) / resolution * pixelRatio;
+    var height = getHeight(extent2) / resolution * pixelRatio;
+    var width = getWidth(extent2) / resolution * pixelRatio;
 
     var angle = (arc.getProperties().alpha + arc.getProperties().omega - 180) / 2;
     var angleRad = angle * Math.PI / 180 + Math.PI / 2;

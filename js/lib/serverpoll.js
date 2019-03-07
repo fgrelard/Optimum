@@ -1,7 +1,7 @@
 import Arc from './arc';
-import proj from 'ol/proj';
-import OSMXML from 'ol/format/osmxml';
-import View from 'ol/view';
+import {transformExtent} from 'ol/proj';
+import OSMXML from 'ol/format/OSMXML';
+import View from 'ol/View';
 
 var urlDB = "http://159.84.143.100:8080/";
 
@@ -100,7 +100,7 @@ export function getBuildingSegments(extent2, projection) {
     client.open('POST', 'https://overpass-api.de/api/interpreter');
 
     var epsg4326Extent =
-            proj.transformExtent(extent2, projection, 'EPSG:4326');
+            transformExtent(extent2, projection, 'EPSG:4326');
     var query = '(node(' +
             epsg4326Extent[1] + ',' + epsg4326Extent[0] + ',' +
             epsg4326Extent[3] + ',' + epsg4326Extent[2] +

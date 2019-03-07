@@ -1,8 +1,8 @@
-import dom from 'ol/dom';
+import * as dom from 'ol/dom';
 import $ from 'jquery';
-import render from 'ol/render';
-import Polygon from 'ol/geom/polygon';
-import ImageStatic from 'ol/source/imagestatic';
+import * as render from 'ol/render';
+import Polygon from 'ol/geom/Polygon';
+import ImageStatic from 'ol/source/ImageStatic';
 
 export default class VectorColorMap {
     constructor(vectorSource, map, style, colors = ['#00f', '#0ff', '#0f0', '#ff0', '#f00']) {

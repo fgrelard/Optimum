@@ -1,17 +1,14 @@
-import ol from 'ol';
-import CanvasImageLayerRenderer from 'ol/renderer/canvas/imagelayer.js';
-import LayerType from 'ol/layertype.js';
-import EventType from 'ol/events/eventtype.js';
-import renderCanvas from 'ol/render/canvas.js';
-import events from 'ol/events.js';
-import dom from 'ol/dom';
-import transform from 'ol/transform';
-import ImageStatic from 'ol/source/imagestatic';
-import render from 'ol/render';
-import Polygon from 'ol/geom/polygon';
-import ImageCanvas from 'ol/imagecanvas';
-import Fill from 'ol/style/fill';
-import Style from 'ol/style/style';
+import CanvasImageLayerRenderer from 'ol/renderer/canvas/ImageLayer.js';
+import LayerType from 'ol/LayerType.js';
+import EventType from 'ol/events/EventType.js';
+import {createCanvasContext2D} from 'ol/dom';
+import * as transform from 'ol/transform';
+import ImageStatic from 'ol/source/ImageStatic';
+import * as render from 'ol/render';
+import Polygon from 'ol/geom/Polygon';
+import ImageCanvas from 'ol/ImageCanvas';
+import Fill from 'ol/style/Fill';
+import Style from 'ol/style/Style';
 
 export default class VectorLayerColormapRenderer extends CanvasImageLayerRenderer {
     constructor(imageLayer) {
@@ -24,7 +21,7 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
     createGradient(colors) {
         var width = 1;
         var height = 256;
-        var context = dom.createCanvasContext2D(width, height);
+        var context = createCanvasContext2D(width, height);
 
         var gradient = context.createLinearGradient(0, 0, width, height);
         var step = 1 / (colors.length - 1);
@@ -129,7 +126,7 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
         var t = frameState.coordinateToPixelTransform.slice();
         var resolution = frameState.viewState.resolution;
         var extent = frameState.extent;
-        var context = dom.createCanvasContext2D(width, height);
+        var context = createCanvasContext2D(width, height);
         var canvas = context.canvas;
         var renderer = render.toContext(context);
 
@@ -163,7 +160,7 @@ export default class VectorLayerColormapRenderer extends CanvasImageLayerRendere
 
 VectorLayerColormapRenderer.LIMIT_RESOLUTION = 3;
 
-VectorLayerColormapRenderer['handles'] =  function(type, layer) {
+VectorLayerColormapRenderer['handles'] =  function(layer) {
     return layer.getType() === "VECTOR_COLORMAP";
 };
 

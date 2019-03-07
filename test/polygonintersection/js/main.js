@@ -1,37 +1,33 @@
-import Style  from 'ol/style/style';
-import Stroke  from 'ol/style/stroke';
-import Fill  from 'ol/style/fill';
-import Text  from 'ol/style/text';
-import Circle  from 'ol/style/circle';
-import Map from 'ol/map';
-import MultiPoint from 'ol/geom/multipoint';
-import View from 'ol/view';
-import LayerVector from 'ol/layer/vector';
-import SourceVector from 'ol/source/vector';
-import GeoJSON from 'ol/format/geojson';
-import TileLayer from 'ol/layer/tile';
-import OSM from 'ol/source/osm';
+import Style  from 'ol/style/Style';
+import Stroke  from 'ol/style/Stroke';
+import Fill  from 'ol/style/Fill';
+import Text  from 'ol/style/Text';
+import Circle  from 'ol/style/Circle';
+import MultiPoint from 'ol/geom/MultiPoint';
+import View from 'ol/View';
+import LayerVector from 'ol/layer/Vector';
+import SourceVector from 'ol/source/Vector';
+import GeoJSON from 'ol/format/GeoJSON';
+import TileLayer from 'ol/layer/Tile';
+import OSM from 'ol/source/OSM';
 import Crop from 'ol-ext/filter/Crop';
 import $ from 'jquery';
-import dom from 'ol/dom';
-import transform from 'ol/transform';
-import proj from 'ol/proj';
-import Projection from 'ol/proj/projection';
-import Group from 'ol/layer/group';
+import * as dom from 'ol/dom';
+import * as transform from 'ol/transform';
+import * as proj from 'ol/proj';
+import Projection from 'ol/proj/Projection';
+import Group from 'ol/layer/Group';
 import VectorLayerColormapRenderer from '../../../js/lib/vectorlayercolormaprenderer';
 import VectorLayerColormap from '../../../js/lib/vectorlayercolormap';
-import plugins from 'ol/plugins';
-import PluginType from 'ol/plugintype';
-import LayerImage from 'ol/layer/image';
-import ImageStatic from 'ol/source/imagestatic';
-import EventType from 'ol/events/eventtype';
-import Overlay from 'ol/overlay';
-import render from 'ol/render';
-import Polygon from 'ol/geom/polygon';
-import VectorColorMap from './VectorColorMap';
-import Heatmap from 'ol/layer/heatmap';
-import Feature from 'ol/feature';
-import Point from 'ol/geom/point';
+import Heatmap from '../../../js/lib/heatmap';
+import LayerImage from 'ol/layer/Image';
+import ImageStatic from 'ol/source/ImageStatic';
+import EventType from 'ol/events/EventType';
+import Overlay from 'ol/Overlay';
+import * as render from 'ol/render';
+import Polygon from 'ol/geom/Polygon';
+import Feature from 'ol/Feature';
+import Point from 'ol/geom/Point';
 
 var styles = [
     /* We are using two different styles for the polygons:
@@ -136,8 +132,6 @@ var imageLayer = new LayerImage();
 
 
 
-plugins.register(PluginType.LAYER_RENDERER, VectorLayerColormapRenderer);
-
 
 var colors = ['#00f', '#0ff', '#0f0', '#ff0', '#f00'];
 var gradient = createGradient(colors);
@@ -168,13 +162,8 @@ var firstCoordinates = new SourceVector({
     features: coordinates
 });
 
-var heatmap = new Heatmap({
-    source: firstCoordinates,
-    radius: 50,
-    blur: 50
-});
 
-var map = new Map({
+var map = new Heatmap({
     layers: [osm, imageLayer, vectorLayerColormap],
     target: 'map',
     view: new View({
