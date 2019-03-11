@@ -300,3 +300,20 @@ export function rectanglesIntersect(a, b) {
     else
         return false;
 }
+
+export function rectangleContains(r1, r2) {
+    var r1minX = r1[0];
+    var r1minY = r1[1];
+    var r1maxX = r1[2];
+    var r1maxY = r1[3];
+
+    var r2minX = r2[0];
+    var r2minY = r2[1];
+    var r2maxX = r2[2];
+    var r2maxY = r2[3];
+
+    return (r2minX >= r1minX && r2minX <= r1maxX &&
+            r2maxX >= r1minX && r2maxX <= r1maxX &&
+            r2minY >= r1minY && r2minY <= r1maxY &&
+            r2maxY >= r1minY && r2maxY <= r1maxY);
+}
