@@ -1,6 +1,6 @@
 /**
  * @fileOverview Isovist computation inspired from Suleiman et al, A New Algorithm for 3D Isovists.
- * Space is delimited by a set of segments, and visibility can be determined by circular sectors associated with these segements
+ * Space is delimited by a set of segments, and visibility can be determined by circular sectors associated with these segments
  * @name isovistsectors2d.js
  * @author Florent Grelard
  * @license

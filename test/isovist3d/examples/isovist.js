@@ -34,9 +34,9 @@ import Select from 'ol/interaction/Select';
 import GeoJSON from 'ol/format/GeoJSON';
 import {bbox} from 'ol/loadingstrategy';
 import Arc from '../../../js/lib/arc';
-//import IsoVist from '../../Optimum/js/lib/isovistsectors2d';
 import $ from 'jquery';
 import {segmentIntersection} from '../../../js/lib/lineintersection';
+import IsoVist from '../../../js/lib/isovistsectors3d';
 
 var geojson;
 
@@ -66,6 +66,18 @@ function readTextFile(file, map, vector)
                     geojsonNew.push(new Feature(new Polygon([array])));
                 }
                 vector.getSource().addFeatures(geojsonNew);
+                var arc = new Arc(position, radius, alpha, omega);
+                arc.computeGeometry();
+                var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
+
+                var visibleSegments = isovist.isovist();
+                for (var i = 0; i < visibleSegments.length
+                     ; i++) {
+                    var poly = visibleSegments[i];
+                    featuresLine.push(new Feature({geometry : poly}));
+                }
+                lines.getSource().clear();
+                lines.getSource().addFeatures(featuresLine);
             }
         }
     };
@@ -80,7 +92,7 @@ var featuresArc=[];
 var features=[];
 var featuresLine =[];
 var alpha = 190;
-var omega = 229.6;
+var omega = 250;
 var radius = 300;
 var position = [739885.8194006054, 5905880.253554305 ];
 position = [739800.8194006054, 5906000.253554305];
@@ -199,17 +211,17 @@ var styles = {
             width: 1
         }),
         fill: new Fill({
-            color: 'rgba(255, 255, 0, 0.5)'
+            color: 'rgba(255, 255, 0, 0.1)'
         })
     }),
     'Polygon': new Style({
         stroke: new Stroke({
             color: 'blue',
             lineDash: [4],
-            width: 3
+            width: 2
         }),
         fill: new Fill({
-            color: 'rgba(0, 0, 255, 0.1)'
+            color: 'rgba(0, 0, 255, 0.05)'
         })
     }),
     'GeometryCollection': new Style({
@@ -243,104 +255,14 @@ var styleFunction = function(feature) {
     return styles[feature.getGeometry().getType()];
 };
 
- var geojsonObject = {
-        'type': 'FeatureCollection',
-        'crs': {
-          'type': 'name',
-          'properties': {
-            'name': 'EPSG:3857'
-          }
-        },
-        'features': [{
-          'type': 'Feature',
-          'geometry': {
-            'type': 'Point',
-            'coordinates': [0, 0]
-          }
-        }, {
-          'type': 'Feature',
-          'geometry': {
-            'type': 'LineString',
-            'coordinates': [[4e6, -2e6], [8e6, 2e6]]
-          }
-        }, {
-          'type': 'Feature',
-          'geometry': {
-            'type': 'LineString',
-            'coordinates': [[4e6, 2e6], [8e6, -2e6]]
-          }
-        }, {
-          'type': 'Feature',
-          'geometry': {
-            'type': 'Polygon',
-            'coordinates': [[[-5e6, -1e6], [-4e6, 1e6], [-3e6, -1e6]]]
-          }
-        }, {
-          'type': 'Feature',
-          'geometry': {
-            'type': 'MultiLineString',
-            'coordinates': [
-              [[-1e6, -7.5e5], [-1e6, 7.5e5]],
-              [[1e6, -7.5e5], [1e6, 7.5e5]],
-              [[-7.5e5, -1e6], [7.5e5, -1e6]],
-              [[-7.5e5, 1e6], [7.5e5, 1e6]]
-            ]
-          }
-        }, {
-          'type': 'Feature',
-          'geometry': {
-            'type': 'MultiPolygon',
-            'coordinates': [
-              [[[-5e6, 6e6], [-5e6, 8e6], [-3e6, 8e6], [-3e6, 6e6]]],
-              [[[-2e6, 6e6], [-2e6, 8e6], [0, 8e6], [0, 6e6]]],
-              [[[1e6, 6e6], [1e6, 8e6], [3e6, 8e6], [3e6, 6e6]]]
-            ]
-          }
-        }, {
-          'type': 'Feature',
-          'geometry': {
-            'type': 'GeometryCollection',
-            'geometries': [{
-              'type': 'LineString',
-              'coordinates': [[-5e6, -5e6], [0, -5e6]]
-            }, {
-              'type': 'Point',
-              'coordinates': [4e6, -5e6]
-            }, {
-              'type': 'Polygon',
-              'coordinates': [[[1e6, -6e6], [2e6, -4e6], [3e6, -6e6]]]
-            }],
-          }
-        }]
-      };
 
-var fs = (new GeoJSON()).readFeatures(geojsonObject);
-
-var vectorSource = new Vector({
-    features: fs
-});
+var vectorSource = new Vector();
 
 
-
-// var vectorSource = new Vector({
-//     features: geojson
-// });
 
 var vector = new VectorLayer({
     source: vectorSource,
-    style: styleFunction// function(feature) {
-    //     for (var key in styles) {
-    //         var value = feature.get(key);
-    //         if (value || value !== undefined) {
-    //             for (var regexp in styles[key]) {
-    //                 if (new RegExp(regexp).test(value)) {
-    //                     return styles[key][regexp];
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return null;
-    // }
+    style: styleFunction
 });
 //vector.set('altitudeMode', 'clampToGround');
 
@@ -348,16 +270,11 @@ var vector = new VectorLayer({
 
 map = new Map({
     layers: [
-        new Tile({
-            source: new OSM()
-        })
+        // new Tile({
+        //     source: new OSM()
+        // })
     ],
     target: 'map',
-    // controls: defaults({
-    //     attributionOptions: {
-    //         collapsible: false
-    //     }
-    // }),
     view: new View({
         center: position,
         maxZoom: 19,
@@ -367,11 +284,8 @@ map = new Map({
 
 var extent2 = map.getView().calculateExtent(map.getSize());
 var polygon = new Polygon([[[position[0], position[1], 600], [position[0]+100, position[1], 700], [position[0], position[1]+100, 800]]]);
-console.log(polygon);
-console.log(arc.geometry);
-//var featureArc = new Feature(arc);
+
 var featureArc = new Feature(arc);
-//featureArc.position = position;
 featuresArc.push(featureArc);
 
 features.push(new Feature(new Point([position[0], position[1], 0])));
@@ -448,7 +362,8 @@ var lines = new VectorLayer({
     source: lineSource,
     style: new Style({
         stroke : new Stroke({
-            color: '#FFFF00'
+            color: '#FF0000',
+            width: 3
         })// ,
         // fill : new Fill({
         //     color: "#33CC9977"
@@ -495,7 +410,6 @@ var modelMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(
 );
 
 var spherical = Cesium.Spherical.fromCartesian3(cartesianCoords);
-console.log(Cesium.Spherical.normalize(spherical));
 
 
 // var model = scene.primitives.add(Cesium.Model.fromGltf({
@@ -526,18 +440,6 @@ select.on('select', function(e) {
     e.selected.filter(function(feature) {
         console.log(feature);
     });
-});
-
-
-var pointOfInterest = Cesium.Cartographic.fromDegrees(deg[0], deg[1], 0);
-
-// Sample the terrain (async) and write the answer to the console.
-Cesium.sampleTerrainMostDetailed(scene.terrainProvider, [ pointOfInterest ])
-    .then(function(samples) {
-        for (let s of samples) {
-            var cartesianPositions = Cesium.Ellipsoid.WGS84.cartographicArrayToCartesianArray(samples);
-            console.log('Height in meters is: ' + s.height);
-        }
 });
 
 export default exports;
