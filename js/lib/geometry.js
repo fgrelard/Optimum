@@ -58,14 +58,12 @@ export function project( p, a, b ) {
 
 
 export function sphericalToCartesian(spherical) {
-
-    var phi = ( Math.PI/2 - spherical.phi ) ;
-    var theta = ( spherical.theta + Math.PI ) ;
-
+    var phi = spherical.phi;
+    var theta = spherical.theta;
     return [
-        -( spherical.norm * Math.cos(phi) * Math.sin(theta)),
-        spherical.norm * Math.sin(phi),
-        -spherical.norm * Math.cos(phi) * Math.cos(theta),
+        spherical.norm * Math.sin(phi) * Math.cos(theta),
+        spherical.norm * Math.sin(phi) * Math.sin(theta),
+        spherical.norm * Math.cos(phi)
     ];
 
 }
@@ -80,9 +78,8 @@ export function cartesianToSpherical( coord ) {
     var phi = 0;
 	if ( radius !== 0 ) {
         theta = Math.atan2( y, x );
-        var clampedRatio = Math.min(Math.max((y/radius), -1), 1);
+        var clampedRatio = Math.min(Math.max((z/radius), -1), 1);
 		phi = Math.acos( clampedRatio );
-        phi = Math.atan2( z, radius);
     }
 	return {theta: theta, phi: phi, norm: radius};
 }

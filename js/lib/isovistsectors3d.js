@@ -111,6 +111,7 @@ export default class IsoVist3D extends IsoVist2D {
                                    coord[1] - this.arc.center[1],
                                    coord[2]];
             var sphericalNorm = cartesianToSpherical(coordTranslated);
+            var c = sphericalToCartesian(sphericalNorm);
             sphericals.push(sphericalNorm);
         }
         return sphericals;
@@ -177,80 +178,6 @@ export default class IsoVist3D extends IsoVist2D {
     }
 
 
-
-
-    segmentPartVisible(intersection, segment, arc) {
-        var segStart = segment.getFirstCoordinate();
-        var segEnd = segment.getLastCoordinate();
-
-        var norm = euclideanDistance(segStart, segEnd);
-
-        var distStart = euclideanDistance(intersection, segStart);
-        var distEnd = euclideanDistance(intersection, segEnd);
-
-        var middle = [(intersection.x + (segStart[0] - segEnd[0]) / norm), (intersection.y + (segStart[1] - segEnd[1]) / norm) ];
-        var middle2 = [(intersection.x + (segEnd[0] - segStart[0]) / norm), (intersection.y + (segEnd[1] - segStart[1]) / norm) ];
-        var p;
-        if (arc.geometry.intersectsCoordinate(middle))
-            p = segStart;
-        else if (arc.geometry.intersectsCoordinate(middle2))
-            p = segEnd;
-        else {
-            p = [intersection.x, intersection.y];
-        }
-        var visibleSegment = new LineString([[intersection.x, intersection.y], p]);
-        return visibleSegment;
-    }
-
-
-    partiallyVisibleSegments(angles, segment) {
-
-        var visibleSegment = null;
-        var position = this.arc.center;
-        var visibleSegments = [];
-        var that = this;
-        var ps1 = segment.getFirstCoordinate();
-        var ps2 = segment.getLastCoordinate();
-
-        for (let angle of angles) {
-            if (!angle.geometry)
-                angle.computeGeometry();
-            var r = that.arc.radius;
-            var alphaRad = angle.alpha * Math.PI / 180;
-            var omegaRad = angle.omega * Math.PI / 180;
-            var p1 = [position[0] + r * Math.cos(alphaRad),
-                      position[1] + r * Math.sin(alphaRad)];
-            var p2 = [position[0] + r * Math.cos(omegaRad),
-                      position[1] + r * Math.sin(omegaRad)];
-            var s1 = new LineString([position, p1]);
-            var s2 = new LineString([position, p2]);
-            var i1 = Intersection.segmentsIntersect(segment, s1);
-            var i2 = Intersection.segmentsIntersect(segment, s2);
-            if (i1 || i2) {
-                if (i1 && i2) {
-                    visibleSegment = new LineString([[i1.x, i1.y],
-                                                     [i2.x, i2.y]]);
-                }
-                else if (i1) {
-                    visibleSegment = that.segmentPartVisible(i1, segment, angle);
-                }
-                else if (i2) {
-                    visibleSegment = that.segmentPartVisible(i2, segment, angle);
-                }
-                visibleSegments.push(visibleSegment);
-            }
-            else {
-                var i3 = angle.geometry.intersectsCoordinate(ps1);
-                var i4 = angle.geometry.intersectsCoordinate(ps2);
-                if (i3 && i4) {
-                    visibleSegments.push(segment);
-                }
-            }
-        }
-
-        return (visibleSegments.length > 0) ? [segment, visibleSegments] : null;
-    }
-
     sortTheta(angles) {
         var tmpAngles = angles.slice();
         tmpAngles.sort(function(a, b) {
@@ -300,21 +227,6 @@ export default class IsoVist3D extends IsoVist2D {
         return [minX, maxX];
     }
 
-    recomputeMinMaxTheta(angles, minMaxPhi) {
-        var minPhi = minMaxPhi[0];
-        var maxPhi = minMaxPhi[1];
-        let containedAngles = [];
-        for (let angle of angles) {
-            let angleMinPhi = angle.getExtent()[1];
-            let angleMaxPhi = angle.getExtent()[3];
-            if (angleMinPhi >= minPhi && angleMinPhi <= maxPhi &&
-                angleMaxPhi >= minPhi && angleMaxPhi <= maxPhi) {
-                containedAngles.push(angle);
-            }
-        }
-        var minMaxTheta = this.minMaxAngle(containedAngles, true);
-        return minMaxTheta;
-    }
 
     polygonFromExtent(extent) {
         var minX = extent[0];
@@ -361,14 +273,12 @@ export default class IsoVist3D extends IsoVist2D {
             }
             if (thetaMaxCurrent > maxX) {
                 maxX = thetaMaxCurrent;
-                // locallyIntersecting.push(current);
             }
             if (phiMaxCurrent > maxY) {
                 maxY = phiMaxCurrent;
             }
             if (maxX < thetaMinNext ||
                 maxY < phiMinNext) {
-                // let minMaxPhi = this.minMaxAngle(locallyIntersecting);
                 let newExtent = boundingExtent([[minX, minY], [maxX, maxY]]);
                 let newPolygon = this.polygonFromExtent(newExtent);
                 trimmedArray.push(newPolygon);
@@ -420,42 +330,48 @@ export default class IsoVist3D extends IsoVist2D {
     }
 
 
-    visibleBlockingSegments(blockingSegments) {
+    partiallyVisiblePolygon(partialParts) {
+        for (let partialPart of partialParts) {
+//            sphericalToCartesian(partialP);
+        }
+    }
+
+    visibleBlockingSegments(blockingPolyAngles) {
         var that  = this;
         var visibleSegments = [];
         var position = this.arc.center;
 
         //Computing blocking segments hidden by other segments
-        blockingSegments.sort(function(a,b) {
-            return euclideanDistance(a.getClosestPoint(position), position) - euclideanDistance(b.getClosestPoint(position), position);
+        blockingPolyAngles.sort(function(a,b) {
+            return that.polygonToMinDistance(a.polygon) - that.polygonToMinDistance(b.polygon);
         });
-        var blockingAngles = [];
-        var freeSegments = [];
-        var freeVisionAngles = [this.arc];
-        for (let segment of blockingSegments) {
-            var blockingAngle = that.visionBlockingArc(segment);
-            var partial = false;
-            for (let angle of freeVisionAngles) {
-                if ((blockingAngle.alpha < angle.alpha && blockingAngle.omega <= angle.omega && blockingAngle.omega > angle.alpha) ||
-                    (blockingAngle.omega > angle.omega && blockingAngle.alpha >= angle.alpha && blockingAngle.alpha < angle.omega)) {
-                    var visibleSegment = that.partiallyVisibleSegments(freeVisionAngles, segment);
-                    if (visibleSegment)
-                        Array.prototype.push.apply(visibleSegments, visibleSegment[1]);
-                    partial = true;
+        var visionField = [];
+        for (let polyAngle of blockingPolyAngles) {
+            let angleCurrent = polyAngle.angle;
+            let extentCurrent = angleCurrent.getExtent();
+            let polyCurrent = polyAngle.polygon;
+            let isPartial = false;
+
+            let partialParts = [];
+            for (let angleVision in visionField) {
+                let extentVision = angleVision.getExtent();
+                let intersection = getIntersection(extentCurrent, extentVision);
+                if (angleCurrent.intersectsExtent(extentVision) &&
+                    angleVision.intersectsExtent(extentCurrent) &&
+                    getArea(intersection) > 0)  {
+                    isPartial = true;
+                    partialParts.push(intersection);
                 }
             }
-            var p1 = segment.getFirstCoordinate();
-            var p2 = segment.getLastCoordinate();
-            if (!partial && that.isInsideArc(segment))
-            {
-                Array.prototype.push.apply(visibleSegments, [segment]);
+            if (isPartial) {
+                this.partiallyVisiblePolygon(partialParts);
+            } else {
+                visibleSegments.push(polyAngle.polygon);
             }
+            visionField.push(polyAngle.angle);
+            visionField = this.mergeOverlappingAngles(visionField);
 
-            blockingAngles.push(blockingAngle);
-            var trimmedBlockingAngles = that.mergeOverlappingAngles(blockingAngles);
-            freeVisionAngles = that.freeAngles(trimmedBlockingAngles);
         }
-
         return visibleSegments;
     }
 
