@@ -61,7 +61,7 @@ function readTextFile(file, map, vector)
                     let coords = feature.getGeometry().flatCoordinates;
                     var array = [];
                     var height = getRandomArbitrary(10,30);
-                    height = 20;
+                    // height = 20;
                     for (let index = 0; index < coords.length; index+=2) {
                         array.push([coords[index], coords[index+1], height]);
                     }

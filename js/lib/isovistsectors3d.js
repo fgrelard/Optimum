@@ -391,7 +391,6 @@ export default class IsoVist3D extends IsoVist2D {
                 trimmedArray.push(newPolygon);
             }
         }
-        console.log(trimmedArray.map(elem => elem.getExtent()));
         return trimmedArray;
     }
 
@@ -402,7 +401,7 @@ export default class IsoVist3D extends IsoVist2D {
         var extent = angle.getExtent();
         for (let angle2 of blockingPolyAngles) {
             var extent2 = angle2.getExtent();
-            if (angle.intersectsExtent(extent2)) {
+            if (Intersection.rectangleContains(extent2,extent)) {
                 isFree = false;
             }
         }
@@ -412,32 +411,12 @@ export default class IsoVist3D extends IsoVist2D {
     freeSegments(blockingPolyAngles, polyAngles) {
         var freeSegments = [];
         var trimmedBlockingAngles = this.mergeOverlappingAngles(blockingPolyAngles.map(bAngle => bAngle.angle));
-        console.log(trimmedBlockingAngles);
-        // console.log(blockingPolyAngles.map(polyAngle => polyAngle.angle.getExtent()));
-        // console.log(trimmedBlockingAngles.map(angle => angle.getExtent()));
         for (let polyAngle of polyAngles) {
             var isFree = this.isFree(polyAngle, trimmedBlockingAngles);
             if (blockingPolyAngles.indexOf(polyAngle) === -1 && isFree)
                 freeSegments.push(polyAngle);
         }
         return freeSegments;
-        // var blockingAngles = [];
-        // var freeSegments = [];
-        // var that = this;
-        // for (let segment of blockingSegments) {
-        //     var blockingAngle = that.visionBlockingArc(segment);
-        //     blockingAngles.push(blockingAngle);
-        // }
-        // var trimmedBlockingAngles = this.mergeOverlappingAngles(blockingAngles);
-        // var freeVisionAngles = this.freeAngles(trimmedBlockingAngles);
-        // for (let segment of segments) {
-        //     if (blockingSegments.indexOf(segment) === -1) {
-        //         var visibleSegment = that.partiallyVisibleSegments(freeVisionAngles, segment);
-        //         if (visibleSegment && that.isInsideArc(visibleSegment[0]))
-        //             freeSegments.push(visibleSegment);
-        //     }
-        // }
-        // return freeSegments;
     }
 
 
@@ -535,19 +514,26 @@ export default class IsoVist3D extends IsoVist2D {
     isovist() {
         var visibleSegments = [];
         var segments = this.segmentsIntersectingFOV();
+        var position = this.arc.center;
 
         var polygons = this.segmentsToPolygons(segments);
         var polyAngles = this.polygonsToAngle(polygons);
-        var blockingPoly = this.blockingSegments(polyAngles);
-        var toMerge = [this.polygonFromExtent([0,0, 10,10]),
-                       this.polygonFromExtent([2,-1, 9, 12]),
-                       this.polygonFromExtent([3,1,11, 18]),
-                       this.polygonFromExtent([12,19,18,27])];
+        var blockingSegments = this.blockingSegments(polyAngles);
         //var trimmed = this.mergeOverlappingAngles(toMerge);
-        var freeSegments = this.freeSegments(blockingPoly, polyAngles);
-        var onlyPoly = freeSegments.map(elem => elem.polygon);
+        var freeSegments = this.freeSegments(blockingSegments, polyAngles);
+        var partiallyVisible = [];
+        var that = this;
+        while (freeSegments.length > 0) {
+            freeSegments.sort(function(a,b) {
+                return that.polygonToMinDistance(a.polygon) - that.polygonToMinDistance(b.polygon);
+            });
+            blockingSegments.push(freeSegments[0]);
+            freeSegments = this.freeSegments(blockingSegments, polyAngles);
+        }
+
+        var onlyPoly = blockingSegments.map(elem => elem.polygon);
         //var onlyPoly = trimmed;
-        onlyPoly = blockingPoly.map(elem => elem.polygon);
+        //onlyPoly = blockingPoly.map(elem => elem.polygon);
         //onlyPoly = polyAngles.map(elem => elem.angle);
         console.log(onlyPoly.map(elem => elem.flatCoordinates));
         return onlyPoly;
