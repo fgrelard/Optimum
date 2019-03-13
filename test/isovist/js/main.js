@@ -284,7 +284,7 @@ var lines = new VectorLayer({
 
 
 map.addLayer(clusters);
-map.addLayer(arcs);
+//map.addLayer(arcs);
 map.addLayer(lines);
 
 var select = new Select();

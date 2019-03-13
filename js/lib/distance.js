@@ -5,5 +5,9 @@
  * @returns {Number} the euclidean distance between point 1 and point 2
  */
 export function euclideanDistance(point1, point2) {
-    return Math.sqrt(Math.pow((point1[0]-point2[0]), 2) + Math.pow((point1[1]-point2[1]), 2));
+    var sumDiffSq = 0;
+    for (var i = 0; i < point1.length; i++) {
+        sumDiffSq += Math.pow((point1[i] - point2[i]), 2);
+    }
+    return Math.sqrt(sumDiffSq);
 }

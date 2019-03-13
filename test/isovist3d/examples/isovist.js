@@ -28,7 +28,7 @@ import Text  from 'ol/style/Text';
 import LineString from 'ol/geom/LineString';
 import Polygon from 'ol/geom/Polygon';
 import Tile from 'ol/layer/Tile.js';
-
+import {getRandomArbitrary} from '../../../js/lib/randomfeatures';
 import {defaults} from 'ol/control';
 import Select from 'ol/interaction/Select';
 import GeoJSON from 'ol/format/GeoJSON';
@@ -60,8 +60,10 @@ function readTextFile(file, map, vector)
                 for (let feature of geojson) {
                     let coords = feature.getGeometry().flatCoordinates;
                     var array = [];
+                    var height = getRandomArbitrary(10,30);
+                    height = 20;
                     for (let index = 0; index < coords.length; index+=2) {
-                        array.push([coords[index], coords[index+1], 20]);
+                        array.push([coords[index], coords[index+1], height]);
                     }
                     geojsonNew.push(new Feature(new Polygon([array])));
                 }

@@ -55,3 +55,34 @@ export function project( p, a, b ) {
     var x = x1 + u * px, y = y1 + u * py;
     return [x, y];
 }
+
+
+export function sphericalToCartesian(spherical) {
+
+    var phi = ( Math.PI/2 - spherical.phi ) ;
+    var theta = ( spherical.theta + Math.PI ) ;
+
+    return [
+        -( spherical.norm * Math.cos(phi) * Math.sin(theta)),
+        spherical.norm * Math.sin(phi),
+        -spherical.norm * Math.cos(phi) * Math.cos(theta),
+    ];
+
+}
+
+
+export function cartesianToSpherical( coord ) {
+    var x = coord[0];
+    var y = coord[1];
+    var z = coord[2];
+    var radius = Math.sqrt( x * x + y * y + z * z );
+    var theta = 0;
+    var phi = 0;
+	if ( radius !== 0 ) {
+        theta = Math.atan2( y, x );
+        var clampedRatio = Math.min(Math.max((y/radius), -1), 1);
+		phi = Math.acos( clampedRatio );
+        phi = Math.atan2( z, radius);
+    }
+	return {theta: theta, phi: phi, norm: radius};
+}

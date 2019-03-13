@@ -10,10 +10,11 @@ import LineString from 'ol/geom/LineString';
 import Polygon from 'ol/geom/Polygon';
 import * as Intersection from './lineintersection';
 import {euclideanDistance} from './distance';
-import {boundingExtent, containsExtent} from 'ol/extent';
+import {boundingExtent, containsExtent, intersects, getIntersection, getArea} from 'ol/extent';
 import Arc from './arc';
 import IsoVist2D from './isovistsectors2d.js';
 import {toLonLat} from 'ol/proj';
+import {cartesianToSpherical, sphericalToCartesian} from './geometry';
 
 class PolygonToAngle {
     constructor(polygon, angle) {
@@ -109,10 +110,7 @@ export default class IsoVist3D extends IsoVist2D {
             var coordTranslated = [coord[0] - this.arc.center[0],
                                    coord[1] - this.arc.center[1],
                                    coord[2]];
-            var r = euclideanDistance(coord, this.arc.center);
-            var theta = Math.atan2(coordTranslated[1],r);
-            var phi = Math.atan2(coordTranslated[0], -coordTranslated[2]);
-            var sphericalNorm = {theta: theta, phi: phi, norm: r};
+            var sphericalNorm = cartesianToSpherical(coordTranslated);
             sphericals.push(sphericalNorm);
         }
         return sphericals;
@@ -151,27 +149,26 @@ export default class IsoVist3D extends IsoVist2D {
 
 
     isNonBlocking(polyAngle, polyAngles) {
-        //nonIntersecting.push(polyAngle);
         var poly = polyAngle.polygon;
         var angle = polyAngle.angle;
         var extent = angle.getExtent();
         var intersecting = [];
         var isBlocking = true;
         for (let j = 0; j < polyAngles.length; j++) {
-            // if (i == j) continue;
             var polyAngle2 = polyAngles[j];
             var poly2 = polyAngle2.polygon;
             var angle2 = polyAngle2.angle;
             var extent2 = angle2.getExtent();
 
-            if (angle.intersectsExtent(extent2) || angle2.intersectsExtent(extent)) {
-                //nonIntersecting.push(polyAngle2);
-                intersecting.push(poly2);
+            if (angle.intersectsExtent(extent2) &&
+                angle2.intersectsExtent(extent) &&
+                getArea(getIntersection(extent, extent2)) > 0) {
+                intersecting.push(polyAngle2);
             }
         }
+        var minDCurrent = this.polygonToMinDistance(poly);
         for (let e of intersecting) {
-            var minDCurrent = this.polygonToMinDistance(poly);
-            var minDOther = this.polygonToMinDistance(e);
+            var minDOther = this.polygonToMinDistance(e.polygon);
             if (minDOther < minDCurrent) {
                 isBlocking = false;
             }
@@ -260,9 +257,17 @@ export default class IsoVist3D extends IsoVist2D {
             let extentA = a.getExtent();
             let extentB = b.getExtent();
             let thetaMinA = extentA[0];
+            let phiMinA = extentA[1];
             let thetaMaxA = extentA[2];
+            let phiMaxA = extentA[3];
             let thetaMinB = extentB[0];
+            let phiMinB = extentB[1];
             let thetaMaxB = extentB[2];
+            let phiMaxB = extentB[3];
+            if (phiMinA === phiMinB && thetaMaxA === thetaMaxB && thetaMinA === thetaMinB)
+                return phiMaxA - phiMaxB;
+            if (thetaMaxA === thetaMaxB && thetaMinA === thetaMinB)
+                return phiMinA - phiMinB;
             if (thetaMinA === thetaMinB)
                 return thetaMaxA - thetaMaxB;
             return thetaMinA - thetaMinB;
@@ -339,32 +344,56 @@ export default class IsoVist3D extends IsoVist2D {
             let extentCurrent = current.getExtent();
             let extentNext = next.getExtent();
             let thetaMinCurrent = extentCurrent[0];
+            let phiMinCurrent = extentCurrent[1];
             let thetaMaxCurrent = extentCurrent[2];
+            let phiMaxCurrent = extentCurrent[3];
 
             let thetaMinNext = extentNext[0];
+            let phiMinNext = extentNext[1];
             let thetaMaxNext = extentNext[2];
+            let phiMaxNext = extentNext[3];
             if (i === 0) {
                 minX = thetaMinCurrent;
+                minY = phiMinCurrent;
+            }
+            if (minY > phiMinCurrent) {
+                minY = phiMinCurrent;
             }
             if (thetaMaxCurrent > maxX) {
                 maxX = thetaMaxCurrent;
-                locallyIntersecting.push(current);
+                // locallyIntersecting.push(current);
             }
-            if (maxX < thetaMinNext || i === sortedAngles.length - 2) {
-                let minMaxPhi = this.minMaxAngle(locallyIntersecting);
-                let minMaxTheta = this.recomputeMinMaxTheta(angles, minMaxPhi);
-                minMaxTheta = [minX, maxX];
-                let newExtent = boundingExtent([[minMaxTheta[0], minMaxPhi[0]], [minMaxTheta[1], minMaxPhi[1]]]);
+            if (phiMaxCurrent > maxY) {
+                maxY = phiMaxCurrent;
+            }
+            if (maxX < thetaMinNext ||
+                maxY < phiMinNext) {
+                // let minMaxPhi = this.minMaxAngle(locallyIntersecting);
+                let newExtent = boundingExtent([[minX, minY], [maxX, maxY]]);
                 let newPolygon = this.polygonFromExtent(newExtent);
                 trimmedArray.push(newPolygon);
                 minX = thetaMinNext;
+                minY = phiMinNext;
                 locallyIntersecting = [];
             }
+            if (i === sortedAngles.length - 2) {
+                if (maxX < thetaMaxNext) {
+                    maxX = thetaMaxNext;
+                }
+                if (maxY < phiMaxNext) {
+                    maxY = phiMaxNext;
+                }
+                if (minY > phiMinNext) {
+                    minY = phiMinNext;
+                }
+                let newExtent = boundingExtent([[minX, minY], [maxX, maxY]]);
+                let newPolygon = this.polygonFromExtent(newExtent);
+                trimmedArray.push(newPolygon);
+            }
         }
+        console.log(trimmedArray.map(elem => elem.getExtent()));
         return trimmedArray;
     }
-
-
 
     isFree(polyAngle, blockingPolyAngles) {
         var isFree = true;
@@ -373,22 +402,22 @@ export default class IsoVist3D extends IsoVist2D {
         var extent = angle.getExtent();
         for (let angle2 of blockingPolyAngles) {
             var extent2 = angle2.getExtent();
-            if (Intersection.rectangleContains(extent2, extent)) {
+            if (angle.intersectsExtent(extent2)) {
                 isFree = false;
             }
         }
         return isFree;
     }
 
-
     freeSegments(blockingPolyAngles, polyAngles) {
         var freeSegments = [];
         var trimmedBlockingAngles = this.mergeOverlappingAngles(blockingPolyAngles.map(bAngle => bAngle.angle));
-        console.log(blockingPolyAngles.map(polyAngle => polyAngle.angle.getExtent()));
-        console.log(trimmedBlockingAngles.map(angle => angle.getExtent()));
+        console.log(trimmedBlockingAngles);
+        // console.log(blockingPolyAngles.map(polyAngle => polyAngle.angle.getExtent()));
+        // console.log(trimmedBlockingAngles.map(angle => angle.getExtent()));
         for (let polyAngle of polyAngles) {
             var isFree = this.isFree(polyAngle, trimmedBlockingAngles);
-            if (isFree)
+            if (blockingPolyAngles.indexOf(polyAngle) === -1 && isFree)
                 freeSegments.push(polyAngle);
         }
         return freeSegments;
@@ -509,10 +538,18 @@ export default class IsoVist3D extends IsoVist2D {
 
         var polygons = this.segmentsToPolygons(segments);
         var polyAngles = this.polygonsToAngle(polygons);
-        var inters = this.blockingSegments(polyAngles);
-        var freeSegments = this.freeSegments(inters, polyAngles);
+        var blockingPoly = this.blockingSegments(polyAngles);
+        var toMerge = [this.polygonFromExtent([0,0, 10,10]),
+                       this.polygonFromExtent([2,-1, 9, 12]),
+                       this.polygonFromExtent([3,1,11, 18]),
+                       this.polygonFromExtent([12,19,18,27])];
+        //var trimmed = this.mergeOverlappingAngles(toMerge);
+        var freeSegments = this.freeSegments(blockingPoly, polyAngles);
         var onlyPoly = freeSegments.map(elem => elem.polygon);
-        console.log(onlyPoly);
+        //var onlyPoly = trimmed;
+        onlyPoly = blockingPoly.map(elem => elem.polygon);
+        //onlyPoly = polyAngles.map(elem => elem.angle);
+        console.log(onlyPoly.map(elem => elem.flatCoordinates));
         return onlyPoly;
 
 
