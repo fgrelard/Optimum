@@ -98,7 +98,7 @@ var omega = 250;
 var radius = 300;
 var position = [739885.8194006054, 5905880.253554305 ];
 position = [739800.8194006054, 5906000.253554305];
-position = [ 489298.32814487105, 5688013.78184738, 0];
+position = [ 489298.32814487105, 5688013.78184738, 10];
 var arc = new Arc(position, radius, alpha, omega);
 arc.computeGeometry();
 
