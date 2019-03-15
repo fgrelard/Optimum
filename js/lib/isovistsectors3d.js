@@ -14,7 +14,7 @@ import {boundingExtent, containsExtent, intersects, getIntersection, getArea} fr
 import Arc from './arc';
 import IsoVist2D from './isovistsectors2d.js';
 import {toLonLat} from 'ol/proj';
-import {cartesianToSpherical, sphericalToCartesian} from './geometry';
+import {cartesianToSpherical, sphericalToCartesian, planeFromThreePoints, intersectionLinePlane} from './geometry';
 
 class PolygonToAngle {
     constructor(polygon, angle) {
@@ -103,17 +103,34 @@ export default class IsoVist3D extends IsoVist2D {
         return polygons;
     }
 
+    translatePolygon(polygon, reference) {
+        let coordsTranslated = [];
+        for (let coord of polygon.getCoordinates()[0]) {
+            var coordTranslated = [coord[0] - reference[0],
+                                   coord[1] - reference[1],
+                                   coord[2] - reference[2]];
+            coordsTranslated.push(coordTranslated);
+        }
+        return new Polygon([coordsTranslated]);
+    }
+
     polygonToSphericalCoordinates(polygon) {
         var sphericals = [];
-
+        // var coordinates = [];
         for (let coord of polygon.getCoordinates()[0]) {
             var coordTranslated = [coord[0] - this.arc.center[0],
                                    coord[1] - this.arc.center[1],
-                                   coord[2]];
+                                   coord[2] - this.arc.center[2]];
             var sphericalNorm = cartesianToSpherical(coordTranslated);
-            var c = sphericalToCartesian(sphericalNorm);
+
+            // sphericalNorm.norm = 1;
+            // var c = sphericalToCartesian(sphericalNorm);
             sphericals.push(sphericalNorm);
+            // coordinates.push(coordTranslated);
         }
+        // var sphericalArray = sphericals.map(spherical => [spherical[0], spherical[1], spherical[2]]);
+        // var plane = planeFromThreePoints(coordinates[0], coordinates[1], coordinates[2]);
+        // intersectionLinePlane(sphericals[0], plane);
         return sphericals;
     }
 
@@ -242,6 +259,7 @@ export default class IsoVist3D extends IsoVist2D {
     }
 
     mergeOverlappingAngles(angles) {
+        if (angles.length === 1) return angles;
         var sortedAngles = this.sortTheta(angles);
         let minX =  2 * Math.PI;
         let minY =  2 * Math.PI;
@@ -330,10 +348,39 @@ export default class IsoVist3D extends IsoVist2D {
     }
 
 
-    partiallyVisiblePolygon(partialParts) {
-        for (let partialPart of partialParts) {
-//            sphericalToCartesian(partialP);
+    projectIntersectionOnFace(partialPart) {
+        var face = partialPart.polygon;
+        var intersection = partialPart.intersection;
+        var coordsFace = face.getCoordinates()[0];
+        var coordsIntersection = intersection.getCoordinates()[0];
+        let cartesianIntersection = [];
+        for (let coord of coordsIntersection) {
+            let spherical = {theta: coord[0], phi: coord[1], norm: 1};
+            let cartesianCoord = sphericalToCartesian(spherical);
+            cartesianIntersection.push(cartesianCoord);
         }
+
+        var plane = planeFromThreePoints(coordsFace[0], coordsFace[1], coordsFace[2]);
+        var p1 = intersectionLinePlane(cartesianIntersection[0], plane);
+        var p2 = intersectionLinePlane(cartesianIntersection[1], plane);
+        var p3 = intersectionLinePlane(cartesianIntersection[2], plane);
+        var p4 = intersectionLinePlane(cartesianIntersection[3], plane);
+        if (!p1 || !p2 || !p3 || !p4)
+            return new Polygon([[[0,0,0]]]);
+        var polygon = new Polygon([[ Object.values(p1), Object.values(p2), Object.values(p3), Object.values(p4)] ]);
+        var translatedPolygon = this.translatePolygon(polygon, [-this.arc.center[0],
+                                                                              -this.arc.center[1],
+                                                                              -this.arc.center[2]]);
+        return translatedPolygon;
+    }
+
+    partiallyVisiblePolygon(partialParts) {
+        let arrayPolygons =  [];
+        for (let partialPart of partialParts) {
+            let projectionPolygon = this.projectIntersectionOnFace(partialPart);
+            arrayPolygons.push(projectionPolygon);
+        }
+        return arrayPolygons;
     }
 
     visibleBlockingSegments(blockingPolyAngles) {
@@ -351,23 +398,33 @@ export default class IsoVist3D extends IsoVist2D {
             let extentCurrent = angleCurrent.getExtent();
             let polyCurrent = polyAngle.polygon;
             let isPartial = false;
-
+            let coordinates = this.translatePolygon(polyCurrent, this.arc.center);
             let partialParts = [];
-            for (let angleVision in visionField) {
+            for (let angleVision of visionField) {
                 let extentVision = angleVision.getExtent();
                 let intersection = getIntersection(extentCurrent, extentVision);
+                // let lowerBound = {theta: intersection[0], phi: intersection[1], norm: 1};
+                // let upperBound = {theta: intersection[2], phi: intersection[3], norm: 1};
+                // var extentCartesian = [sphericalToCartesian(lowerBound), sphericalToCartesian(upperBound)];
+                // extentCartesian = [].concat.apply([], extentCartesian);
+                let polyIntersection = this.polygonFromExtent(intersection);
+                // console.log(polyIntersection);
                 if (angleCurrent.intersectsExtent(extentVision) &&
                     angleVision.intersectsExtent(extentCurrent) &&
                     getArea(intersection) > 0)  {
                     isPartial = true;
-                    partialParts.push(intersection);
+                    let objIntersectionToSpherical = {intersection: polyIntersection, polygon: coordinates};
+                    this.projectIntersectionOnFace (objIntersectionToSpherical);
+                    partialParts.push(objIntersectionToSpherical);
                 }
             }
             if (isPartial) {
-                this.partiallyVisiblePolygon(partialParts);
+                var arrayPolygons = this.partiallyVisiblePolygon(partialParts);
+                Array.prototype.push.apply(visibleSegments, arrayPolygons);
             } else {
-                visibleSegments.push(polyAngle.polygon);
+                //visibleSegments.push(polyAngle.polygon);
             }
+            //break;
             visionField.push(polyAngle.angle);
             visionField = this.mergeOverlappingAngles(visionField);
 
@@ -446,8 +503,10 @@ export default class IsoVist3D extends IsoVist2D {
             blockingSegments.push(freeSegments[0]);
             freeSegments = this.freeSegments(blockingSegments, polyAngles);
         }
+        var visibleSegments = this.visibleBlockingSegments(blockingSegments);
 
         var onlyPoly = blockingSegments.map(elem => elem.polygon);
+        onlyPoly = visibleSegments;
         //var onlyPoly = trimmed;
         //onlyPoly = blockingPoly.map(elem => elem.polygon);
         //onlyPoly = polyAngles.map(elem => elem.angle);

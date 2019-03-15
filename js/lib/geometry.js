@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 export function  angleToVector(angle) {
     var rad = angle * Math.PI / 180;
     var x = Math.cos(rad);
@@ -82,4 +84,24 @@ export function cartesianToSpherical( coord ) {
 		phi = Math.acos( clampedRatio );
     }
 	return {theta: theta, phi: phi, norm: radius};
+}
+
+
+export function planeFromThreePoints(p1, p2, p3) {
+    var plane = new THREE.Plane();
+    plane.setFromCoplanarPoints(new THREE.Vector3(p1[0], p1[1], p1[2]),
+                                new THREE.Vector3(p2[0], p2[1], p2[2]),
+                                new THREE.Vector3(p3[0], p3[1], p3[2]));
+    return plane;
+}
+
+export function intersectionLinePlane(point, plane) {
+    var v1 = new THREE.Vector3(point[0], point[1], point[2]);
+    v1 = v1.normalize();
+    var line = new THREE.Line3(new THREE.Vector3(0,0,0), v1.multiplyScalar(10000));
+    var target = new THREE.Vector3();
+    var intersects = plane.intersectLine(line, target);
+    if (intersects)
+        return target;
+    return intersects;
 }

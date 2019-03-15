@@ -20,6 +20,19 @@ const olRule = {
   }
 };
 
+const threeRule = {
+  test: /three\/.*\.js$/,
+  use: {
+    loader: 'babel-loader',
+    options: {
+      babelrc: false,
+      presets: babelPresets,
+    }
+  }
+};
+
+
+
 const olcsRule = {
   test: /olcs\/.*\.js$/,
   use: {
@@ -56,17 +69,18 @@ const config = {
   },
   module: {
     rules: [
-      olRule,
-      olcsRule,
-      htmlRule,
-      iconRule
+        olRule,
+        threeRule,
+        olcsRule,
+        htmlRule,
+        iconRule
     ]
   },
   plugins: [
   ],
   resolve: {
     modules: [
-      '../node_modules', '../node_modules/ol/src'
+        '../node_modules', '../node_modules/ol/src'
     ],
     mainFields: ['jsnext:main', 'main'],
     alias: {
