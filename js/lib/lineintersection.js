@@ -1,13 +1,27 @@
+/**
+ * @fileOverview Intersections between shapes
+ * @name lineintersection.js
+ * @author Florent Grélard
+ * @license
+ */
 import bigdecimal from 'bigdecimal';
 
+/**
+ * Error tolerance epsilon
+ * @type {number}
+ */
 export var epsilon = 0.000001;
 
+/**
+ * Change the value of {@link epsilon}
+ * @param {number} eps
+ */
 export function setEpsilon(eps) {
     epsilon = eps;
 }
 
 /**
- * Checks if coordinates are on a line
+ * Checks if number b is in the interval [a, c+epsilon]
  * @param {Number} a lower bound
  * @param {Number} b value to check
  * @param {Number} c upper bound
@@ -17,22 +31,30 @@ function between(a, b, c) {
     return a-epsilon <= b && b <= c+epsilon;
 }
 
+
+/**
+ * Mean absolute difference of b between a and c
+ * @param {number} a first value
+ * @param {number} b value to check
+ * @param {number} c second value
+ * @returns {number} mean absolute difference
+ */
 function averageDiff(a, b, c) {
     return (Math.abs(a - b) + Math.abs(c - b)) / 2;
 }
 
 
 /**
- * Intersection segment
- * @param {} x1 First segment first point x
- * @param {} y1 First segment first point y
- * @param {} x2 First segment second point x
- * @param {} y2 First segment second point y
- * @param {} x3 Second segment first point x
- * @param {} y3 Second segment first point y
- * @param {} x4 Second segment second point x
- * @param {} y4 Second segment second point y
- * @returns {} the intersection, if it exists
+ * Exact Intersection segment
+ * @param {number} x1 First segment first point x
+ * @param {number} y1 First segment first point y
+ * @param {number} x2 First segment second point x
+ * @param {number} y2 First segment second point y
+ * @param {number} x3 Second segment first point x
+ * @param {number} y3 Second segment first point y
+ * @param {number} x4 Second segment second point x
+ * @param {number} y4 Second segment second point y
+ * @returns {Boolean|{x,y}} the intersection, if it exists
  */
 export function segmentIntersectionExact(x1,y1,x2,y2, x3,y3,x4,y4) {
     var bx1 = bigdecimal.BigDecimal(x1.toString());
@@ -97,15 +119,15 @@ export function segmentIntersectionExact(x1,y1,x2,y2, x3,y3,x4,y4) {
 
 /**
  * Intersection segment
- * @param {} x1 First segment first point x
- * @param {} y1 First segment first point y
- * @param {} x2 First segment second point x
- * @param {} y2 First segment second point y
- * @param {} x3 Second segment first point x
- * @param {} y3 Second segment first point y
- * @param {} x4 Second segment second point x
- * @param {} y4 Second segment second point y
- * @returns {} the intersection, if it exists
+ * @param {number} x1 First segment first point x
+ * @param {number} y1 First segment first point y
+ * @param {number} x2 First segment second point x
+ * @param {number} y2 First segment second point y
+ * @param {number} x3 Second segment first point x
+ * @param {number} y3 Second segment first point y
+ * @param {number} x4 Second segment second point x
+ * @param {number} y4 Second segment second point y
+ * @returns {Boolean|{x,y}} the intersection, if it exists
  */
 export function segmentIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
     var x=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4)) /
@@ -141,15 +163,15 @@ export function segmentIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
 
 /**
  * Intersection line
- * @param {} x1 First segment first point x
- * @param {} y1 First segment first point y
- * @param {} x2 First segment second point x
- * @param {} y2 First segment second point y
- * @param {} x3 Second segment first point x
- * @param {} y3 Second segment first point y
- * @param {} x4 Second segment second point x
- * @param {} y4 Second segment second point y
- * @returns {} the intersection, if it exists
+ * @param {number} x1 First segment first point x
+ * @param {number} y1 First segment first point y
+ * @param {number} x2 First segment second point x
+ * @param {number} y2 First segment second point y
+ * @param {number} x3 Second segment first point x
+ * @param {number} y3 Second segment first point y
+ * @param {number} x4 Second segment second point x
+ * @param {number} y4 Second segment second point y
+ * @returns {Boolean|{x,y}} the intersection, if it exists
  */
 export function lineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
     var x=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4)) /
@@ -164,6 +186,18 @@ export function lineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
 
 
 
+/**
+* Intersection half-line and line
+ * @param {number} x1 First segment first point x
+ * @param {number} y1 First segment first point y
+ * @param {number} x2 First segment second point x
+ * @param {number} y2 First segment second point y
+ * @param {number} x3 Second segment first point x
+ * @param {number} y3 Second segment first point y
+ * @param {number} x4 Second segment second point x
+ * @param {number} y4 Second segment second point y
+ * @returns {Boolean|{x,y}} the intersection, if it exists
+ */
 export function halfLineAndLineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
     var intersection = lineIntersection(x1,y1,x2,y2, x3,y3,x4,y4);
     if (!intersection) return false;
@@ -184,15 +218,15 @@ export function halfLineAndLineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
 
 /**
  * Intersection half line
- * @param {} x1 First segment first point x
- * @param {} y1 First segment first point y
- * @param {} x2 First segment second point x
- * @param {} y2 First segment second point y
- * @param {} x3 Second segment first point x
- * @param {} y3 Second segment first point y
- * @param {} x4 Second segment second point x
- * @param {} y4 Second segment second point y
- * @returns {} the intersection, if it exists
+ * @param {number} x1 First segment first point x
+ * @param {number} y1 First segment first point y
+ * @param {number} x2 First segment second point x
+ * @param {number} y2 First segment second point y
+ * @param {number} x3 Second segment first point x
+ * @param {number} y3 Second segment first point y
+ * @param {number} x4 Second segment second point x
+ * @param {number} y4 Second segment second point y
+ * @returns {Boolean|{x,y}} the intersection, if it exists
  */
 export function halfLineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
     var obj = halfLineAndLineIntersection(x1,y1,x2,y2, x3,y3,x4,y4);
@@ -215,9 +249,9 @@ export function halfLineIntersection(x1,y1,x2,y2, x3,y3,x4,y4) {
 
 /**
  * Helper function to check if there is intersection between two segments represented as linestring objects
- * @param {} s1 first linestring segment
- * @param {} s2 second linestring segment
- * @returns {} the intersection, if it exists
+ * @param {ol.geom.LineString} s1 first linestring segment
+ * @param {ol.geom.LineString} s2 second linestring segment
+ * @returns {Boolean|{x,y}} the intersection, if it exists
  */
 export function segmentsIntersect(s1, s2) {
     var pS1F = s1.getFirstCoordinate();
@@ -235,9 +269,9 @@ export function segmentsIntersect(s1, s2) {
 
 /**
  * Helper function to check if there is intersection between two half lines represented as linestring objects where first coordinate is the start of the half line
- * @param {} s1 first linestring half lines
- * @param {} s2 second linestring half lines
- * @returns {} the intersection, if it exists
+ * @param {ol.geom.LineString} s1 first linestring half lines
+ * @param {ol.geom.LineString} s2 second linestring half lines
+ * @returns {Boolean|{x,y}} the intersection, if it exists
  */
 export function halfLinesIntersect(s1, s2) {
     var pS1F = s1.getFirstCoordinate();
@@ -253,6 +287,12 @@ export function halfLinesIntersect(s1, s2) {
     return intersection;
 }
 
+/**
+ * Checks whether a point belongs to a segment
+ * @param {Array<number>} p the point
+ * @param {ol.geom.LineString} s the segment
+ * @returns {boolean} whether p belongs to s
+ */
 export function onSegment(p, s) {
     var p1 = s.getFirstCoordinate();
     var p2 = s.getLastCoordinate();
@@ -283,6 +323,12 @@ export function onSegment(p, s) {
 }
 
 
+/**
+ * Checks whether two segments have the same coordinates
+ * @param {ol.geom.LineString} s1
+ * @param {ol.geom.LineString} s2
+ * @returns {boolean} whether the segments are the same
+ */
 export function segmentsEqual(s1, s2) {
     return (s1.getFirstCoordinate()[0] === s2.getFirstCoordinate()[0] &&
             s1.getFirstCoordinate()[1] === s2.getFirstCoordinate()[1] &&
@@ -290,6 +336,12 @@ export function segmentsEqual(s1, s2) {
             s1.getLastCoordinate()[1] === s2.getLastCoordinate()[1]);
 }
 
+/**
+ * Checks whether two rectangles intersect, that is to say they overlap
+ * @param {Object} a
+ * @param {Object} b
+ * @returns {boolean} whether rectangles intersect
+ */
 export function rectanglesIntersect(a, b) {
     var x = Math.max(a.minX, b.minX);
     var num1 = Math.min(a.maxX, b.maxX);
@@ -301,6 +353,12 @@ export function rectanglesIntersect(a, b) {
         return false;
 }
 
+/**
+ * Checks whether a rectangle is entirely contained inside another rectangle
+ * @param {Array<number>} r1
+ * @param {Array<number>} r2
+ * @returns {boolean} whether r2 is entirely contained in r1
+ */
 export function rectangleContains(r1, r2) {
     var r1minX = r1[0];
     var r1minY = r1[1];

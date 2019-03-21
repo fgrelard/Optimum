@@ -1,8 +1,8 @@
 /**
  * @fileOverview Isovist computation inspired from Suleiman et al, A New Algorithm for 3D Isovists.
- * Space is delimited by a set of segments, and visibility can be determined by circular sectors associated with these segments
+ * Space is delimited by a set of polygons, and visibility can be determined by spherical coordinates associated with these segments
  * @name isovistsectors3d.js
- * @author Florent Grelard
+ * @author Florent Grélard
  * @license
  */
 
@@ -16,76 +16,106 @@ import IsoVist2D from './isovistsectors2d.js';
 import {toLonLat} from 'ol/proj';
 import {cartesianToSpherical, sphericalToCartesian, planeFromThreePoints, intersectionLinePlane} from './geometry';
 
+
+/** Object containing polygon and associated visibility sector
+ */
 class PolygonToAngle {
+    /**
+     * Constructor
+     * @param {ol.geom.Polygon} Polygon
+     * @param {ol.geom.Polygon} spherical extent
+     */
     constructor(polygon, angle) {
+        /**
+         * polygon
+         * @type {ol.geom.Polygon}
+         */
         this.polygon = polygon;
+
+        /**
+         * angle
+         * @type {ol.geom.Polygon}
+         */
         this.angle = angle;
     }
 }
 
 
+/** Object containing segment and associated visibility sector
+ */
 class AngleToSegment {
+    /**
+     * Constructor
+     * @param {Arc} angle
+     * @param {ol.geom.LineString} segment
+     */
     constructor(angle, segment) {
+        /**
+         * angle
+         * @type {Arc}
+         */
         this.angle = angle;
+
+        /**
+         * segment
+         * @type {ol.geom.LineString}
+         */
         this.segment = segment;
     }
 }
 
+/** Class allowing to compute the isovist in 3D, inspired by Suleiman et al's 'A New Algorithm for 3D Isovists"
+ * the space is delimited by a set of polygons and visibility can be determined by spherical coordiantes associated with these segments
+ * WORK IN PROGRESS
+ */
 export default class IsoVist3D extends IsoVist2D {
-
+    /**
+     * Constructor
+     * @param {Arc} arc the field of view
+     * @param {Array.<ol.Feature>} segments segments in map
+     * @param {Boolean} isDisplayPartial if true display only partial visible segments, else display full visible segments
+     * @param {Boolean} isDisplayPolygon should display polygon or line segments
+     * @param {number} epsilon tolerance for intersection
+     */
     constructor(arc, segments, isDisplayPartial = true, isDisplayPolygon = true, epsilon = 0.0001) {
         super(arc, segments, isDisplayPartial, isDisplayPolygon, epsilon);
+        /**
+         * arc the field of view
+         * @type {Arc}
+         */
         this.arc = arc;
+
+        /**
+         * building segments
+         * @type {Array.<ol.Feature>} segments segments in map
+         */
         this.segments = segments;
+
+        /**
+         * if true display only partial visible segments, else display full visible segments
+         * @type {Boolean}
+         */
         this.isDisplayPartial = isDisplayPartial;
+
+        /**
+         * if true, displays polygon, else, union of line segments
+         * @type {Boolean}
+         */
         this.isDisplayPolygon = isDisplayPolygon;
+
+        /**
+         * @type {number} epsilon tolerance for intersection
+         */
         this.epsilon = epsilon;
     }
 
 
 
-    isInsideArc(segment) {
-        for (let i = 0; i < 1; i+=0.1) {
-            if (this.arc.geometry.intersectsCoordinate(segment.getCoordinateAt(i))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    segmentsFromPolygon(polygon, arc) {
-        var segments = [];
-        var polygonVertices = polygon.getCoordinates()[0];
-        for (let i = 0; i < polygonVertices.length-1; i++) {
-            var p1 = polygonVertices[i];
-            var p2 = polygonVertices[i+1];
-            var segment = new LineString([p1, p2]);
-            segments.push(segment);
-        }
-        return segments;
-    }
-
-
-    segmentsIntersectingFOV() {
-        var segments = [];
-        var geometryArc = this.arc.geometry;
-        var extentArc = geometryArc.getExtent();
-        var that = this;
-        for (let f of this.segments) {
-            var geometryFeature = f.getGeometry();
-            if (euclideanDistance(geometryFeature.getFirstCoordinate(), that.arc.center) > 2 * that.arc.radius) continue;
-            if (geometryArc.intersectsExtent(geometryFeature.getExtent()) &&
-                geometryFeature.intersectsExtent(extentArc)) {
-                if (geometryFeature.getType() === "Polygon") {
-                    var segmentsPolygon = that.segmentsFromPolygon(geometryFeature, geometryArc);
-                    Array.prototype.push.apply(segments, segmentsPolygon);
-                }
-            }
-        }
-        return segments;
-    }
-
+    /**
+     * Converts a segment to a 3D polygon
+     * @param {ol.geom.LineString} segment
+     * @returns {ol.geom.Polygon} polygon
+     */
     segmentTo3DPolygon(segment) {
         var p1 = segment.getFirstCoordinate();
         var p2 = segment.getLastCoordinate();
@@ -94,6 +124,11 @@ export default class IsoVist3D extends IsoVist2D {
         return new Polygon([[p1, p2, p3, p4]]);
     }
 
+    /**
+     * Converts several segments to polygons
+     * @param {Array<ol.geom.LineString>} segments
+     * @returns {Array<ol.geom.Polygon>} polygons
+     */
     segmentsToPolygons(segments) {
         var polygons = [];
         for (let segment of segments) {
@@ -103,6 +138,12 @@ export default class IsoVist3D extends IsoVist2D {
         return polygons;
     }
 
+    /**
+     * Translation of polygons by reference vector
+     * @param {ol.geom.Polygon} polygon
+     * @param {Array<number>} reference
+     * @returns {ol.geom.Polygon} translated polygons
+     */
     translatePolygon(polygon, reference) {
         let coordsTranslated = [];
         for (let coord of polygon.getCoordinates()[0]) {
@@ -114,6 +155,11 @@ export default class IsoVist3D extends IsoVist2D {
         return new Polygon([coordsTranslated]);
     }
 
+    /**
+     * Converts a polygon in cartesian coordinates to spherical coordinates
+     * @param {ol.geom.Polygon} polygon
+     * @returns {Object} spherical coordinates
+     */
     polygonToSphericalCoordinates(polygon) {
         var sphericals = [];
         // var coordinates = [];
@@ -134,6 +180,11 @@ export default class IsoVist3D extends IsoVist2D {
         return sphericals;
     }
 
+    /**
+     * Converts spherical coordinates to a polygon
+     * @param {Object} sphericals
+     * @returns {ol.geom.Polygon} polygon
+     */
     sphericalCoordinatesToShape(sphericals) {
         var coords = [];
         for (let s of sphericals) {
@@ -143,6 +194,11 @@ export default class IsoVist3D extends IsoVist2D {
         return new Polygon([coords]);
     }
 
+    /**
+     * Converts several polygons to their polygonal shape
+     * @param {Array<ol.geom.Polygon>} polygons
+     * @returns {Array<Object>} objects
+     */
     polygonsToAngle(polygons) {
         var polyAngles = [];
         for (let polygon of polygons) {
@@ -154,6 +210,11 @@ export default class IsoVist3D extends IsoVist2D {
         return polyAngles;
     }
 
+    /**
+     * Minimum distance of each corner in the polygon to the picture's position
+     * @param {ol.geom.Polygon} polygon
+     * @returns {number} min distance
+     */
     polygonToMinDistance(polygon) {
         var distance = Number.MAX_VALUE;
         for (let coord of polygon.getCoordinates()[0]) {
@@ -165,7 +226,12 @@ export default class IsoVist3D extends IsoVist2D {
         return distance;
     }
 
-
+    /**
+     * Checks whether a polygon is blocking, that is to say it is fully visible from the point of view
+     * @param {Object} polyAngle polygon to angle
+     * @param {Array.<Object>} polyAngles
+     * @returns {Boolean} whether polyAngle is blocking with respect to polyAngles
+     */
     isNonBlocking(polyAngle, polyAngles) {
         var poly = polyAngle.polygon;
         var angle = polyAngle.angle;
@@ -195,6 +261,11 @@ export default class IsoVist3D extends IsoVist2D {
     }
 
 
+    /**
+     * Sort according to theta angle from spherical coordinates, then phi
+     * @param {Array<ol.geom.Polygon>} angles spherical coordinates
+     * @returns {Array<ol.geom.Polygon>} sorted angles
+     */
     sortTheta(angles) {
         var tmpAngles = angles.slice();
         tmpAngles.sort(function(a, b) {
@@ -220,6 +291,12 @@ export default class IsoVist3D extends IsoVist2D {
     }
 
 
+    /**
+     * Minimum and maximum of angle
+     * @param {Array<ol.geom.Polygon>} angles
+     * @param {boolean=} theta theta or phi
+     * @returns {Array} min and max
+     */
     minMaxAngle(angles, theta = false) {
         var minX = Number.MAX_VALUE;
         var maxX = -Number.MAX_VALUE;
@@ -245,6 +322,11 @@ export default class IsoVist3D extends IsoVist2D {
     }
 
 
+    /**
+     * Computes the extent from a polygon
+     * @param {ol.extent.Extent} extent
+     * @returns {ol.geom.Polygon} polygon
+     */
     polygonFromExtent(extent) {
         var minX = extent[0];
         var minY = extent[1];
@@ -258,6 +340,12 @@ export default class IsoVist3D extends IsoVist2D {
         return new Polygon([[ p1, p2, p3, p4 ]]);
     }
 
+
+    /**
+     * Merges consecutive spherical coordinates
+     * @param {Array.<Object>} angles spherical coordinates
+     * @returns {Array.<Arc>} simplified array
+     */
     mergeOverlappingAngles(angles) {
         if (angles.length === 1) return angles;
         var sortedAngles = this.sortTheta(angles);
@@ -322,6 +410,12 @@ export default class IsoVist3D extends IsoVist2D {
         return trimmedArray;
     }
 
+    /**
+     * Whether a polygon is free, that is to say it is partially visible
+     * @param {Object} polyAngle
+     * @param {Array<Object>} blockingPolyAngles
+     * @returns {boolean} whether it is partially visible
+     */
     isFree(polyAngle, blockingPolyAngles) {
         var isFree = true;
         var poly = polyAngle.polygon;
@@ -336,6 +430,12 @@ export default class IsoVist3D extends IsoVist2D {
         return isFree;
     }
 
+    /**
+     * Extracts all partially visible polygons, that is to say to those who are in the free vision field
+     * @param {Array.<ol.geom.Polygon>} blockingPolyAngles
+     * @param {Array.<ol.geom.Polygon>} polyAngles
+     * @returns {Array.<ol.geom.Polygon>} partially visible polygons
+     */
     freeSegments(blockingPolyAngles, polyAngles) {
         var freeSegments = [];
         var trimmedBlockingAngles = this.mergeOverlappingAngles(blockingPolyAngles.map(bAngle => bAngle.angle));
@@ -348,6 +448,11 @@ export default class IsoVist3D extends IsoVist2D {
     }
 
 
+    /**
+     * Projects the spherical intersection in 2D, onto a 3D plane in cartesian coordinates
+     * @param {Object} partialPart
+     * @returns {ol.geom.Polygon} the 3D polygon in cartesian coordinates
+     */
     projectIntersectionOnFace(partialPart) {
         var face = partialPart.polygon;
         var intersection = partialPart.intersection;
@@ -369,11 +474,16 @@ export default class IsoVist3D extends IsoVist2D {
             return new Polygon([[[0,0,0]]]);
         var polygon = new Polygon([[ Object.values(p1), Object.values(p2), Object.values(p3), Object.values(p4)] ]);
         var translatedPolygon = this.translatePolygon(polygon, [-this.arc.center[0],
-                                                                              -this.arc.center[1],
-                                                                              -this.arc.center[2]]);
+                                                                -this.arc.center[1],
+                                                                -this.arc.center[2]]);
         return translatedPolygon;
     }
 
+    /**
+     * Extracts polygon parts that are partially visible
+     * @param {Array<Object>} partialParts
+     * @returns {Array<ol.geom.Polygon>} array of polygons
+     */
     partiallyVisiblePolygon(partialParts) {
         let arrayPolygons =  [];
         for (let partialPart of partialParts) {
@@ -383,6 +493,11 @@ export default class IsoVist3D extends IsoVist2D {
         return arrayPolygons;
     }
 
+    /**
+     * Polygons that are partially visible
+     * @param {Array<Object>} blockingPolyAngles
+     * @returns {Array<ol.geom.Polygon>} the parts of polygons
+     */
     visibleBlockingSegments(blockingPolyAngles) {
         var that  = this;
         var visibleSegments = [];
@@ -432,58 +547,10 @@ export default class IsoVist3D extends IsoVist2D {
         return visibleSegments;
     }
 
-    visibilityPolygon(blockingSegments) {
-        var polygon = [];
-        var that = this;
-        var anglesToSegments = [];
-        var blockingAngles = [];
-
-        for (let segment of blockingSegments) {
-            var blockingAngle = that.visionBlockingArc(segment);
-            let fc = segment.getFirstCoordinate();
-            let lc = segment.getLastCoordinate();
-            var angleFC = that.angleFromCoordinates(fc);
-            var angleLC = that.angleFromCoordinates(lc);
-            angleFC = (angleFC < that.arc.alpha - 1) ? angleFC+360 : angleFC;
-            angleLC = (angleLC < that.arc.alpha - 1) ? angleLC+360 : angleLC;
-            var first = (angleFC < angleLC) ? fc : lc;
-            var last = (angleFC < angleLC) ? lc : fc;
-            var orientedSegment = new LineString([first, last]);
-            let angleToSegment = new AngleToSegment(blockingAngle, orientedSegment);
-            blockingAngles.push(blockingAngle);
-            anglesToSegments.push(angleToSegment);
-        }
-        var trimmedBlockingAngles = this.mergeOverlappingAngles(blockingAngles);
-        var freeVisionAngles = this.freeAngles(trimmedBlockingAngles);
-        for (let angle of freeVisionAngles) {
-            if (angle.omega - angle.alpha < 0.5) continue;
-            angle.computeGeometry();
-            var freeSegment = new LineString([angle.fullGeometry[1].getFlatCoordinates(),
-                                              angle.fullGeometry[2].getFlatCoordinates()]);
-            let angleToSegment = new AngleToSegment(angle, freeSegment);
-            anglesToSegments.push(angleToSegment);
-        }
-
-        anglesToSegments.sort(function(a,b) {
-            if (a.angle.alpha === b.angle.alpha)
-                return a.angle.omega - b.angle.omega;
-            return a.angle.alpha - b.angle.alpha;
-        });
-        if (anglesToSegments.length > 0) {
-            polygon.push(this.arc.center);
-            polygon.push(anglesToSegments[0].segment.getFirstCoordinate());
-            for (let i = 0; i < anglesToSegments.length; i++) {
-                let fc = anglesToSegments[i].segment.getFirstCoordinate();
-                let lc = anglesToSegments[i].segment.getLastCoordinate();
-                polygon.push(fc);
-                polygon.push(lc);
-            }
-            polygon.push(this.arc.center);
-        }
-        return new Polygon([polygon]);
-    }
-
-
+    /**
+     * Main function
+     * @returns {Array.<ol.geom.Polygon>} isovist as the polygons from buildings visible from the point of view
+     */
     isovist() {
         var visibleSegments = [];
         var segments = this.segmentsIntersectingFOV();

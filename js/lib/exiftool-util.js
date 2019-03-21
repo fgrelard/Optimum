@@ -1,11 +1,23 @@
 import transpose from 'transpose';
 import Arc from './arc';
 
+/**
+ * Converts lon lat to decimal values
+ * @param {number} deg
+ * @param {number} min
+ * @param {number} sec
+ * @returns {number} decimal
+ */
 export function lonLatToDecimal(deg, min, sec) {
     return deg + min / 60 + sec / 3600;
 }
 
 
+/**
+ * Converts raw exif to json
+ * @param {string} metadata
+ * @returns {json} converted json
+ */
 export function convertMetadataToJSON(metadata) {
     const transposed = transpose(metadata.data);
     const headers = transposed.shift();
@@ -18,6 +30,11 @@ export function convertMetadataToJSON(metadata) {
     return res;
 }
 
+/**
+ * Array of coordinates from a given string
+ * @param {string} positionString
+ * @returns {Array<number>} coordinates
+ */
 export function createPositionArray(positionString) {
     var patt1 = /[0-9.]/g;
     var patt2 = /[a-zA-Z]/g;
@@ -37,6 +54,11 @@ export function createPositionArray(positionString) {
     return arrayPos;
 }
 
+/**
+ * Get position from metadata
+ * @param {json} mapMetadata metadata
+ * @returns {Array<number>}  position
+ */
 export function getPosition(mapMetadata) {
     if (mapMetadata.hasOwnProperty('GPSPosition')) {
         var positionString = mapMetadata.GPSPosition;
@@ -55,6 +77,12 @@ export function getPosition(mapMetadata) {
     return null;
 }
 
+/**
+ * Computes the starting and ending angle of the visibility cone (=angular sector), corresponding to the field of view and the direction of the picture
+ * @param {number} direction angle in degrees
+ * @param {number} fov angle of aperture in degrees
+ * @returns {Array<number>} angles of the visibility cone
+ */
 export function computeAlphaOmegaFromDir(direction, fov) {
     var dirTrigRad = (360 - direction + 90) % 360;
     var alpha = (dirTrigRad - fov / 2) % 360;
@@ -65,6 +93,12 @@ export function computeAlphaOmegaFromDir(direction, fov) {
     return [alpha, omega];
 }
 
+/**
+ * Orientation of a picture
+ * @param {json} mapMetadata
+ * @param {Array} position
+ * @returns {Arc} angular sector corresponding to the visibility cone
+ */
 export function getOrientation(mapMetadata, position) {
     if (mapMetadata.hasOwnProperty('GPSImgDirection') &&
         mapMetadata.hasOwnProperty('Orientation') &&

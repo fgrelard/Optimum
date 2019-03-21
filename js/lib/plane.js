@@ -1,11 +1,40 @@
+/**
+ * @fileOverview Class representing a 2D plane
+ * @name plane.js
+ * @author Florent Grélard
+ * @license
+ */
 import {halfLineIntersection, halfLineAndLineIntersection} from './lineintersection.js';
 
+/**
+ * Class representing a 2D plane
+ */
 export default class Plane {
+
+    /**
+     * Constructor
+     * @param {Array<number>} center
+     * @param {Array<number>} normal
+     */
     constructor(center, normal) {
+        /**
+         * Plane center
+         * @type {Array<number>}
+         */
         this.center = center;
+
+        /**
+         * Plane normal
+         * @type {Array<number>}
+         */
         this.normal = normal.slice();
     }
 
+    /**
+     * Checks whether a point is above the plane
+     * @param {Array<number>} p the point
+     * @returns {boolean} whether p is above this plane
+     */
     isAbove(p) {
         if (this.center[0] === p[0] && this.center[1] === p[1])
             return true;
@@ -14,6 +43,13 @@ export default class Plane {
 	    return (valueToCheckForPlane >= d);
     }
 
+    /**
+     * Checks whether a sector is above the plane (that is to say it does not intersect the plane)
+     * @param {Arc} arc the sector
+     * @param {boolean=} isComplementary whether the plane is a complementary
+     * @param {boolean=} isHalfLine function used for intersection
+     * @returns {boolean}  whether the sector is above this plane
+     */
     isSectorAbove(arc, isComplementary = false, isHalfLine = false) {
         var func = (isHalfLine) ? halfLineIntersection : halfLineAndLineIntersection;
         var isPointAbove = this.isAbove(arc.center);
@@ -47,12 +83,21 @@ export default class Plane {
        //return this.isAbove(la) || this.isAbove(lo);
     }
 
+    /**
+     * Utility function to display the plane in the console
+     * @returns {string} plane as a string
+     */
     toString() {
         var cx = Math.round(this.center[0]).toString();
         var cy = Math.round(this.center[1]).toString();
         return "c=(" + cx.slice(0, cy.length) + "," + cy.slice(0, cy.length) +  "), v=(" + this.normal[0].toFixed(2) + "," + this.normal[1].toFixed(2) + ")";
     }
 
+    /**
+     * Checks whether two planes are the same
+     * @param {Plane} other other plane
+     * @returns {boolean} whether this plane and the other plane are the same
+     */
     equals(other) {
         return (this.center[0] === other.center[0] &&
                 this.center[1] === other.center[1] &&

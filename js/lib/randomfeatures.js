@@ -2,9 +2,9 @@ import Arc from './arc';
 
 /**
  * Random number between min and max
- * @param {} min
- * @param {} max
- * @returns {} the random number
+ * @param {number} min
+ * @param {number} max
+ * @returns {number} the random number
  */
 export function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;

@@ -12,30 +12,77 @@ import * as Intersection from './lineintersection';
 import {euclideanDistance} from './distance';
 import Arc from './arc';
 
+/** Object containing segment and associated visibility sector
+ */
 class AngleToSegment {
+    /**
+     * Constructor
+     * @param {Arc} angle
+     * @param {ol.geom.LineString} segment
+     */
     constructor(angle, segment) {
+        /**
+         * angle
+         * @type {Arc}
+         */
         this.angle = angle;
+
+        /**
+         * segment
+         * @type {ol.geom.LineString}
+         */
         this.segment = segment;
     }
 }
 
-
+/** Class allowing to compute the isovist in 2D, inspired by Suleiman et al's 'A New Algorithm for 3D Isovists"
+ * the space is delimited by a set of segments and visibility can be determined by circular sectors associated with these segments
+ */
 export default class IsoVist {
     /**
      * Constructor
      * @param {Arc} arc the field of view
      * @param {Array.<ol.Feature>} segments segments in map
      * @param {Boolean} isDisplayPartial if true display only partial visible segments, else display full visible segments
-     * @param {} epsilon tolerance for intersection
+     * @param {Boolean} isDisplayPolygon should display polygon or line segments
+     * @param {number} epsilon tolerance for intersection
      */
     constructor(arc, segments, isDisplayPartial = true, isDisplayPolygon = true, epsilon = 0.0001) {
+        /**
+         * arc the field of view
+         * @type {Arc}
+         */
         this.arc = arc;
+
+        /**
+         * building segments
+         * @type {Array.<ol.Feature>} segments segments in map
+         */
         this.segments = segments;
+
+        /**
+         * if true display only partial visible segments, else display full visible segments
+         * @type {Boolean}
+         */
         this.isDisplayPartial = isDisplayPartial;
+
+        /**
+         * if true, displays polygon, else, union of line segments
+         * @type {Boolean}
+         */
         this.isDisplayPolygon = isDisplayPolygon;
-        this.epsilon = epsilon;
+
+        /**
+         * @type {number} epsilon tolerance for intersection
+         */
+         this.epsilon = epsilon;
     }
 
+    /**
+     * Checks whether a segment is contained inside an arc
+     * @param {ol.geom.LineString} segment
+     * @returns {boolean} whether segment is inside
+     */
     isInsideArc(segment) {
         for (let i = 0; i < 1; i+=0.1) {
             if (this.arc.geometry.intersectsCoordinate(segment.getCoordinateAt(i))) {
@@ -48,6 +95,7 @@ export default class IsoVist {
     /**
      * Extracts all segments constituting a polygon
      * @param {ol.geom.Polygon} polygon
+     * @param {Arc} arc
      * @returns {Array} segments
      */
     segmentsFromPolygon(polygon, arc) {
@@ -64,7 +112,7 @@ export default class IsoVist {
 
     /**
      * From all the segments in the building, extract only those visible in field of view
-     * @returns {} array of visible segments
+     * @returns {Array.<ol.geom.LineString>} array of visible segments
      */
     segmentsIntersectingFOV() {
         var segments = [];
@@ -124,6 +172,11 @@ export default class IsoVist {
         return toPush;
     }
 
+    /**
+     * Converts a point to the angle that it forms with the x-axis in degrees (theta in spherical coordinates)
+     * @param {Array} point
+     * @returns {number} angle in degree
+     */
     angleFromCoordinates(point) {
         var position = this.arc.center;
         var v = [point[0] - position[0],
@@ -324,7 +377,7 @@ export default class IsoVist {
     /**
      * Extract all fully visible segments
      * @param {Array.<ol.geom.LineString>} segments all segments from buildings
-     * @returns {} fully visible segments
+     * @returns {Array.<ol.geom.LineString>} fully visible segments
      */
     blockingSegments(segments) {
         var blockingSegments = [];
@@ -341,9 +394,9 @@ export default class IsoVist {
 
     /**
      * Extracts all partially visible segments, that is to say to those who are in the free vision field
-     * @param {} blockingSegments
-     * @param {} segments
-     * @returns {} partially visible segments
+     * @param {Array.<ol.geom.LineString>} blockingSegments
+     * @param {Array.<ol.geom.LineString>} segments
+     * @returns {Array.<ol.geom.LineString>} partially visible segments
      */
     freeSegments(blockingSegments, segments) {
         var blockingAngles = [];
@@ -409,6 +462,11 @@ export default class IsoVist {
         return visibleSegments;
     }
 
+    /**
+     * Computes the isovist polygon from blocking segments
+     * @param {Array.<ol.geom.LineString>} blockingSegments
+     * @returns {Array.<ol.geom.Polygon>} the isovist
+     */
     visibilityPolygon(blockingSegments) {
         var polygon = [];
         var that = this;
@@ -465,7 +523,7 @@ export default class IsoVist {
 
     /**
      * Main function
-     * @returns {} isovist as the segments from buildings visible from the point of view
+     * @returns {Array.<ol.geom.Polygon>} isovist as the segments from buildings visible from the point of view
      */
     isovist() {
         var visibleSegments = [];

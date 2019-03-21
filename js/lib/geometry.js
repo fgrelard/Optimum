@@ -1,5 +1,16 @@
+/**
+ * @fileOverview Various geometry functions useful
+ * @name geometry.js
+ * @author Florent Grélard
+ * @license
+ */
 import * as THREE from 'three';
 
+/**
+ * Converts an angle in degrees to a 2D vector
+ * @param {number} angle
+ * @returns {Array} the 2D vector
+ */
 export function  angleToVector(angle) {
     var rad = angle * Math.PI / 180;
     var x = Math.cos(rad);
@@ -7,6 +18,12 @@ export function  angleToVector(angle) {
     return [x, y];
 }
 
+/**
+ * Converts a 2D vector to an angle in degrees
+ * @param {Array} vector
+ * @param {Array} vectorRef axis
+ * @returns {number} angle in radians
+ */
 export function vectorToAngle(vector, vectorRef) {
     var dot = vectorRef[0]*vector[0] + vectorRef[1]*vector[1];
     var det = vectorRef[0]*vector[1] - vectorRef[1]*vector[0];
@@ -15,6 +32,11 @@ export function vectorToAngle(vector, vectorRef) {
 }
 
 
+/**
+ * Bounding box of positions
+ * @param {Array} positions
+ * @returns {Array} bounding box
+ */
 export function boundingBox(positions) {
     var low = [Number.MAX_VALUE, Number.MAX_VALUE];
     var up = [-Number.MAX_VALUE, -Number.MAX_VALUE];
@@ -28,6 +50,12 @@ export function boundingBox(positions) {
     return [low, up];
 }
 
+/**
+ * Bounding box as an object
+ * @param {Array} array
+ * @param {Object} feature a reference to the original object, useful to keep track of it in a R-tree for instance
+ * @returns {Object} the bounding box
+ */
 export function bboxArrayToObject(array, feature) {
     return {minX: array[0][0],
             minY: array[0][1],
@@ -38,6 +66,11 @@ export function bboxArrayToObject(array, feature) {
 
 }
 
+/**
+ * Barycenter
+ * @param {Array} positions
+ * @returns {Array} barycenter
+ */
 export function centerOfMass(positions) {
     var g = [0,0];
     for (var p of positions) {
@@ -50,6 +83,13 @@ export function centerOfMass(positions) {
 }
 
 
+/**
+ * Orthogonal projection of a point onto a segment [a,b]
+ * @param {Array} p
+ * @param {Array} a
+ * @param {Array} b
+ * @returns {Array} the projection
+ */
 export function project( p, a, b ) {
     var x1=a[0], y1=a[1], x2=b[0], y2=b[1], x3=p[0], y3=p[1];
     var px = x2-x1, py = y2-y1, dAB = px*px + py*py;
@@ -59,6 +99,11 @@ export function project( p, a, b ) {
 }
 
 
+/**
+ * Converts spherical coordinates to cartesian
+ * @param {Object} spherical
+ * @returns {Array} cartesian coordinates
+ */
 export function sphericalToCartesian(spherical) {
     var phi = spherical.phi;
     var theta = spherical.theta;
@@ -71,6 +116,11 @@ export function sphericalToCartesian(spherical) {
 }
 
 
+/**
+ * Converts cartesian coordinates to spherical
+ * @param {Array} coord
+ * @returns {Object} sphericals
+ */
 export function cartesianToSpherical( coord ) {
     var x = coord[0];
     var y = coord[1];
@@ -87,6 +137,13 @@ export function cartesianToSpherical( coord ) {
 }
 
 
+/**
+ * Computes the plane given 3 points
+ * @param {Array} p1
+ * @param {Array} p2
+ * @param {Array} p3
+ * @returns {THREE.Plane}
+ */
 export function planeFromThreePoints(p1, p2, p3) {
     var plane = new THREE.Plane();
     plane.setFromCoplanarPoints(new THREE.Vector3(p1[0], p1[1], p1[2]),
@@ -95,6 +152,12 @@ export function planeFromThreePoints(p1, p2, p3) {
     return plane;
 }
 
+/**
+ * Intersection
+ * @param {Array} point
+ * @param {THREE.Plane} plane
+ * @returns {THREE.Vector3|Boolean} the intersection
+ */
 export function intersectionLinePlane(point, plane) {
     var v1 = new THREE.Vector3(point[0], point[1], point[2]);
     v1 = v1.normalize();

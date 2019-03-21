@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href>
+  <title data-ice="title">Source | optimum</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Projet Optimum"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="optimum"><meta property="twitter:description" content="Projet Optimum"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/arc.js~Arc.html">Arc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/astree.js~ASTree.html">ASTree</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/astreesectors.js~ASTreeSectors.html">ASTreeSectors</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/cluster.js~Cluster.html">Cluster</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/dual.js~Dual.html">Dual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/dualrtree.js~DualRtree.html">DualRtree</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/heatmap.js~HeatMap.html">HeatMap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/isovistsectors2d.js~IsoVist.html">IsoVist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/isovistsectors3d.js~IsoVist3D.html">IsoVist3D</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/picture.js~Picture.html">Picture</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/plane.js~Plane.html">Plane</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/polardual.js~PolarDual.html">PolarDual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/sector.js~Sector.html">Sector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/vectorlayercolormap.js~VectorLayerColormap.html">VectorLayerColormap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/vectorlayercolormaprenderer.js~VectorLayerColormapRenderer.html">VectorLayerColormapRenderer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne">sectorsStEtienne</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne2345_r1500">sectorsStEtienne2345_r1500</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne2345_r300">sectorsStEtienne2345_r300</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-euclideanDistance">euclideanDistance</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-computeAlphaOmegaFromDir">computeAlphaOmegaFromDir</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-convertMetadataToJSON">convertMetadataToJSON</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createPositionArray">createPositionArray</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getOrientation">getOrientation</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getPosition">getPosition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-lonLatToDecimal">lonLatToDecimal</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-angleToVector">angleToVector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-bboxArrayToObject">bboxArrayToObject</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-boundingBox">boundingBox</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-cartesianToSpherical">cartesianToSpherical</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-centerOfMass">centerOfMass</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-intersectionLinePlane">intersectionLinePlane</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-planeFromThreePoints">planeFromThreePoints</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-project">project</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sphericalToCartesian">sphericalToCartesian</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-vectorToAngle">vectorToAngle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-changeLayout">changeLayout</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fillGrid">fillGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-filter">filter</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-generateGrid">generateGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-loadImageAndFillGrid">loadImageAndFillGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLineAndLineIntersection">halfLineAndLineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLineIntersection">halfLineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLinesIntersect">halfLinesIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-lineIntersection">lineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-onSegment">onSegment</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-rectangleContains">rectangleContains</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-rectanglesIntersect">rectanglesIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentIntersection">segmentIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentIntersectionExact">segmentIntersectionExact</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsEqual">segmentsEqual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsIntersect">segmentsIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setEpsilon">setEpsilon</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-addRandomArcs">addRandomArcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-addRandomLocations">addRandomLocations</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRandomArbitrary">getRandomArbitrary</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getBuildingSegments">getBuildingSegments</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollDB">pollDB</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollImages">pollImages</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollIsovist">pollIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollThumbnails">pollThumbnails</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsFromXMLRequest">segmentsFromXMLRequest</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCircleOutOverlay">createCircleOutOverlay</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createNewImage">createNewImage</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-gradient">gradient</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleArcs">setStyleArcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleClusters">setStyleClusters</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleInput">setStyleInput</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStylePolygonColormapIsovist">setStylePolygonColormapIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStylePolygonIsovist">setStylePolygonIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleTopo">setStyleTopo</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-arcs">arcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-clusterSource">clusterSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-imageStatic">imageStatic</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-inputLineSource">inputLineSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-inputLines">inputLines</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lineSource">lineSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lines">lines</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-olClusters">olClusters</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-onClickGroup">onClickGroup</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-overlay">overlay</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-overlayGroup">overlayGroup</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-polygonSource">polygonSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-source">source</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-thumbnails">thumbnails</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-vectorLayerArc">vectorLayerArc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-vectorLayerColormap">vectorLayerColormap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-epsilon">epsilon</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-pointRadius">pointRadius</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-stylesTopo">stylesTopo</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#clustering">clustering</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/clusteringstrategy.js~ClusteringStrategy.html">ClusteringStrategy</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/dendrogramstrategy.js~DistanceStrategy.html">DistanceStrategy</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/distancestrategy.js~DistanceStrategy.html">DistanceStrategy</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1>Source <img data-ice="coverageBadge" src="./badge.svg"><span data-ice="totalCoverageCount" class="total-coverage-count">350/350</span></h1>
+
+<table class="files-summary" data-ice="files" data-use-coverage="true">
+  <thead>
+    <tr>
+      <td>File</td>
+      <td>Identifier</td>
+      <td class="coverage">Document</td>
+      <td style="display: none;">Size</td>
+      <td style="display: none;">Lines</td>
+      <td style="display: none;">Updated</td>
+    </tr>
+  </thead>
+  <tbody>
+    
+  <tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/arc.js.html">lib/arc.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/arc.js~Arc.html">Arc</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">12/12</span></td>
+      <td style="display: none;" data-ice="size">4516 byte</td>
+      <td style="display: none;" data-ice="lines">144</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 15:51:44 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/astree.js.html">lib/astree.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/astree.js~ASTree.html">ASTree</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">49/49</span></td>
+      <td style="display: none;" data-ice="size">30303 byte</td>
+      <td style="display: none;" data-ice="lines">964</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 17:09:06 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/astreesectors.js.html">lib/astreesectors.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/astreesectors.js~ASTreeSectors.html">ASTreeSectors</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">49/49</span></td>
+      <td style="display: none;" data-ice="size">27118 byte</td>
+      <td style="display: none;" data-ice="lines">883</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 17:08:27 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/cluster.js.html">lib/cluster.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/cluster.js~Cluster.html">Cluster</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">5/5</span></td>
+      <td style="display: none;" data-ice="size">1071 byte</td>
+      <td style="display: none;" data-ice="lines">43</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 15:14:10 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/clustering/clusteringstrategy.js.html">lib/clustering/clusteringstrategy.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/clustering/clusteringstrategy.js~ClusteringStrategy.html">ClusteringStrategy</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">3/3</span></td>
+      <td style="display: none;" data-ice="size">877 byte</td>
+      <td style="display: none;" data-ice="lines">32</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 15:15:56 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/clustering/dendrogramstrategy.js.html">lib/clustering/dendrogramstrategy.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/clustering/dendrogramstrategy.js~DistanceStrategy.html">DistanceStrategy</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">5/5</span></td>
+      <td style="display: none;" data-ice="size">2351 byte</td>
+      <td style="display: none;" data-ice="lines">83</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 15:25:03 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/clustering/distancestrategy.js.html">lib/clustering/distancestrategy.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/clustering/distancestrategy.js~DistanceStrategy.html">DistanceStrategy</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">4/4</span></td>
+      <td style="display: none;" data-ice="size">1665 byte</td>
+      <td style="display: none;" data-ice="lines">56</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 15:25:01 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/datastetienne.js.html">lib/datastetienne.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-sectorsStEtienne">sectorsStEtienne</a></span>
+<span><a href="function/index.html#static-function-sectorsStEtienne2345_r1500">sectorsStEtienne2345_r1500</a></span>
+<span><a href="function/index.html#static-function-sectorsStEtienne2345_r300">sectorsStEtienne2345_r300</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">3/3</span></td>
+      <td style="display: none;" data-ice="size">99751 byte</td>
+      <td style="display: none;" data-ice="lines">1264</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 15:27:24 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/distance.js.html">lib/distance.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-euclideanDistance">euclideanDistance</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">1/1</span></td>
+      <td style="display: none;" data-ice="size">405 byte</td>
+      <td style="display: none;" data-ice="lines">13</td>
+      <td style="display: none;" data-ice="updated">2019-03-06 13:10:14 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/dual.js.html">lib/dual.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/dual.js~Dual.html">Dual</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">5/5</span></td>
+      <td style="display: none;" data-ice="size">2952 byte</td>
+      <td style="display: none;" data-ice="lines">82</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 15:33:23 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/dualrtree.js.html">lib/dualrtree.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/dualrtree.js~DualRtree.html">DualRtree</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">12/12</span></td>
+      <td style="display: none;" data-ice="size">4784 byte</td>
+      <td style="display: none;" data-ice="lines">162</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 15:43:19 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/exiftool-util.js.html">lib/exiftool-util.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-computeAlphaOmegaFromDir">computeAlphaOmegaFromDir</a></span>
+<span><a href="function/index.html#static-function-convertMetadataToJSON">convertMetadataToJSON</a></span>
+<span><a href="function/index.html#static-function-createPositionArray">createPositionArray</a></span>
+<span><a href="function/index.html#static-function-getOrientation">getOrientation</a></span>
+<span><a href="function/index.html#static-function-getPosition">getPosition</a></span>
+<span><a href="function/index.html#static-function-lonLatToDecimal">lonLatToDecimal</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">6/6</span></td>
+      <td style="display: none;" data-ice="size">3584 byte</td>
+      <td style="display: none;" data-ice="lines">116</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 15:54:10 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/geometry.js.html">lib/geometry.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-angleToVector">angleToVector</a></span>
+<span><a href="function/index.html#static-function-bboxArrayToObject">bboxArrayToObject</a></span>
+<span><a href="function/index.html#static-function-boundingBox">boundingBox</a></span>
+<span><a href="function/index.html#static-function-cartesianToSpherical">cartesianToSpherical</a></span>
+<span><a href="function/index.html#static-function-centerOfMass">centerOfMass</a></span>
+<span><a href="function/index.html#static-function-intersectionLinePlane">intersectionLinePlane</a></span>
+<span><a href="function/index.html#static-function-planeFromThreePoints">planeFromThreePoints</a></span>
+<span><a href="function/index.html#static-function-project">project</a></span>
+<span><a href="function/index.html#static-function-sphericalToCartesian">sphericalToCartesian</a></span>
+<span><a href="function/index.html#static-function-vectorToAngle">vectorToAngle</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">10/10</span></td>
+      <td style="display: none;" data-ice="size">4444 byte</td>
+      <td style="display: none;" data-ice="lines">170</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 16:00:52 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/grid.js.html">lib/grid.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-changeLayout">changeLayout</a></span>
+<span><a href="function/index.html#static-function-fillGrid">fillGrid</a></span>
+<span><a href="function/index.html#static-function-filter">filter</a></span>
+<span><a href="function/index.html#static-function-generateGrid">generateGrid</a></span>
+<span><a href="function/index.html#static-function-loadImageAndFillGrid">loadImageAndFillGrid</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">5/5</span></td>
+      <td style="display: none;" data-ice="size">3117 byte</td>
+      <td style="display: none;" data-ice="lines">112</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 16:05:01 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/heatmap.js.html">lib/heatmap.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/heatmap.js~HeatMap.html">HeatMap</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">3/3</span></td>
+      <td style="display: none;" data-ice="size">1750 byte</td>
+      <td style="display: none;" data-ice="lines">53</td>
+      <td style="display: none;" data-ice="updated">2019-03-05 10:07:19 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/isovistsectors2d.js.html">lib/isovistsectors2d.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/isovistsectors2d.js~IsoVist.html">IsoVist</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">26/26</span></td>
+      <td style="display: none;" data-ice="size">21175 byte</td>
+      <td style="display: none;" data-ice="lines">568</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 17:28:24 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/isovistsectors3d.js.html">lib/isovistsectors3d.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/isovistsectors3d.js~IsoVist3D.html">IsoVist3D</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">33/33</span></td>
+      <td style="display: none;" data-ice="size">22516 byte</td>
+      <td style="display: none;" data-ice="lines">617</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 17:29:39 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/layers.js.html">lib/layers.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="variable/index.html#static-variable-arcs">arcs</a></span>
+<span><a href="variable/index.html#static-variable-clusterSource">clusterSource</a></span>
+<span><a href="variable/index.html#static-variable-imageStatic">imageStatic</a></span>
+<span><a href="variable/index.html#static-variable-inputLineSource">inputLineSource</a></span>
+<span><a href="variable/index.html#static-variable-inputLines">inputLines</a></span>
+<span><a href="variable/index.html#static-variable-lineSource">lineSource</a></span>
+<span><a href="variable/index.html#static-variable-lines">lines</a></span>
+<span><a href="variable/index.html#static-variable-olClusters">olClusters</a></span>
+<span><a href="variable/index.html#static-variable-onClickGroup">onClickGroup</a></span>
+<span><a href="variable/index.html#static-variable-overlay">overlay</a></span>
+<span><a href="variable/index.html#static-variable-overlayGroup">overlayGroup</a></span>
+<span><a href="variable/index.html#static-variable-polygonSource">polygonSource</a></span>
+<span><a href="variable/index.html#static-variable-source">source</a></span>
+<span><a href="variable/index.html#static-variable-thumbnails">thumbnails</a></span>
+<span><a href="variable/index.html#static-variable-vectorLayerArc">vectorLayerArc</a></span>
+<span><a href="variable/index.html#static-variable-vectorLayerColormap">vectorLayerColormap</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">16/16</span></td>
+      <td style="display: none;" data-ice="size">3174 byte</td>
+      <td style="display: none;" data-ice="lines">156</td>
+      <td style="display: none;" data-ice="updated">2019-03-05 09:28:21 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/lineintersection.js.html">lib/lineintersection.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="variable/index.html#static-variable-epsilon">epsilon</a></span>
+<span><a href="function/index.html#static-function-halfLineAndLineIntersection">halfLineAndLineIntersection</a></span>
+<span><a href="function/index.html#static-function-halfLineIntersection">halfLineIntersection</a></span>
+<span><a href="function/index.html#static-function-halfLinesIntersect">halfLinesIntersect</a></span>
+<span><a href="function/index.html#static-function-lineIntersection">lineIntersection</a></span>
+<span><a href="function/index.html#static-function-onSegment">onSegment</a></span>
+<span><a href="function/index.html#static-function-rectangleContains">rectangleContains</a></span>
+<span><a href="function/index.html#static-function-rectanglesIntersect">rectanglesIntersect</a></span>
+<span><a href="function/index.html#static-function-segmentIntersection">segmentIntersection</a></span>
+<span><a href="function/index.html#static-function-segmentIntersectionExact">segmentIntersectionExact</a></span>
+<span><a href="function/index.html#static-function-segmentsEqual">segmentsEqual</a></span>
+<span><a href="function/index.html#static-function-segmentsIntersect">segmentsIntersect</a></span>
+<span><a href="function/index.html#static-function-setEpsilon">setEpsilon</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">15/15</span></td>
+      <td style="display: none;" data-ice="size">11615 byte</td>
+      <td style="display: none;" data-ice="lines">377</td>
+      <td style="display: none;" data-ice="updated">2019-03-05 09:16:57 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/picture.js.html">lib/picture.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/picture.js~Picture.html">Picture</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">9/9</span></td>
+      <td style="display: none;" data-ice="size">1591 byte</td>
+      <td style="display: none;" data-ice="lines">65</td>
+      <td style="display: none;" data-ice="updated">2019-03-05 09:21:37 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/plane.js.html">lib/plane.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/plane.js~Plane.html">Plane</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">8/8</span></td>
+      <td style="display: none;" data-ice="size">3573 byte</td>
+      <td style="display: none;" data-ice="lines">107</td>
+      <td style="display: none;" data-ice="updated">2019-03-05 09:42:29 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/polardual.js.html">lib/polardual.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/polardual.js~PolarDual.html">PolarDual</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">5/5</span></td>
+      <td style="display: none;" data-ice="size">5940 byte</td>
+      <td style="display: none;" data-ice="lines">156</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 15:35:01 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/randomfeatures.js.html">lib/randomfeatures.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-addRandomArcs">addRandomArcs</a></span>
+<span><a href="function/index.html#static-function-addRandomLocations">addRandomLocations</a></span>
+<span><a href="function/index.html#static-function-getRandomArbitrary">getRandomArbitrary</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">3/3</span></td>
+      <td style="display: none;" data-ice="size">1539 byte</td>
+      <td style="display: none;" data-ice="lines">52</td>
+      <td style="display: none;" data-ice="updated">2019-03-04 13:19:23 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/sector.js.html">lib/sector.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/sector.js~Sector.html">Sector</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">10/10</span></td>
+      <td style="display: none;" data-ice="size">2818 byte</td>
+      <td style="display: none;" data-ice="lines">97</td>
+      <td style="display: none;" data-ice="updated">2019-03-05 09:42:42 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/serverpoll.js.html">lib/serverpoll.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-getBuildingSegments">getBuildingSegments</a></span>
+<span><a href="function/index.html#static-function-pollDB">pollDB</a></span>
+<span><a href="function/index.html#static-function-pollImages">pollImages</a></span>
+<span><a href="function/index.html#static-function-pollIsovist">pollIsovist</a></span>
+<span><a href="function/index.html#static-function-pollThumbnails">pollThumbnails</a></span>
+<span><a href="function/index.html#static-function-segmentsFromXMLRequest">segmentsFromXMLRequest</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">8/8</span></td>
+      <td style="display: none;" data-ice="size">5376 byte</td>
+      <td style="display: none;" data-ice="lines">186</td>
+      <td style="display: none;" data-ice="updated">2019-03-05 10:28:42 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/styles.js.html">lib/styles.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-createCircleOutOverlay">createCircleOutOverlay</a></span>
+<span><a href="function/index.html#static-function-createNewImage">createNewImage</a></span>
+<span><a href="function/index.html#static-function-gradient">gradient</a></span>
+<span><a href="variable/index.html#static-variable-pointRadius">pointRadius</a></span>
+<span><a href="function/index.html#static-function-setStyleArcs">setStyleArcs</a></span>
+<span><a href="function/index.html#static-function-setStyleClusters">setStyleClusters</a></span>
+<span><a href="function/index.html#static-function-setStyleInput">setStyleInput</a></span>
+<span><a href="function/index.html#static-function-setStylePolygonColormapIsovist">setStylePolygonColormapIsovist</a></span>
+<span><a href="function/index.html#static-function-setStylePolygonIsovist">setStylePolygonIsovist</a></span>
+<span><a href="function/index.html#static-function-setStyleTopo">setStyleTopo</a></span>
+<span><a href="variable/index.html#static-variable-stylesTopo">stylesTopo</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">12/12</span></td>
+      <td style="display: none;" data-ice="size">8832 byte</td>
+      <td style="display: none;" data-ice="lines">331</td>
+      <td style="display: none;" data-ice="updated">2019-03-05 10:27:59 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/vectorlayercolormap.js.html">lib/vectorlayercolormap.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/vectorlayercolormap.js~VectorLayerColormap.html">VectorLayerColormap</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">19/19</span></td>
+      <td style="display: none;" data-ice="size">3407 byte</td>
+      <td style="display: none;" data-ice="lines">158</td>
+      <td style="display: none;" data-ice="updated">2019-03-05 10:27:21 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/lib/vectorlayercolormaprenderer.js.html">lib/vectorlayercolormaprenderer.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/lib/vectorlayercolormaprenderer.js~VectorLayerColormapRenderer.html">VectorLayerColormapRenderer</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">14/14</span></td>
+      <td style="display: none;" data-ice="size">8649 byte</td>
+      <td style="display: none;" data-ice="lines">255</td>
+      <td style="display: none;" data-ice="updated">2019-03-05 10:26:43 (UTC)</td>
+    </tr>
+</tbody>
+</table>
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

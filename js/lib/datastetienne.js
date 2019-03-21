@@ -1,5 +1,15 @@
+/**
+ * @fileOverview Isovist from real data St-Etienne
+ * @name datastetienne.js
+ * @author Florent Grélard
+ * @license
+ */
 import Arc from './arc.js';
 
+/**
+ * Sectors from months 02/2018 through 05/2018
+ * @returns {Array<Arc>}  sectors
+ */
 export function sectorsStEtienne2345_r1500() {
     var arcs = [new Arc([485538.20312252047,5692058.519576657],100, 86.94999999999997, 86.95),
                 new Arc([485168.37503644056,5690734.161387739],100, 115.58, 116.2102),
@@ -578,7 +588,10 @@ export function sectorsStEtienne2345_r1500() {
     return arcs2;
 }
 
-
+/**
+ * Sectors from months 02/2018 through 05/2018 (radius 300)
+ * @returns {Array<Arc>}  sectors
+ */
 export function sectorsStEtienne2345_r300() {
     return [new Arc([485538.20312252047,5692058.519576657],100, 86.94999999999997, 86.95),
             new Arc([485168.37503644056,5690734.161387739],100, 115.58, 155.18),
@@ -1036,6 +1049,11 @@ export function sectorsStEtienne2345_r300() {
             new Arc([489576.31765104656,5688245.955613515],100, 85.30999999999999, 85.31)];
 }
 
+/**
+ * Sectors from months 02/2018
+ * @param {number=} r radius
+ * @returns {Array<Arc>}  sectors
+ */
 export function sectorsStEtienne(r=100) {
     var arcs = [new Arc([490530.2638429834,5689709.625998666],r, 65.42000000000003, 65.4729),
 

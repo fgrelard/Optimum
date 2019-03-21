@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">lib/isovistsectors2d.js | optimum</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Projet Optimum"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="optimum"><meta property="twitter:description" content="Projet Optimum"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/arc.js~Arc.html">Arc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/astree.js~ASTree.html">ASTree</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/astreesectors.js~ASTreeSectors.html">ASTreeSectors</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/cluster.js~Cluster.html">Cluster</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/dual.js~Dual.html">Dual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/dualrtree.js~DualRtree.html">DualRtree</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/heatmap.js~HeatMap.html">HeatMap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/isovistsectors2d.js~IsoVist.html">IsoVist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/isovistsectors3d.js~IsoVist3D.html">IsoVist3D</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/picture.js~Picture.html">Picture</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/plane.js~Plane.html">Plane</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/polardual.js~PolarDual.html">PolarDual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/sector.js~Sector.html">Sector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/vectorlayercolormap.js~VectorLayerColormap.html">VectorLayerColormap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/vectorlayercolormaprenderer.js~VectorLayerColormapRenderer.html">VectorLayerColormapRenderer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne">sectorsStEtienne</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne2345_r1500">sectorsStEtienne2345_r1500</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne2345_r300">sectorsStEtienne2345_r300</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-euclideanDistance">euclideanDistance</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-computeAlphaOmegaFromDir">computeAlphaOmegaFromDir</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-convertMetadataToJSON">convertMetadataToJSON</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createPositionArray">createPositionArray</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getOrientation">getOrientation</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getPosition">getPosition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-lonLatToDecimal">lonLatToDecimal</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-angleToVector">angleToVector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-bboxArrayToObject">bboxArrayToObject</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-boundingBox">boundingBox</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-cartesianToSpherical">cartesianToSpherical</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-centerOfMass">centerOfMass</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-intersectionLinePlane">intersectionLinePlane</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-planeFromThreePoints">planeFromThreePoints</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-project">project</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sphericalToCartesian">sphericalToCartesian</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-vectorToAngle">vectorToAngle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-changeLayout">changeLayout</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fillGrid">fillGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-filter">filter</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-generateGrid">generateGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-loadImageAndFillGrid">loadImageAndFillGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLineAndLineIntersection">halfLineAndLineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLineIntersection">halfLineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLinesIntersect">halfLinesIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-lineIntersection">lineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-onSegment">onSegment</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-rectangleContains">rectangleContains</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-rectanglesIntersect">rectanglesIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentIntersection">segmentIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentIntersectionExact">segmentIntersectionExact</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsEqual">segmentsEqual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsIntersect">segmentsIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setEpsilon">setEpsilon</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-addRandomArcs">addRandomArcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-addRandomLocations">addRandomLocations</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRandomArbitrary">getRandomArbitrary</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getBuildingSegments">getBuildingSegments</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollDB">pollDB</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollImages">pollImages</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollIsovist">pollIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollThumbnails">pollThumbnails</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsFromXMLRequest">segmentsFromXMLRequest</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCircleOutOverlay">createCircleOutOverlay</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createNewImage">createNewImage</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-gradient">gradient</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleArcs">setStyleArcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleClusters">setStyleClusters</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleInput">setStyleInput</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStylePolygonColormapIsovist">setStylePolygonColormapIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStylePolygonIsovist">setStylePolygonIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleTopo">setStyleTopo</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-arcs">arcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-clusterSource">clusterSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-imageStatic">imageStatic</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-inputLineSource">inputLineSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-inputLines">inputLines</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lineSource">lineSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lines">lines</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-olClusters">olClusters</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-onClickGroup">onClickGroup</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-overlay">overlay</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-overlayGroup">overlayGroup</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-polygonSource">polygonSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-source">source</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-thumbnails">thumbnails</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-vectorLayerArc">vectorLayerArc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-vectorLayerColormap">vectorLayerColormap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-epsilon">epsilon</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-pointRadius">pointRadius</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-stylesTopo">stylesTopo</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#clustering">clustering</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/clusteringstrategy.js~ClusteringStrategy.html">ClusteringStrategy</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/dendrogramstrategy.js~DistanceStrategy.html">DistanceStrategy</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/distancestrategy.js~DistanceStrategy.html">DistanceStrategy</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">lib/isovistsectors2d.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/**
+ * @fileOverview Isovist computation inspired from Suleiman et al, A New Algorithm for 3D Isovists.
+ * Space is delimited by a set of segments, and visibility can be determined by circular sectors associated with these segments
+ * @name isovistsectors2d.js
+ * @author Florent Grelard
+ * @license
+ */
+
+import LineString from &apos;ol/geom/LineString&apos;;
+import Polygon from &apos;ol/geom/Polygon&apos;;
+import * as Intersection from &apos;./lineintersection&apos;;
+import {euclideanDistance} from &apos;./distance&apos;;
+import Arc from &apos;./arc&apos;;
+
+/** Object containing segment and associated visibility sector
+ */
+class AngleToSegment {
+    /**
+     * Constructor
+     * @param {Arc} angle
+     * @param {ol.geom.LineString} segment
+     */
+    constructor(angle, segment) {
+        /**
+         * angle
+         * @type {Arc}
+         */
+        this.angle = angle;
+
+        /**
+         * segment
+         * @type {ol.geom.LineString}
+         */
+        this.segment = segment;
+    }
+}
+
+/** Class allowing to compute the isovist in 2D, inspired by Suleiman et al&apos;s &apos;A New Algorithm for 3D Isovists&quot;
+ * the space is delimited by a set of segments and visibility can be determined by circular sectors associated with these segments
+ */
+export default class IsoVist {
+    /**
+     * Constructor
+     * @param {Arc} arc the field of view
+     * @param {Array.&lt;ol.Feature&gt;} segments segments in map
+     * @param {Boolean} isDisplayPartial if true display only partial visible segments, else display full visible segments
+     * @param {Boolean} isDisplayPolygon should display polygon or line segments
+     * @param {number} epsilon tolerance for intersection
+     */
+    constructor(arc, segments, isDisplayPartial = true, isDisplayPolygon = true, epsilon = 0.0001) {
+        /**
+         * arc the field of view
+         * @type {Arc}
+         */
+        this.arc = arc;
+
+        /**
+         * building segments
+         * @type {Array.&lt;ol.Feature&gt;} segments segments in map
+         */
+        this.segments = segments;
+
+        /**
+         * if true display only partial visible segments, else display full visible segments
+         * @type {Boolean}
+         */
+        this.isDisplayPartial = isDisplayPartial;
+
+        /**
+         * if true, displays polygon, else, union of line segments
+         * @type {Boolean}
+         */
+        this.isDisplayPolygon = isDisplayPolygon;
+
+        /**
+         * @type {number} epsilon tolerance for intersection
+         */
+         this.epsilon = epsilon;
+    }
+
+    /**
+     * Checks whether a segment is contained inside an arc
+     * @param {ol.geom.LineString} segment
+     * @returns {boolean} whether segment is inside
+     */
+    isInsideArc(segment) {
+        for (let i = 0; i &lt; 1; i+=0.1) {
+            if (this.arc.geometry.intersectsCoordinate(segment.getCoordinateAt(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Extracts all segments constituting a polygon
+     * @param {ol.geom.Polygon} polygon
+     * @param {Arc} arc
+     * @returns {Array} segments
+     */
+    segmentsFromPolygon(polygon, arc) {
+        var segments = [];
+        var polygonVertices = polygon.getCoordinates()[0];
+        for (let i = 0; i &lt; polygonVertices.length-1; i++) {
+            var p1 = polygonVertices[i];
+            var p2 = polygonVertices[i+1];
+            var segment = new LineString([p1, p2]);
+            segments.push(segment);
+        }
+        return segments;
+    }
+
+    /**
+     * From all the segments in the building, extract only those visible in field of view
+     * @returns {Array.&lt;ol.geom.LineString&gt;} array of visible segments
+     */
+    segmentsIntersectingFOV() {
+        var segments = [];
+        var geometryArc = this.arc.geometry;
+        var extentArc = geometryArc.getExtent();
+        var that = this;
+        for (let f of this.segments) {
+            var geometryFeature = f.getGeometry();
+            if (euclideanDistance(geometryFeature.getFirstCoordinate(), that.arc.center) &gt; 2 * that.arc.radius) continue;
+            if (geometryArc.intersectsExtent(geometryFeature.getExtent()) &amp;&amp;
+                geometryFeature.intersectsExtent(extentArc)) {
+                if (geometryFeature.getType() === &quot;Polygon&quot;) {
+                    var segmentsPolygon = that.segmentsFromPolygon(geometryFeature, geometryArc);
+                    Array.prototype.push.apply(segments, segmentsPolygon);
+                }
+            }
+        }
+        return segments;
+    }
+
+
+
+    /**
+     * Checks whether a segment is blocking, that is to say it is fully visible from the point of view
+     * @param {ol.geom.LineString} segment
+     * @param {Array.&lt;ol.geom.LineString&gt;} segments all the segments
+     * @returns {Boolean} whether segment is blocking with respect to segments
+     */
+    isNonBlocking(segment, segments) {
+        var position = this.arc.center;
+        var p1 = segment.getFirstCoordinate();
+        var p2 = segment.getLastCoordinate();
+
+        var s1 = new LineString([position, p1]);
+        var s2 = new LineString([position, p2]);
+
+        var toPush = false;
+        var that = this;
+        for (let s of segments) {
+            if (Intersection.segmentsEqual(s, segment))
+                continue;
+            var i1 = Intersection.segmentsIntersect(s1, s);
+            var i2 = Intersection.segmentsIntersect(s2, s);
+            if (i1 || i2) {
+                if (i1) {
+                    if (euclideanDistance([i1.x, i1.y], p1) &gt; that.epsilon &amp;&amp;
+                        euclideanDistance([i1.x, i1.y], p2) &gt; that.epsilon)
+                        toPush = true;
+                }
+                if (i2) {
+                    if (euclideanDistance([i2.x , i2.y], p1) &gt; that.epsilon &amp;&amp;
+                        euclideanDistance([i2.x , i2.y], p2) &gt; that.epsilon)
+                        toPush = true;
+                }
+            }
+        }
+        return toPush;
+    }
+
+    /**
+     * Converts a point to the angle that it forms with the x-axis in degrees (theta in spherical coordinates)
+     * @param {Array} point
+     * @returns {number} angle in degree
+     */
+    angleFromCoordinates(point) {
+        var position = this.arc.center;
+        var v = [point[0] - position[0],
+                 point[1] - position[1]];
+
+        var dot = v[0];
+
+        var norm = Math.sqrt(Math.pow(v[0], 2) + Math.pow(v[1], 2));
+
+        var angle = Math.atan2(v[1], v[0]) * 360 / (2*Math.PI);
+        if (angle &lt; 0)
+            angle += 360;
+        return angle;
+    }
+
+    /**
+     * Computes the angle that is blocked by a segment
+     * @param {ol.geom.LineString} segment
+     * @returns {Arc} the arc corresponding to segment
+     */
+    visionBlockingArc(segment) {
+        var radius = this.arc.radius;
+        var position = this.arc.center;
+        var p1 = segment.getFirstCoordinate();
+        var p2 = segment.getLastCoordinate();
+
+        var alpha = this.angleFromCoordinates(p1);
+        var omega = this.angleFromCoordinates(p2);
+
+        if (omega &lt; alpha) {
+            var tmp = alpha;
+            alpha = omega;
+            omega = tmp;
+        }
+        var diffOA = omega - alpha;
+        var diffOA360 = 360+alpha-omega;
+        if (diffOA360 &lt; diffOA) {
+            var tmp = alpha;
+            alpha = omega-360;
+            omega = tmp;
+        }
+        if (omega &lt; this.arc.alpha) {
+            alpha += 360;
+            omega += 360;
+        }
+
+        return new Arc(position, radius, +alpha.toFixed(4), +omega.toFixed(4));
+    }
+
+    /**
+     * Merges consecutive arcs which have overlapping angles
+     * @param {Array.&lt;Arc&gt;} array
+     * @returns {Array.&lt;Arc&gt;} simplified array
+     */
+    mergeOverlappingAngles(array) {
+        if (array.length === 1) return array;
+        var that = this;
+        var trimmedArray = [];
+        array.sort(function(a,b) {
+            if (a.alpha === b.alpha)
+                return a.omega - b.omega;
+            return a.alpha - b.alpha;
+        });
+        var alpha = 0;
+        var omega = 0;
+
+        for (let i = 0; i &lt; array.length - 1; i++) {
+            var current = array[i];
+            var next = array[i+1];
+
+            if (i === 0) {
+                alpha = current.alpha;
+            }
+            if (current.omega &gt; omega) {
+                omega = current.omega;
+            }
+            if (omega &lt; next.alpha) {
+                trimmedArray.push(new Arc(that.arc.center, that.arc.radius, alpha, omega));
+                alpha = next.alpha;
+            }
+            if (i === array.length - 2) {
+                trimmedArray.push(new Arc(that.arc.center, that.arc.radius, alpha, next.omega));
+            }
+        };
+        return trimmedArray;
+    }
+
+    /**
+     * Returns the complementary of blocked angles in the field of view
+     * @param {Array.&lt;Arc&gt;} blockedAngles
+     * @returns {Array.&lt;Arc&gt;} free angles
+     */
+    freeAngles(blockedAngles) {
+        var freeA = [];
+        var start = this.arc.alpha;
+        var end = this.arc.omega;
+        var that = this;
+        var index = 0;
+        while (index &lt; blockedAngles.length) {
+            var currentBlocked = blockedAngles[index];
+            if (start &lt; currentBlocked.alpha &amp;&amp; start &lt; end) {
+                freeA.push(new Arc(this.arc.center, this.arc.radius, start, currentBlocked.alpha));
+            }
+            if (index === blockedAngles.length - 1 &amp;&amp; currentBlocked.omega &gt; that.arc.alpha &amp;&amp; currentBlocked.omega &lt; end) {
+                freeA.push(new Arc(this.arc.center, this.arc.radius, currentBlocked.omega, end));
+            }
+            start = (currentBlocked.omega &gt;= start) ? currentBlocked.omega : start;
+            index++;
+        }
+        return freeA;
+    }
+
+    /**
+     * For partially visible segments, extract the part that is visible from the point of view
+     * @param {Array} intersection start point of visible segment
+     * @param {ol.geom.LineString} segment full segment
+     * @param {Arc} arc
+     * @returns {ol.geom.LineString} visible segment
+     */
+    segmentPartVisible(intersection, segment, arc) {
+        var segStart = segment.getFirstCoordinate();
+        var segEnd = segment.getLastCoordinate();
+
+        var norm = euclideanDistance(segStart, segEnd);
+
+        var distStart = euclideanDistance(intersection, segStart);
+        var distEnd = euclideanDistance(intersection, segEnd);
+
+        var middle = [(intersection.x + (segStart[0] - segEnd[0]) / norm), (intersection.y + (segStart[1] - segEnd[1]) / norm) ];
+        var middle2 = [(intersection.x + (segEnd[0] - segStart[0]) / norm), (intersection.y + (segEnd[1] - segStart[1]) / norm) ];
+        var p;
+        if (arc.geometry.intersectsCoordinate(middle))
+            p = segStart;
+        else if (arc.geometry.intersectsCoordinate(middle2))
+            p = segEnd;
+        else {
+            p = [intersection.x, intersection.y];
+        }
+        var visibleSegment = new LineString([[intersection.x, intersection.y], p]);
+        return visibleSegment;
+    }
+
+    /**
+     * Computes partially visible segment(s) from a segment
+     * @param {Array.&lt;Arc&gt;} angles free angles
+     * @param {ol.geom.LineString} segment
+     * @returns {Array.&lt;ol.geom.LineString, Array.&lt;ol.geom.LineString&gt; &gt;} if it is partially visible : first argument = full segment, second argument = array of visible segments ; else null
+     */
+    partiallyVisibleSegments(angles, segment) {
+
+        var visibleSegment = null;
+        var position = this.arc.center;
+        var visibleSegments = [];
+        var that = this;
+        var ps1 = segment.getFirstCoordinate();
+        var ps2 = segment.getLastCoordinate();
+
+        for (let angle of angles) {
+            if (!angle.geometry)
+                angle.computeGeometry();
+            var r = that.arc.radius;
+            var alphaRad = angle.alpha * Math.PI / 180;
+            var omegaRad = angle.omega * Math.PI / 180;
+            var p1 = [position[0] + r * Math.cos(alphaRad),
+                      position[1] + r * Math.sin(alphaRad)];
+            var p2 = [position[0] + r * Math.cos(omegaRad),
+                      position[1] + r * Math.sin(omegaRad)];
+            var s1 = new LineString([position, p1]);
+            var s2 = new LineString([position, p2]);
+            var i1 = Intersection.segmentsIntersect(segment, s1);
+            var i2 = Intersection.segmentsIntersect(segment, s2);
+            if (i1 || i2) {
+                if (i1 &amp;&amp; i2) {
+                    visibleSegment = new LineString([[i1.x, i1.y],
+                                                     [i2.x, i2.y]]);
+                }
+                else if (i1) {
+                    visibleSegment = that.segmentPartVisible(i1, segment, angle);
+                }
+                else if (i2) {
+                    visibleSegment = that.segmentPartVisible(i2, segment, angle);
+                }
+                visibleSegments.push(visibleSegment);
+            }
+            else {
+                var i3 = angle.geometry.intersectsCoordinate(ps1);
+                var i4 = angle.geometry.intersectsCoordinate(ps2);
+                if (i3 &amp;&amp; i4) {
+                    visibleSegments.push(segment);
+                }
+            }
+        }
+
+        return (visibleSegments.length &gt; 0) ? [segment, visibleSegments] : null;
+    }
+
+
+    /**
+     * Extract all fully visible segments
+     * @param {Array.&lt;ol.geom.LineString&gt;} segments all segments from buildings
+     * @returns {Array.&lt;ol.geom.LineString&gt;} fully visible segments
+     */
+    blockingSegments(segments) {
+        var blockingSegments = [];
+        var that = this;
+        for (let segment of segments) {
+            var nonBlocking = that.isNonBlocking(segment,
+                                                 segments);
+            if (!nonBlocking) {
+                blockingSegments.push(segment);
+            }
+        }
+        return  blockingSegments;
+    }
+
+    /**
+     * Extracts all partially visible segments, that is to say to those who are in the free vision field
+     * @param {Array.&lt;ol.geom.LineString&gt;} blockingSegments
+     * @param {Array.&lt;ol.geom.LineString&gt;} segments
+     * @returns {Array.&lt;ol.geom.LineString&gt;} partially visible segments
+     */
+    freeSegments(blockingSegments, segments) {
+        var blockingAngles = [];
+        var freeSegments = [];
+        var that = this;
+        for (let segment of blockingSegments) {
+            var blockingAngle = that.visionBlockingArc(segment);
+            blockingAngles.push(blockingAngle);
+        }
+        var trimmedBlockingAngles = this.mergeOverlappingAngles(blockingAngles);
+        var freeVisionAngles = this.freeAngles(trimmedBlockingAngles);
+        for (let segment of segments) {
+            if (blockingSegments.indexOf(segment) === -1) {
+                var visibleSegment = that.partiallyVisibleSegments(freeVisionAngles, segment);
+                if (visibleSegment &amp;&amp; that.isInsideArc(visibleSegment[0]))
+                    freeSegments.push(visibleSegment);
+            }
+        }
+        return freeSegments;
+    }
+
+    /**
+     * Display visible parts of blocking segments
+     * @param {Array.&lt;ol.geom.LineString&gt;} blockingSegments
+     * @returns {Array.&lt;ol.geom.LineString&gt;} partially visible blocking segments
+     */
+    visibleBlockingSegments(blockingSegments) {
+        var that  = this;
+        var visibleSegments = [];
+        var position = this.arc.center;
+
+        //Computing blocking segments hidden by other segments
+        blockingSegments.sort(function(a,b) {
+            return euclideanDistance(a.getClosestPoint(position), position) - euclideanDistance(b.getClosestPoint(position), position);
+        });
+        var blockingAngles = [];
+        var freeSegments = [];
+        var freeVisionAngles = [this.arc];
+        for (let segment of blockingSegments) {
+            var blockingAngle = that.visionBlockingArc(segment);
+            var partial = false;
+            for (let angle of freeVisionAngles) {
+                if ((blockingAngle.alpha &lt; angle.alpha &amp;&amp; blockingAngle.omega &lt;= angle.omega &amp;&amp; blockingAngle.omega &gt; angle.alpha) ||
+                    (blockingAngle.omega &gt; angle.omega &amp;&amp; blockingAngle.alpha &gt;= angle.alpha &amp;&amp; blockingAngle.alpha &lt; angle.omega)) {
+                    var visibleSegment = that.partiallyVisibleSegments(freeVisionAngles, segment);
+                    if (visibleSegment)
+                        Array.prototype.push.apply(visibleSegments, visibleSegment[1]);
+                    partial = true;
+                }
+            }
+            var p1 = segment.getFirstCoordinate();
+            var p2 = segment.getLastCoordinate();
+            if (!partial &amp;&amp; that.isInsideArc(segment))
+            {
+                Array.prototype.push.apply(visibleSegments, [segment]);
+            }
+
+            blockingAngles.push(blockingAngle);
+            var trimmedBlockingAngles = that.mergeOverlappingAngles(blockingAngles);
+            freeVisionAngles = that.freeAngles(trimmedBlockingAngles);
+        }
+
+        return visibleSegments;
+    }
+
+    /**
+     * Computes the isovist polygon from blocking segments
+     * @param {Array.&lt;ol.geom.LineString&gt;} blockingSegments
+     * @returns {Array.&lt;ol.geom.Polygon&gt;} the isovist
+     */
+    visibilityPolygon(blockingSegments) {
+        var polygon = [];
+        var that = this;
+        var anglesToSegments = [];
+        var blockingAngles = [];
+
+        for (let segment of blockingSegments) {
+            var blockingAngle = that.visionBlockingArc(segment);
+            let fc = segment.getFirstCoordinate();
+            let lc = segment.getLastCoordinate();
+            var angleFC = that.angleFromCoordinates(fc);
+            var angleLC = that.angleFromCoordinates(lc);
+            angleFC = (angleFC &lt; that.arc.alpha - 1) ? angleFC+360 : angleFC;
+            angleLC = (angleLC &lt; that.arc.alpha - 1) ? angleLC+360 : angleLC;
+            var first = (angleFC &lt; angleLC) ? fc : lc;
+            var last = (angleFC &lt; angleLC) ? lc : fc;
+            var orientedSegment = new LineString([first, last]);
+            let angleToSegment = new AngleToSegment(blockingAngle, orientedSegment);
+            blockingAngles.push(blockingAngle);
+            anglesToSegments.push(angleToSegment);
+        }
+        var trimmedBlockingAngles = this.mergeOverlappingAngles(blockingAngles);
+        var freeVisionAngles = this.freeAngles(trimmedBlockingAngles);
+        for (let angle of freeVisionAngles) {
+            if (angle.omega - angle.alpha &lt; 0.5) continue;
+            angle.computeGeometry();
+            var freeSegment = new LineString([angle.fullGeometry[1].getFlatCoordinates(),
+                                              angle.fullGeometry[2].getFlatCoordinates()]);
+            let angleToSegment = new AngleToSegment(angle, freeSegment);
+            anglesToSegments.push(angleToSegment);
+        }
+
+        anglesToSegments.sort(function(a,b) {
+            if (a.angle.alpha === b.angle.alpha)
+                return a.angle.omega - b.angle.omega;
+            return a.angle.alpha - b.angle.alpha;
+        });
+        if (anglesToSegments.length &gt; 0) {
+            polygon.push(this.arc.center);
+            polygon.push(anglesToSegments[0].segment.getFirstCoordinate());
+            for (let i = 0; i &lt; anglesToSegments.length; i++) {
+                let fc = anglesToSegments[i].segment.getFirstCoordinate();
+                let lc = anglesToSegments[i].segment.getLastCoordinate();
+                polygon.push(fc);
+                polygon.push(lc);
+            }
+            polygon.push(this.arc.center);
+        }
+        return new Polygon([polygon]);
+    }
+
+
+
+
+    /**
+     * Main function
+     * @returns {Array.&lt;ol.geom.Polygon&gt;} isovist as the segments from buildings visible from the point of view
+     */
+    isovist() {
+        var visibleSegments = [];
+        var segments = this.segmentsIntersectingFOV();
+        var position = this.arc.center;
+        var blockingSegments = this.blockingSegments(segments);
+
+        if (this.isDisplayPartial) {
+            var visibleBlockingSegments = this.visibleBlockingSegments(blockingSegments);
+            Array.prototype.push.apply(visibleSegments, visibleBlockingSegments);
+        }
+        var freeSegments = this.freeSegments(blockingSegments, segments);
+
+        var partiallyVisible = [];
+        while (freeSegments.length &gt; 0) {
+            freeSegments.sort(function(a,b) {
+                return euclideanDistance(position, a[0].getClosestPoint(position)) - euclideanDistance(position, b[0].getClosestPoint(position));
+            });
+            blockingSegments.push(freeSegments[0][0]);
+            partiallyVisible.push(freeSegments[0][1]);
+            freeSegments = this.freeSegments(blockingSegments, segments);
+        }
+
+        if (this.isDisplayPartial) {
+            for (let segments of partiallyVisible) {
+                Array.prototype.push.apply(visibleSegments, segments);
+            }
+        } else {
+            Array.prototype.push.apply(visibleSegments, blockingSegments);
+        }
+
+        if (this.isDisplayPolygon) {
+            var polygon = this.visibilityPolygon(visibleSegments);
+            return polygon;
+        }
+        return visibleSegments;
+    }
+}
+
+
+
+
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

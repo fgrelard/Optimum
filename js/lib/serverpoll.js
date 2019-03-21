@@ -1,10 +1,28 @@
+/**
+ * @fileOverview Allows to poll a Webserver for images
+ * isovists and metadata
+ * @name serverpoll.js
+ * @author Florent Grélard
+ * @license
+ */
+
+
 import Arc from './arc';
 import {transformExtent} from 'ol/proj';
 import OSMXML from 'ol/format/OSMXML';
 import View from 'ol/View';
 
+/**
+ * WebServer URL to poll
+ * @type {string}
+ */
 var urlDB = "http://159.84.143.100:8080/";
 
+/**
+ * Converts a POST response to a blob for image display in the browser
+ * @param {json} json the post request
+ * @returns {Blob} blob
+ */
 function jsonToBlob(json) {
     var sliceSize = sliceSize || 512;
 
@@ -27,6 +45,12 @@ function jsonToBlob(json) {
     return blob;
 }
 
+/**
+ * Generic function to poll the DB
+ * @param {string} path local path used in the post request
+ * @param {string} url2 the POST path
+ * @returns {json} json post result
+ */
 export function pollDB(path, url2) {
     var t0Image = fetch(urlDB + url2, {
         method: 'post',
@@ -42,6 +66,12 @@ export function pollDB(path, url2) {
 }
 
 
+/**
+ * Polls for images
+ * @param {string} path the full path to the image
+ * @param {AbortController} signal the controller allowing to manage request (null by default)
+ * @returns {URL} the blob image url
+ */
 export function pollImages(path, signal = null) {
     var t0Image = fetch(urlDB + "images", {
         method: 'post',
@@ -61,6 +91,12 @@ export function pollImages(path, signal = null) {
 }
 
 
+/**
+ * Polls for thumbnails
+ * @param {string} path the full path to the image
+ * @param {AbortController} signal the controller allowing to manage request (null by default)
+ * @returns {URL} the blob image url
+ */
 export function pollThumbnails(path, signal = null) {
     var t0Image = fetch(urlDB + "thumbnails", {
         method: 'post',
@@ -79,6 +115,12 @@ export function pollThumbnails(path, signal = null) {
     return t2Image;
 }
 
+/**
+ * Polls for isovists
+ * @param {string} path the full path to the image
+ * @param {AbortController} signal the controller allowing to manage request (null by default)
+ * @returns {ol.geom.Polygon} the isovist
+ */
 export function pollIsovist(path, signal) {
 
     var t0Image = fetch(urlDB + "isovist", {
@@ -95,6 +137,13 @@ export function pollIsovist(path, signal) {
 }
 
 
+/**
+ * @deprecated
+ * Client request for building segments
+ * @param {ol.extent.Extent} extent2 extent in which to search for building segments
+ * @param {ol.Projection} projection world projection
+ * @returns {XMLHttpRequest} client request
+ */
 export function getBuildingSegments(extent2, projection) {
     var client = new XMLHttpRequest();
     client.open('POST', 'https://overpass-api.de/api/interpreter');
@@ -110,6 +159,14 @@ export function getBuildingSegments(extent2, projection) {
 }
 
 
+/**
+ * @deprecated
+ * Response to client request for building segments
+ * @param {XMLHttpRequest} client
+ * @param {ol.Map} map
+ * @param {Array<number>=} position
+ * @returns {Array.<ol.Feature>} segments
+ */
 export function segmentsFromXMLRequest(client, map, position = null) {
     var features = new OSMXML().readFeatures(client.responseText, {
         featureProjection: (position) ? new View({center:position}).getProjection() : map.getView().getProjection()

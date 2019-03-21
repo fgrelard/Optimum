@@ -1,14 +1,37 @@
+/**
+ * @fileOverview Dendrogram based on distance from several pictures
+ * @name dendrogramstrategy.js
+ * @author Florent Grélard
+ * @license
+ */
 import {euclideanDistance} from '../distance';
 import Cluster from '../cluster';
 import ClusteringStrategy from './clusteringstrategy';
 
+
+/** Distance strategy to cluster pictures
+ */
 export default class DistanceStrategy extends ClusteringStrategy {
+
+
+    /**
+     * Overrides constructor
+     * @param {Array<Picture>} pictures
+     */
     constructor(pictures) {
         super();
+        /**
+         * pictures
+         * @type {Array<Picture>}
+         */
         this.pictures = pictures;
     }
 
 
+    /**
+     * Dendrogram strategy
+     * @returns {Array<Cluster>} array of clusters
+     */
     computeClusters() {
         var indexes = [];
         var clusters = [];
@@ -36,6 +59,11 @@ export default class DistanceStrategy extends ClusteringStrategy {
         return clusters;
     }
 
+    /**
+     * Closest image from a given image
+     * @param {Array<number>} pos1
+     * @returns {Array<Object>} closest images, and distance
+     */
     getClosestImage(pos1) {
         var minDistance = Number.MAX_VALUE;
         var minImage;

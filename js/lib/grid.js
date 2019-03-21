@@ -1,6 +1,18 @@
+/**
+ * @fileOverview Code to handle grid of pictures, based on Muuri
+ * @name grid.js
+ * @author Florent Grélard
+ * @license
+ */
+
 import $ from 'jquery';
 import Muuri from 'muuri';
 
+/**
+ * Filters the grid according to values on HTML elements
+ * @param {Muuri} grid
+ * @returns {boolean} match
+ */
 export function filter(grid) {
     var filterFieldValue = $('.filter-field').val();
     grid.filter(function (item) {
@@ -10,6 +22,10 @@ export function filter(grid) {
     });
 }
 
+/**
+ * Changes the number of columns inside the grid according to valyes on HTML elements
+ * @param {Muuri} grid
+ */
 export function changeLayout(grid) {
     var layoutFieldValue = $('.layout-field').val();
     var elements = grid.getItems();
@@ -19,6 +35,10 @@ export function changeLayout(grid) {
     grid.refreshItems().layout();
 }
 
+/**
+ * Creates an empty grid
+ * @returns {Muuri}
+ */
 export function generateGrid() {
     return new Muuri('.grid', {
         items: '.item',
@@ -39,6 +59,15 @@ export function generateGrid() {
     });
 }
 
+/**
+ * Adds an image to the grid
+ * @param {Muuri} grid
+ * @param {URL} url
+ * @param {Array} images
+ * @param {string} label
+ * @param {number} count
+ * @param {number} length
+ */
 export function loadImageAndFillGrid(grid, url, images, label, count, length) {
     var i = new Image();
     i.addEventListener('dragstart', function (e) {
@@ -51,6 +80,15 @@ export function loadImageAndFillGrid(grid, url, images, label, count, length) {
 
 }
 
+/**
+ * Fill a grid of images (callback function)
+ * @param {Muuri} grid
+ * @param {Image} image
+ * @param {Array} images
+ * @param {string} label
+ * @param {number} count
+ * @param {number} length
+ */
 export function fillGrid(grid, image, images, label, count, length) {
     var divItem = $("<div/>", {
         class: "item" + ($('.layout-field').val() || ""),

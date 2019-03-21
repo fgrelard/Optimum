@@ -1,13 +1,35 @@
+/**
+ * @fileOverview Distance Strategy
+ * @name distancestrategy.js
+ * @author Florent Grélard
+ * @license
+ */
 import {euclideanDistance} from '../distance';
 import Cluster from '../cluster';
 import ClusteringStrategy from './clusteringstrategy';
 
+/** Distance strategy based on distance
+ */
 export default class DistanceStrategy extends ClusteringStrategy {
+
+
+    /**
+     * Overrides constructor
+     * @param {Array<Picture>} pictures
+     */
     constructor(pictures) {
         super();
+        /**
+         * pictures
+         * @type {Array<Picture>}
+         */
         this.pictures = pictures;
     }
 
+    /**
+     * Distance strategy: pictures contained in the arc of a givben picture
+     * @returns {Array<Cluster>} array of clusters
+     */
     computeClusters() {
         var indexes = [];
         var clusters = [];

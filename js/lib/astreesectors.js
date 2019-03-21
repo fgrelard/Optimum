@@ -1,24 +1,64 @@
+/**
+ * @fileOverview Data structure based on separating sectors for angular sectors
+ * @name astreesectors.js
+ * @author Florent Grélard
+ * @license
+ */
 import Arc from './arc.js';
 import {halfLineIntersection, segmentIntersection} from './lineintersection.js';
 import {euclideanDistance} from './distance.js';
 import Plane from './plane.js';
 import Sector from './sector.js';
 
+/**
+ * Class representing a node inside the tree
+ *  @deprecated use {@link DualRtree}
+ */
 class Node {
+    /**
+     * Constructor
+     * @param {Object} value the node value
+     */
     constructor(value)  {
+        /**
+         * value
+         * @type {Object}
+         */
         this.value = value;
+
+        /**
+         * Children nodes
+         * @type {Array<Node>}
+         */
         this.children = [];
+
+        /**
+         * Parent node
+         * @type {Node}
+         */
         this.parent = null;
     }
 
+    /**
+     * Sets the parent node
+     * @param {Node} node
+     */
     setParentNode(node) {
         this.parent = node;
     }
 
+    /**
+     * Gets the parent node
+     * @returns {Node} node
+     */
     getParentNode() {
         return this.parent;
     }
 
+    /**
+     * Adds a child to the current node
+     * @param {Node} node
+     */
     addChild(node) {
         if (!this.hasChild(node)) {
             node.setParentNode(this);
@@ -26,14 +66,26 @@ class Node {
         }
     }
 
+    /**
+     * Gets the children associated with this node
+     * @returns {Array<Node>} the children
+     */
     getChildren() {
         return this.children;
     }
 
+    /**
+     * Removes children
+     */
     removeChildren () {
         this.children = [];
     }
 
+    /**
+     * Checks whether this node has a given child
+     * @param {Node} child child to test
+     * @returns {Boolean} whether this node has this child
+     */
     hasChild(child) {
         var childV = child.value;
         for (let i = 0; i < this.children.length; i++) {
@@ -46,6 +98,10 @@ class Node {
         return false;
     }
 
+    /**
+     * Utility function used to display the node
+     * @returns {string} string representing the node
+     */
     toString() {
         var str = this.value.toString();
         var children = this.children;
@@ -60,15 +116,52 @@ class Node {
     }
 }
 
+/**
+ * Data structure used for angular sectors,
+ * based on the sectors delimiting each angular sector
+ * the delineation is done according to the sector which separate
+ * the angular sectors into two balanced groups
+ * @deprecated use {@link DualRtree}
+ */
 export default class ASTreeSectors {
-
+    /**
+     * Constructor
+     * @param {Array<Arc>} sectors the angular sectors
+     * @param {number=} n maximum number of leaves
+     */
     constructor(sectors, n = 2) {
+        /**
+         * data structure
+         * @type {Node}
+         */
         this.tree = new Node(new Sector([0,0], [0,0], [0,0]));
+
+        /**
+         * angular sectors
+         * @type {Array<Arc>}
+         */
         this.sectors = sectors;
+
+        /**
+         * maximum number of leaves
+         * @type {number}
+         */
         this.maxNumberLeaves = n;
+
+        /**
+         *  processed sectors
+         * @type {Array<Arc>}
+         */
         this.addedSectors = [];
+
     }
 
+
+    /**
+     * Converts sectors to half planes
+     * @param {Arc} sector
+     * @returns {Plane} half planes
+     */
     convertArcToHalfPlanes(sector) {
         var plane1 = this.angleToPlane(sector.alpha, sector.center, true);
         var plane2 = this.angleToPlane(sector.omega, sector.center);
@@ -77,6 +170,13 @@ export default class ASTreeSectors {
         return sectorAsPlanes;
     }
 
+
+    /**
+     * Whether two sectors intersect
+     * @param {Arc} sector
+     * @param {Arc} otherSector
+     * @returns {boolean}
+     */
     sectorsIntersect(sector, otherSector) {
         var f = sector.center;
         var la = sector.fullGeometry[1].getFlatCoordinates();
@@ -105,6 +205,13 @@ export default class ASTreeSectors {
     }
 
 
+    /**
+     * Intersection indices in the array of sectors
+     * @param {Array<Arc<} sectors
+     * @param {Arc} sector
+     * @param {number} index
+     * @returns {Array<number>} indices
+     */
     intersectionIndices(sectors, sector, index) {
         var length = sectors.length;
         var cpt = 0;
@@ -119,6 +226,13 @@ export default class ASTreeSectors {
         return intersectionIndexes;
     }
 
+    /**
+     * Connected components of intersecting sectors
+     * @param {Array<number>} cc the returned connected component
+     * @param {Array<Arc>} elements the sectors
+     * @param {number} index current index
+     * @param {Array<number>} knownIndices
+     */
     connectedComponents(cc, elements, index, knownIndices) {
         if (knownIndices.indexOf(index) >= 0 || index >= elements.length) return;
         knownIndices.push(index);
@@ -130,6 +244,12 @@ export default class ASTreeSectors {
         }
     }
 
+    /**
+     * Whether two arrays are equal
+     * @param {Array} a
+     * @param {Array} b
+     * @returns {Boolean}
+     */
     arraysEqual(a, b) {
         if (a === b) return true;
         if (a == null || b == null) return false;
@@ -145,6 +265,12 @@ export default class ASTreeSectors {
         return true;
     }
 
+
+    /**
+     * Removes the duplicates in an array
+     * @param {Array} cc
+     * @returns {Array} array without duplicates
+     */
     removeDuplicates(cc) {
         var that = this;
         var unique = cc.filter(function(elem, index, self) {
@@ -155,7 +281,11 @@ export default class ASTreeSectors {
         return unique;
     }
 
-
+    /**
+     * Converts an angle in degrees to a 2D vector
+     * @param {number} angle
+     * @returns {Array<number>} 2D vector
+     */
     angleToVector(angle) {
         var rad = angle * Math.PI / 180;
         var x = Math.cos(rad);
@@ -163,6 +293,13 @@ export default class ASTreeSectors {
         return [x, y];
     }
 
+    /**
+     * Converts an angle to a 2D plane
+     * @param {number} angle
+     * @param {Array<number>} center
+     * @param {Boolean=} isAlpha starting or ending angle of the sector
+     * @returns {Plane}
+     */
     angleToPlane(angle, center, isAlpha = false) {
         var vector = this.angleToVector(angle);
 
@@ -173,6 +310,11 @@ export default class ASTreeSectors {
         return plane;
     }
 
+    /**
+     * Complementary sector : sector with normal with reversed direction
+     * @param {Sector} sector
+     * @returns {Sector} complementary sector
+     */
     complementarySector(sector) {
         var center = sector.firstPlane.center;
         var normal1 = sector.firstPlane.normal;
@@ -189,6 +331,12 @@ export default class ASTreeSectors {
         return compSector;
     }
 
+
+    /**
+     * Bounding box of sectors
+     * @param {Array<Arc>} cones
+     * @returns {Array<Array<number>>} the bounding box
+     */
     boundingBox(cones) {
         var low = [Number.MAX_VALUE, Number.MAX_VALUE];
         var up = [Number.MIN_VALUE, Number.MIN_VALUE];
@@ -203,6 +351,13 @@ export default class ASTreeSectors {
         return [low, up];
     }
 
+
+    /**
+     * Position from direction
+     * @param {Array<Array<number>>} boundingBox
+     * @param {Object} cones
+     * @returns {Array<number>} position
+     */
     positionFromDirection(boundingBox, cones) {
         var meanVector = [0,0];
         for (let i = 0; i < cones.length; i++) {
@@ -225,6 +380,12 @@ export default class ASTreeSectors {
         return position;
     }
 
+
+    /**
+     * Returns the connected component with minimum intersecting elements
+     * @param {Array<Array<Object>>} elements
+     * @returns {Array<Object>} elements with min intersection
+     */
     minimumIntersectingElements(elements) {
         var minElements = [];
         var minLength = Number.MAX_VALUE;
@@ -240,7 +401,11 @@ export default class ASTreeSectors {
         return minElements;
     }
 
-
+    /**
+     * List of parent nodes until root
+     * @param {Node} node
+     * @returns {Array<Node>}
+     */
     traversedNodes(node) {
         var parent = node;
         var parentNodes = [];
@@ -251,6 +416,11 @@ export default class ASTreeSectors {
         return parentNodes;
     }
 
+    /**
+     * Sectors from indices
+     * @param {Array<number>} elements
+     * @returns {Array<Arc>} sectors
+     */
     sectorsFromIndices(elements) {
         var sectors = [];
         for (let i = 0; i < elements.length; i++) {
@@ -260,6 +430,11 @@ export default class ASTreeSectors {
         return sectors;
     }
 
+    /**
+     * Function returning the maximum number of intersection for the given sectors
+     * @param {Array<Arc>} sectors
+     * @returns {number} max number of intersection
+     */
     maxNumberIntersection(sectors) {
         var nb = 0;
         for (let index in sectors) {
@@ -275,6 +450,11 @@ export default class ASTreeSectors {
         return nb;
     }
 
+    /**
+     * Computes the max number of self intersections
+     * @param {Array} elements
+     * @returns {number}
+     */
     maxNumberSelfIntersections(elements) {
         var max = -1;
         for (let indices of elements) {
@@ -287,6 +467,12 @@ export default class ASTreeSectors {
         return max;
     }
 
+    /**
+     * Checks whether a sector is already existing in a parent
+     * @param {Node} node
+     * @param {Arc} sector
+     * @returns {boolean} found
+     */
     findSectorInParents(node, sector) {
         var parent = node;
         var plane2 = this.complementarySector(sector);
@@ -299,6 +485,13 @@ export default class ASTreeSectors {
         return found;
     }
 
+    /**
+     * Computes the best separating sector
+     * @param {Array<Arc>} sectors
+     * @param {Node} node
+     * @param {Boolean=} isMinDifference strategy used
+     * @returns {Arc} best sector
+     */
     separatingPlane(sectors, node, isMinDifference = false) {
         var absDiff = ((a,b) => Math.abs(a-b));
         var absDiffPositive = ((a,b) => (a === 0 || b === 0) ? 0 : Math.abs(a-b));
@@ -331,6 +524,13 @@ export default class ASTreeSectors {
         return bestSector;
     }
 
+    /**
+     * Number of sectors above/below the sector
+     * @param {Arc} sector
+     * @param {Array<Arc>} sectors
+     * @param {Function} func function to use
+     * @returns {Object} number of planes above/below sector
+     */
     differenceAboveBelowPlane(sector, sectors, func = Math.abs) {
         var numberLeft = 0;
         var numberRight = 0;
@@ -354,7 +554,11 @@ export default class ASTreeSectors {
         return func(numberLeft, numberRight);
     }
 
-
+    /**
+     * Converts a connected component to an angular sector
+     * @param {Object} cc
+     * @returns {Arc} angular sector
+     */
     connectedComponentToSector(cc) {
         var cones = [];
         var minAlpha = 360;
@@ -380,6 +584,13 @@ export default class ASTreeSectors {
         return new Arc(position, 100, minAlpha, maxOmega);
     }
 
+    /**
+     * Computes the data structure
+     * @param {Array} ccSectors
+     * @param {Node} node
+     * @param {Array} cc
+     * @param {number} indices
+     */
     buildTreeRecursive(ccSectors, node, cc, indices) {
         if (indices.length === 0) return;
         var currentCCSectors = [];
@@ -414,6 +625,12 @@ export default class ASTreeSectors {
         this.buildTreeRecursive(ccSectors, secondChild, cc, secondIndices);
     }
 
+
+    /**
+     * Depth of a node
+     * @param {Node} node
+     * @returns {number} depth
+     */
     depth(node) {
         var parent = node;
         var nb = 0;
@@ -424,6 +641,13 @@ export default class ASTreeSectors {
         return nb;
     }
 
+    /**
+     * Separate sectors which intersect (no proper delineating sector)
+     * @param {Array<Arc>} sectors
+     * @param {Node} node modified node
+     * @param {Array<number>} cc
+     * @returns {void} nothing
+     */
     separateIntersectingSectors(sectors, node, cc) {
         var that = this;
         var isLeaf = cc.every(function(element) {
@@ -462,8 +686,8 @@ export default class ASTreeSectors {
                 // let isAddedSector = (sector.equals(bestSeparation));
                 if (isAbove //&& !isAddedSector
                    ) {
-                    subsectors.push(sector);
-                }
+                       subsectors.push(sector);
+                   }
             }
 
             this.separateIntersectingSectors(subsectors, child, cc);
@@ -473,17 +697,29 @@ export default class ASTreeSectors {
         return;
     }
 
-        numberIntersectionHalfPlanes(sector, sectors) {
-            var nb = 0;
-            for (let sector2 of sectors) {
-                if (sector.isSectorAbove(sector2)) {
-                    nb++;
-                }
+    /**
+     * Number of intersections with half planes
+     * @param {Arc} sector
+     * @param {Array<Arc>} sectors
+     * @returns {number} number of intersections
+     */
+    numberIntersectionHalfPlanes(sector, sectors) {
+        var nb = 0;
+        for (let sector2 of sectors) {
+            if (sector.isSectorAbove(sector2)) {
+                nb++;
             }
-            return nb;
-
         }
+        return nb;
 
+    }
+
+    /**
+     * Number intersection
+     * @param {Arc} sector
+     * @param {Array<Arc>} sectors
+     * @returns {number} nb
+     */
     numberIntersection(sector, sectors) {
         var nb = 0;
         for (let sector2 of sectors) {
@@ -494,13 +730,24 @@ export default class ASTreeSectors {
         return nb;
     }
 
-    sortByNumberIntersection(sectors) {
+    /**
+     * Sorting by number intersecting
+     * @param {Array<Arc>} sectors
+     * @returns {void} sorted sectors
+     */
+    sortByNumberInTersection(sectors) {
         var that = this;
         sectors.sort(function(a,b) {
             return that.numberIntersection(a, sectors) - that.numberIntersection(b, sectors);
         });
     }
 
+    /**
+     * Intersections between sectors
+     * @param {Arc} sector
+     * @param {Array<Arc>} sectors
+     * @returns {Array<Object>} intersections
+     */
     intersections(sector, sectors) {
         var inters = [];
         inters.push(sector);
@@ -513,6 +760,11 @@ export default class ASTreeSectors {
     }
 
 
+    /**
+     * Build tree main function
+     * @param {Node} node
+     * @param {Array<Arc>} sectors
+     */
     buildTreeIntersection(node, sectors) {
         if (sectors.length === 0) return;
         var sector = sectors.shift();
@@ -530,7 +782,10 @@ export default class ASTreeSectors {
         this.buildTreeIntersection(child2, sectors);
     }
 
-
+    /**
+     * Loading the data structure
+     * @param {boolean} useHeuristic heuristic for number of leaves
+     */
     load(useHeuristic = false) {
         this.sortByNumberIntersection(this.sectors);
         var index = 0;
@@ -570,6 +825,14 @@ export default class ASTreeSectors {
         // console.log(this.tree);
     }
 
+    /**
+     * Search function recursive
+     * @param {Array<number>} p point
+     * @param {Array<Node>} hits
+     * @param {Node} node current node
+     * @param {Object} number of hits
+     * @returns {void} nothing
+     */
     searchRecursive(p, hits, node, number) {
         number++;
         var hasChildren = node.children;
@@ -604,6 +867,11 @@ export default class ASTreeSectors {
         return number;
     }
 
+    /**
+     * Search function
+     * @param {Array<number>} p
+     * @returns {Array<Node>} the hits
+     */
     search(p) {
         console.log("search");
         var hits = [];

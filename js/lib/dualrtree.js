@@ -1,20 +1,62 @@
+/**
+ * @fileOverview Dual R-tree, using the R-bush library
+ * @name dualrtree.js
+ * @author Florent Grélard
+ * @license
+ */
 import {centerOfMass} from './geometry.js';
 import {euclideanDistance} from './distance.js';
 import rbush from 'rbush';
 
+/** Dual R-tree constructed from different types of dualities
+ * {@link PolarDual} and {@link Dual}
+ */
 export default class DualRtree {
+    /**
+     * Constructor
+     * @param {Duality} duality type of duality
+     * @param {number} branchingFactor
+     * @param {boolean=} divide creates two data structures if true (for vertical lines)
+     */
     constructor(duality, branchingFactor, divide = false) {
+        /**
+         * Whether to create two data structures or not
+         * @type {boolean}
+         */
         this.divide = divide;
+
+        /**
+         * Type of duality : polar or affine
+         * @type {Duality}
+         */
         this.Duality = duality;
+
+        /**
+         * Origin (barycenter)
+         * @type {Array<number>}
+         */
         this.origin = [];
 
+        /**
+         * Data structure
+         * @type {rbush}
+         */
         this.rtree = rbush(branchingFactor);
         if (this.divide) {
+            /**
+             * Data structure for vertical lines
+             * @type {rbush}
+             */
             this.rtreeVertical = rbush(branchingFactor);
         }
     }
 
 
+    /**
+     * Dual representation of angular sectors
+     * @param {Arc} arcs
+     * @returns {Array<Object>} dual representation
+     */
     dualRepresentation(arcs) {
         var dual = [];
         var dualVertical = [];
@@ -50,6 +92,11 @@ export default class DualRtree {
         return [dual, dualVertical];
     }
 
+    /**
+     * Inserts angular sectors into the data structure as their duals
+     * @param {Arc} arcs
+     * @returns {rbush} constructed dual R-tree
+     */
     load(arcs) {
         this.origin = centerOfMass(arcs.map(function(arc) {
             return arc.center;
@@ -62,6 +109,13 @@ export default class DualRtree {
         }
     }
 
+    /**
+     * Search recursive in the dual R-tree
+     * @param {Array} hits
+     * @param {Node} node
+     * @param {Array} p current point
+     * @param {Object} number number of hits
+     */
     searchRecursive(hits, node, p, number = {cpt: 0}) {
         number.cpt++;
         if (node.leaf) {
@@ -80,6 +134,11 @@ export default class DualRtree {
         return;
     }
 
+    /**
+     * Search function
+     * @param {Array<number>} p point to search for
+     * @returns {Object} hits and number of hits
+     */
     search(p) {
         var hits = [];
         var request = [p[0] - this.origin[0],
@@ -93,6 +152,10 @@ export default class DualRtree {
         return {hits: hits, number: number};
     }
 
+    /**
+     * Getter for the data structure
+     * @returns {Array} the data structure
+     */
     dataStructure() {
         return this.rtree.data;
     }

@@ -1,3 +1,12 @@
+/**
+ * @fileOverview Cluster for pictures
+ * @name cluster.js
+ * @author Florent Grélard
+ * @license
+ */
+import Picture from './picture';
+
+/** Base class which allows to cluster pictures */
 export default class Cluster {
     /**
      * Constructor
@@ -5,14 +14,23 @@ export default class Cluster {
      * @param {String} label
      */
     constructor(pictures, label) {
+        /**
+         * pictures pertaining to this cluster
+         * @type {Array.<Picture>}
+         */
         this.pictures = pictures;
+
+        /**
+         * a label characterizing this cluster
+         * @type {string|number}
+         */
         this.label = label;
     }
 
     /**
      * Checks whether a picture is inside this cluster
-     * @param {} picture
-     * @returns {} true if picture inside cluster, false else
+     * @param {Picture} picture
+     * @returns {Boolean} true if picture inside cluster, false else
      */
     hasPicture(picture) {
         for (var keyP in this.pictures) {

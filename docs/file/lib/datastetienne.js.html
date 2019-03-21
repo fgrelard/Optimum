@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">lib/datastetienne.js | optimum</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Projet Optimum"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="optimum"><meta property="twitter:description" content="Projet Optimum"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/arc.js~Arc.html">Arc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/astree.js~ASTree.html">ASTree</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/astreesectors.js~ASTreeSectors.html">ASTreeSectors</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/cluster.js~Cluster.html">Cluster</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/dual.js~Dual.html">Dual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/dualrtree.js~DualRtree.html">DualRtree</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/heatmap.js~HeatMap.html">HeatMap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/isovistsectors2d.js~IsoVist.html">IsoVist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/isovistsectors3d.js~IsoVist3D.html">IsoVist3D</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/picture.js~Picture.html">Picture</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/plane.js~Plane.html">Plane</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/polardual.js~PolarDual.html">PolarDual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/sector.js~Sector.html">Sector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/vectorlayercolormap.js~VectorLayerColormap.html">VectorLayerColormap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/vectorlayercolormaprenderer.js~VectorLayerColormapRenderer.html">VectorLayerColormapRenderer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne">sectorsStEtienne</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne2345_r1500">sectorsStEtienne2345_r1500</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne2345_r300">sectorsStEtienne2345_r300</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-euclideanDistance">euclideanDistance</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-computeAlphaOmegaFromDir">computeAlphaOmegaFromDir</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-convertMetadataToJSON">convertMetadataToJSON</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createPositionArray">createPositionArray</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getOrientation">getOrientation</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getPosition">getPosition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-lonLatToDecimal">lonLatToDecimal</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-angleToVector">angleToVector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-bboxArrayToObject">bboxArrayToObject</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-boundingBox">boundingBox</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-cartesianToSpherical">cartesianToSpherical</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-centerOfMass">centerOfMass</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-intersectionLinePlane">intersectionLinePlane</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-planeFromThreePoints">planeFromThreePoints</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-project">project</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sphericalToCartesian">sphericalToCartesian</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-vectorToAngle">vectorToAngle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-changeLayout">changeLayout</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fillGrid">fillGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-filter">filter</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-generateGrid">generateGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-loadImageAndFillGrid">loadImageAndFillGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLineAndLineIntersection">halfLineAndLineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLineIntersection">halfLineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLinesIntersect">halfLinesIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-lineIntersection">lineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-onSegment">onSegment</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-rectangleContains">rectangleContains</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-rectanglesIntersect">rectanglesIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentIntersection">segmentIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentIntersectionExact">segmentIntersectionExact</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsEqual">segmentsEqual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsIntersect">segmentsIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setEpsilon">setEpsilon</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-addRandomArcs">addRandomArcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-addRandomLocations">addRandomLocations</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRandomArbitrary">getRandomArbitrary</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getBuildingSegments">getBuildingSegments</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollDB">pollDB</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollImages">pollImages</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollIsovist">pollIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollThumbnails">pollThumbnails</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsFromXMLRequest">segmentsFromXMLRequest</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCircleOutOverlay">createCircleOutOverlay</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createNewImage">createNewImage</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-gradient">gradient</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleArcs">setStyleArcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleClusters">setStyleClusters</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleInput">setStyleInput</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStylePolygonColormapIsovist">setStylePolygonColormapIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStylePolygonIsovist">setStylePolygonIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleTopo">setStyleTopo</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-arcs">arcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-clusterSource">clusterSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-imageStatic">imageStatic</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-inputLineSource">inputLineSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-inputLines">inputLines</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lineSource">lineSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lines">lines</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-olClusters">olClusters</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-onClickGroup">onClickGroup</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-overlay">overlay</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-overlayGroup">overlayGroup</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-polygonSource">polygonSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-source">source</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-thumbnails">thumbnails</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-vectorLayerArc">vectorLayerArc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-vectorLayerColormap">vectorLayerColormap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-epsilon">epsilon</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-pointRadius">pointRadius</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-stylesTopo">stylesTopo</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#clustering">clustering</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/clusteringstrategy.js~ClusteringStrategy.html">ClusteringStrategy</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/dendrogramstrategy.js~DistanceStrategy.html">DistanceStrategy</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/distancestrategy.js~DistanceStrategy.html">DistanceStrategy</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">lib/datastetienne.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/**
+ * @fileOverview Isovist from real data St-Etienne
+ * @name datastetienne.js
+ * @author Florent Gr&#xE9;lard
+ * @license
+ */
+import Arc from &apos;./arc.js&apos;;
+
+/**
+ * Sectors from months 02/2018 through 05/2018
+ * @returns {Array&lt;Arc&gt;}  sectors
+ */
+export function sectorsStEtienne2345_r1500() {
+    var arcs = [new Arc([485538.20312252047,5692058.519576657],100, 86.94999999999997, 86.95),
+                new Arc([485168.37503644056,5690734.161387739],100, 115.58, 116.2102),
+                new Arc([485168.37503644056,5690734.161387739],100, 124.3367, 126.8656),
+                new Arc([485168.37503644056,5690734.161387739],100, 131.584, 131.7843),
+                new Arc([485168.37503644056,5690734.161387739],100, 132.3996, 134.0642),
+                new Arc([485168.37503644056,5690734.161387739],100, 137.2439, 140.0202),
+                new Arc([485168.37503644056,5690734.161387739],100, 141.8345, 144.067),
+                new Arc([485168.37503644056,5690734.161387739],100, 145.7131, 145.7323),
+                new Arc([485168.37503644056,5690734.161387739],100, 148.7939, 149.0292),
+                new Arc([485168.37503644056,5690734.161387739],100, 149.4426, 149.9998),
+                new Arc([485168.37503644056,5690734.161387739],100, 153.8889, 155.0113),
+                new Arc([485168.37503644056,5690734.161387739],100, 124.3367, 126.8656),
+                new Arc([485168.37503644056,5690734.161387739],100, 131.584, 131.7843),
+                new Arc([485168.37503644056,5690734.161387739],100, 132.3996, 134.0642),
+                new Arc([485168.37503644056,5690734.161387739],100, 137.2439, 140.0202),
+                new Arc([485168.37503644056,5690734.161387739],100, 141.8345, 144.067),
+                new Arc([485168.37503644056,5690734.161387739],100, 145.7131, 145.7323),
+                new Arc([485168.37503644056,5690734.161387739],100, 148.7939, 149.0292),
+                new Arc([485168.37503644056,5690734.161387739],100, 149.4426, 149.9998),
+                new Arc([485168.37503644056,5690734.161387739],100, 153.8889, 155.0113),
+                new Arc([485168.37503644056,5690734.161387739],100, 157.4755, 157.4982),
+                new Arc([485156.31542493793,5690754.432948245],100, 131.7623, 131.967),
+                new Arc([485156.31542493793,5690754.432948245],100, 132.592, 133.1519),
+                new Arc([485156.31542493793,5690754.432948245],100, 134.3131, 134.3905),
+                new Arc([485156.31542493793,5690754.432948245],100, 137.6653, 140.596),
+                new Arc([485156.31542493793,5690754.432948245],100, 142.4735, 144.7548),
+                new Arc([485156.31542493793,5690754.432948245],100, 150.2531, 150.4568),
+                new Arc([485156.31542493793,5690754.432948245],100, 154.4235, 155.5284),
+                new Arc([485156.31542493793,5690754.432948245],100, 164.5691, 164.5722),
+                new Arc([485156.31542493793,5690754.432948245],100, 167.17, 167.17000000000002),
+                new Arc([485014.0738533688,5690961.55804501],100, 124.9912, 125.7438),
+                new Arc([485014.0738533688,5690961.55804501],100, 136.2725, 136.7754),
+                new Arc([485014.0738533688,5690961.55804501],100, 136.9894, 137.0905),
+                new Arc([485014.0738533688,5690961.55804501],100, 142.584, 144.5994),
+                new Arc([485014.0738533688,5690961.55804501],100, 145.525, 145.5495),
+                new Arc([485014.0738533688,5690961.55804501],100, 146.7173, 147.9646),
+                new Arc([485014.0738533688,5690961.55804501],100, 150.9315, 151.4462),
+                new Arc([485014.0738533688,5690961.55804501],100, 152.7058, 152.7075),
+                new Arc([485014.0738533688,5690961.55804501],100, 153.5792, 153.6125),
+                new Arc([485014.0738533688,5690961.55804501],100, 155.8464, 155.9246),
+                new Arc([485014.0738533688,5690961.55804501],100, 136.2725, 136.7754),
+                new Arc([485014.0738533688,5690961.55804501],100, 136.9894, 137.0905),
+                new Arc([485014.0738533688,5690961.55804501],100, 142.584, 144.5994),
+                new Arc([485014.0738533688,5690961.55804501],100, 145.525, 145.5495),
+                new Arc([485014.0738533688,5690961.55804501],100, 146.7173, 147.9646),
+                new Arc([485014.0738533688,5690961.55804501],100, 150.9315, 151.4462),
+                new Arc([485014.0738533688,5690961.55804501],100, 152.7058, 152.7075),
+                new Arc([485014.0738533688,5690961.55804501],100, 153.5792, 153.6125),
+                new Arc([485014.0738533688,5690961.55804501],100, 155.8464, 155.9246),
+                new Arc([485014.0738533688,5690961.55804501],100, 160.7256, 161.4189),
+                new Arc([485014.0738533688,5690961.55804501],100, 174.0385, 174.0771),
+                new Arc([485014.0738533688,5690961.55804501],100, 175.4026, 175.41),
+                new Arc([484325.4391144893,5691660.089717437],100, 118.82999999999997, 118.83),
+                new Arc([484325.4391144893,5691660.089717437],100, 127.6683, 128.2392),
+                new Arc([484325.4391144893,5691660.089717437],100, 135.5018, 135.8781),
+                new Arc([484325.4391144893,5691660.089717437],100, 142.2552, 144.0219),
+                new Arc([484325.4391144893,5691660.089717437],100, 158.1129, 158.2047),
+                new Arc([484325.4391144893,5691660.089717437],100, 160.4881, 160.6486),
+                new Arc([484325.4391144893,5691660.089717437],100, 161.2959, 161.3652),
+                new Arc([486294.2479974915,5695593.157446534],100, 207.98999999999998, 207.99),
+                new Arc([482634.3105168548,5691842.113547831],100, 68.90999999999998, 68.91),
+                new Arc([482634.3105168548,5691842.113547831],100, 70.6277, 70.7682),
+                new Arc([481340.5306571908,5690449.923688883],100, 40.53999999999998, 40.54),
+                new Arc([481344.85974849935,5690455.2117497325],100, 62.28999999999998, 62.29),
+                new Arc([481332.8001369967,5690458.737125367],100, 34.9949, 35.3332),
+                new Arc([481332.8001369967,5690458.737125367],100, 51.91, 51.91000000000001),
+                new Arc([481327.2341624571,5690478.126716156],100, 79.53999999999998, 79.54),
+                new Arc([481366.19598423474,5690453.449062436],100, 106.4018, 106.7411),
+                new Arc([481366.19598423474,5690453.449062436],100, 125.91, 125.91000000000003),
+                new Arc([481867.75213442004,5690880.02950945],100, 63.59999999999998, 63.6),
+                new Arc([481867.75213442004,5690880.02950945],100, 67.8648, 69.2277),
+                new Arc([481867.75213442004,5690880.02950945],100, 69.8118, 69.8281),
+                new Arc([481856.9294061485,5690881.351587892],100, 29.71999999999998, 29.72),
+                new Arc([481856.9294061485,5690881.351587892],100, 67.4458, 68.803),
+                new Arc([481836.5208328363,5690877.826045827],100, 74.4362, 74.8056),
+                new Arc([481923.4118798167,5691043.528023928],100, 13.909999999999979, 13.91),
+                new Arc([481923.4118798167,5691043.528023928],100, 36.4949, 36.4957),
+                new Arc([481937.94525778136,5691061.596776155],100, 66.2019, 66.2057),
+                new Arc([481937.94525778136,5691061.596776155],100, 68.3549, 68.4935),
+                new Arc([481926.81330870197,5691063.800285021],100, 51.6286, 55.9099),
+                new Arc([481926.81330870197,5691063.800285021],100, 67.1952, 67.1968),
+                new Arc([481926.81330870197,5691063.800285021],100, 67.9174, 68.0166),
+                new Arc([481926.81330870197,5691063.800285021],100, 74.5717, 74.587),
+                new Arc([481926.81330870197,5691063.800285021],100, 76.3358, 77.0448),
+                new Arc([481926.81330870197,5691063.800285021],100, 78.9202, 81.7348),
+                new Arc([481926.81330870197,5691063.800285021],100, 82.8205, 82.892),
+                new Arc([481926.81330870197,5691063.800285021],100, 83.3738, 83.8344),
+                new Arc([481926.81330870197,5691063.800285021],100, 86.7075, 86.86000000000001),
+                new Arc([485038.81151798955,5693282.568258294],100, 86.7633, 86.7731),
+                new Arc([485038.81151798955,5693282.568258294],100, 97.004, 97.0049),
+                new Arc([485038.81151798955,5693282.568258294],100, 103.3591, 103.3596),
+                new Arc([485038.81151798955,5693282.568258294],100, 109.2191, 109.2505),
+                new Arc([485038.81151798955,5693282.568258294],100, 110.0021, 110.1976),
+                new Arc([485038.81151798955,5693282.568258294],100, 111.4514, 113.1316),
+                new Arc([485038.81151798955,5693282.568258294],100, 113.9604, 114.0282),
+                new Arc([485038.81151798955,5693282.568258294],100, 118.22, 118.22000000000003),
+                new Arc([485033.5547642576,5693279.041770288],100, 37.4407, 37.5644),
+                new Arc([485033.5547642576,5693279.041770288],100, 41.7863, 56.1376),
+                new Arc([485033.5547642576,5693279.041770288],100, 56.7664, 56.7822),
+                new Arc([485033.5547642576,5693279.041770288],100, 56.8095, 57.7034),
+                new Arc([485033.5547642576,5693279.041770288],100, 60.5475, 60.5641),
+                new Arc([485033.5547642576,5693279.041770288],100, 63.6733, 63.7877),
+                new Arc([485033.5547642576,5693279.041770288],100, 65.6951, 66.1),
+                new Arc([485033.5547642576,5693279.041770288],100, 67.9981, 68.0122),
+                new Arc([485033.5547642576,5693279.041770288],100, 68.0122, 68.0277),
+                new Arc([485047.160479799,5693275.515283671],100, 52.979999999999976, 56.0063),
+                new Arc([485047.160479799,5693275.515283671],100, 56.4587, 56.6543),
+                new Arc([485047.160479799,5693275.515283671],100, 57.2914, 57.3073),
+                new Arc([485047.160479799,5693275.515283671],100, 57.332, 58.2183),
+                new Arc([485047.160479799,5693275.515283671],100, 61.0872, 61.1128),
+                new Arc([485047.160479799,5693275.515283671],100, 61.3315, 61.3464),
+                new Arc([485047.160479799,5693275.515283671],100, 64.238, 64.37),
+                new Arc([485047.160479799,5693275.515283671],100, 66.3539, 66.6278),
+                new Arc([485047.160479799,5693275.515283671],100, 66.8363, 66.8469),
+                new Arc([485047.160479799,5693275.515283671],100, 68.6591, 68.6756),
+                new Arc([485047.160479799,5693275.515283671],100, 70.4219, 70.4295),
+                new Arc([485047.160479799,5693275.515283671],100, 71.0172, 71.0201),
+                new Arc([485047.160479799,5693275.515283671],100, 88.387, 88.4097),
+                new Arc([485805.06067961664,5687021.714330306],100, 21.869999999999994, 21.87),
+                new Arc([485805.06067961664,5687021.714330306],100, 25.3803, 25.4226),
+                new Arc([485805.06067961664,5687021.714330306],100, 42.535, 42.5429),
+                new Arc([485805.06067961664,5687021.714330306],100, 44.5454, 44.5629),
+                new Arc([485805.06067961664,5687021.714330306],100, 51.9315, 51.9421),
+                new Arc([485805.06067961664,5687021.714330306],100, 52.427, 53.502),
+                new Arc([485805.06067961664,5687021.714330306],100, 64.4446, 64.495),
+                new Arc([485794.237951345,5687027.881373262],100, 344.8461, 345.139),
+                new Arc([485794.237951345,5687027.881373262],100, 347.9192, 347.9249),
+                new Arc([485794.237951345,5687027.881373262],100, 347.9249, 347.9277),
+                new Arc([485794.237951345,5687027.881373262],100, 349.4121, 349.4266),
+                new Arc([485794.237951345,5687027.881373262],100, 359.258, 359.3533),
+                new Arc([485794.237951345,5687027.881373262],100, 363.8971, 364.1258),
+                new Arc([485794.237951345,5687027.881373262],100, 365.7045, 365.7202),
+                new Arc([485794.237951345,5687027.881373262],100, 367.9865, 368.3289),
+                new Arc([485794.237951345,5687027.881373262],100, 372.9689, 373.0028),
+                new Arc([485794.237951345,5687027.881373262],100, 379.5981, 379.6016),
+                new Arc([485794.237951345,5687027.881373262],100, 396.1595, 396.163),
+                new Arc([485754.34846714407,5687069.729276909],100, 47.93999999999998, 47.94),
+                new Arc([485754.34846714407,5687069.729276909],100, 48.9938, 49.0527),
+                new Arc([485754.34846714407,5687069.729276909],100, 49.532, 50.1272),
+                new Arc([485754.34846714407,5687069.729276909],100, 78.3279, 80.1924),
+                new Arc([485754.34846714407,5687069.729276909],100, 98.3793, 98.3983),
+                new Arc([485754.34846714407,5687069.729276909],100, 99.0364, 100.0596),
+                new Arc([485754.34846714407,5687069.729276909],100, 101.6787, 102.33999999999997),
+                new Arc([485680.75391489745,5687138.888872629],100, 341.7141, 341.9417),
+                new Arc([485680.75391489745,5687138.888872629],100, 342.6939, 344.4318),
+                new Arc([485680.75391489745,5687138.888872629],100, 344.6055, 345.998),
+                new Arc([485680.75391489745,5687138.888872629],100, 354.203, 354.8044),
+                new Arc([485719.715736675,5687104.529261495],100, 342.567, 342.8128),
+                new Arc([485719.715736675,5687104.529261495],100, 343.6658, 345.4972),
+                new Arc([485719.715736675,5687104.529261495],100, 345.675, 347.1257),
+                new Arc([485719.715736675,5687104.529261495],100, 355.499, 356.115),
+                new Arc([485719.715736675,5687104.529261495],100, 358.3182, 358.3362),
+                new Arc([485719.715736675,5687104.529261495],100, 360.6192, 360.949),
+                new Arc([485719.715736675,5687104.529261495],100, 362.6226, 362.6259),
+                new Arc([485719.715736675,5687104.529261495],100, 364.433, 364.4874),
+                new Arc([485719.715736675,5687104.529261495],100, 366.055, 366.1138),
+                new Arc([485771.97405318636,5687117.303973321],100, 115.7297, 116.2024),
+                new Arc([485771.97405318636,5687117.303973321],100, 117.0163, 117.4636),
+                new Arc([485771.97405318636,5687117.303973321],100, 118.2837, 124.2719),
+                new Arc([485771.97405318636,5687117.303973321],100, 129.0761, 129.895),
+                new Arc([485771.97405318636,5687117.303973321],100, 130.3318, 130.6762),
+                new Arc([485771.97405318636,5687117.303973321],100, 133.4118, 165.8119),
+                new Arc([485818.666395158,5687115.9824505625],100, 228.07000000000002, 228.3737),
+                new Arc([485818.666395158,5687115.9824505625],100, 231.5013, 238.776),
+                new Arc([485818.666395158,5687115.9824505625],100, 278.6861, 278.7423),
+                new Arc([485844.0225013942,5687118.184988598],100, 10.929999999999996, 10.93),
+                new Arc([485844.0225013942,5687118.184988598],100, 44.5984, 44.5996),
+                new Arc([485844.0225013942,5687118.184988598],100, 50.267, 50.2793),
+                new Arc([485844.0225013942,5687118.184988598],100, 50.6232, 50.6577),
+                new Arc([485844.0225013942,5687118.184988598],100, 51.177, 51.2403),
+                new Arc([485844.0225013942,5687118.184988598],100, 51.7786, 52.124),
+                new Arc([485871.233932477,5687121.268542762],100, 137.90000000000003, 167.1164),
+                new Arc([485871.233932477,5687121.268542762],100, 168.3951, 173.7621),
+                new Arc([485871.233932477,5687121.268542762],100, 175.4969, 177.1477),
+                new Arc([485871.233932477,5687121.268542762],100, 177.9722, 178.0599),
+                new Arc([485871.233932477,5687121.268542762],100, 179.6947, 189.7637),
+                new Arc([485871.233932477,5687121.268542762],100, 191.8428, 192.30000000000004),
+                new Arc([485900.30068840634,5687126.554638081],100, 213.08, 214.1076),
+                new Arc([485900.30068840634,5687126.554638081],100, 216.5217, 216.9501),
+                new Arc([485900.30068840634,5687126.554638081],100, 249.2841, 249.4026),
+                new Arc([485907.41276698484,5687132.721753233],100, 201.45000000000002, 206.3441),
+                new Arc([485907.41276698484,5687132.721753233],100, 208.8114, 214.2187),
+                new Arc([485907.41276698484,5687132.721753233],100, 216.5946, 217.0141),
+                new Arc([485907.41276698484,5687132.721753233],100, 248.2389, 248.7693),
+                new Arc([485907.41276698484,5687132.721753233],100, 250.9639, 251.0124),
+                new Arc([485916.6893912176,5687126.995146166],100, 46.8204, 46.8617),
+                new Arc([485916.6893912176,5687126.995146166],100, 53.9181, 55.0055),
+                new Arc([485916.6893912176,5687126.995146166],100, 68.1796, 68.1983),
+                new Arc([485916.6893912176,5687126.995146166],100, 88.3544, 89.1683),
+                new Arc([485972.658357422,5687152.1041427795],100, 47.3383, 47.3439),
+                new Arc([485972.658357422,5687152.1041427795],100, 55.0248, 55.0257),
+                new Arc([485972.658357422,5687152.1041427795],100, 55.2295, 56.7104),
+                new Arc([485972.658357422,5687152.1041427795],100, 61.8788, 62.0329),
+                new Arc([485972.658357422,5687152.1041427795],100, 71.3006, 71.3045),
+                new Arc([485972.658357422,5687152.1041427795],100, 91.4846, 92.5572),
+                new Arc([485992.7577099263,5687167.521982605],100, 62.4652, 62.681),
+                new Arc([485992.7577099263,5687167.521982605],100, 62.8428, 62.849),
+                new Arc([485992.7577099263,5687167.521982605],100, 93.035, 93.8419),
+                new Arc([485992.7577099263,5687167.521982605],100, 108.3521, 108.5427),
+                new Arc([485992.7577099263,5687167.521982605],100, 109.436, 110.6231),
+                new Arc([485992.7577099263,5687167.521982605],100, 111.86, 111.86000000000001),
+                new Arc([486034.50251897384,5687177.213209796],100, 198.36, 205.1829),
+                new Arc([486034.50251897384,5687177.213209796],100, 207.2579, 211.4087),
+                new Arc([486034.50251897384,5687177.213209796],100, 231.3068, 232.9365),
+                new Arc([486034.50251897384,5687177.213209796],100, 234.6134, 236.8099),
+                new Arc([485881.12899832526,5687071.931803573],100, 139.95, 165.0277),
+                new Arc([485881.12899832526,5687071.931803573],100, 166.2971, 169.5887),
+                new Arc([485881.12899832526,5687071.931803573],100, 171.1724, 175.222),
+                new Arc([485881.12899832526,5687071.931803573],100, 177.021, 187.2268),
+                new Arc([485881.12899832526,5687071.931803573],100, 189.2489, 194.35),
+                new Arc([485881.12899832526,5687071.931803573],100, 42.3811, 42.4037),
+                new Arc([485881.12899832526,5687071.931803573],100, 51.0926, 51.1441),
+                new Arc([485881.12899832526,5687071.931803573],100, 54.0641, 55.1294),
+                new Arc([485881.12899832526,5687071.931803573],100, 67.3722, 67.3888),
+                new Arc([485881.12899832526,5687071.931803573],100, 78.7492, 80.49000000000002),
+                new Arc([485881.12899832526,5687071.931803573],100, 170.76999999999998, 170.77),
+                new Arc([485881.12899832526,5687071.931803573],100, 171.1724, 175.222),
+                new Arc([485881.12899832526,5687071.931803573],100, 177.021, 187.2268),
+                new Arc([485881.12899832526,5687071.931803573],100, 189.2489, 202.4635),
+                new Arc([485881.12899832526,5687071.931803573],100, 205.1578, 208.6866),
+                new Arc([485866.9048411684,5687081.182421462],100, 189.844, 203.7494),
+                new Arc([485866.9048411684,5687081.182421462],100, 206.4729, 212.0082),
+                new Arc([485866.9048411684,5687081.182421462],100, 243.32, 243.32000000000002),
+                new Arc([485861.9573082442,5687083.825456901],100, 191.17000000000002, 204.1573),
+                new Arc([485861.9573082442,5687083.825456901],100, 206.8919, 212.553),
+                new Arc([485861.9573082442,5687083.825456901],100, 215.2089, 215.7256),
+                new Arc([485861.9573082442,5687083.825456901],100, 216.6067, 216.6161),
+                new Arc([485861.9573082442,5687083.825456901],100, 243.3903, 243.6561),
+                new Arc([485861.9573082442,5687083.825456901],100, 245.57, 245.57000000000002),
+                new Arc([487075.64897869865,5693928.37980361],100, 108.05, 108.3761),
+                new Arc([487075.64897869865,5693928.37980361],100, 115.1415, 115.233),
+                new Arc([487060.49715911853,5693924.412218386],100, 110.99, 110.99000000000001),
+                new Arc([487057.7141718486,5693928.37980361],100, 81.0044, 81.1563),
+                new Arc([487062.0432631573,5693930.143175378],100, 358.15999999999997, 358.16),
+                new Arc([487157.283271947,5693960.561393176],100, 297.97999999999996, 297.98),
+                new Arc([487157.283271947,5693960.561393176],100, 307.47999999999996, 307.48),
+                new Arc([487216.03522542125,5693964.088149761],100, 268.46999999999997, 269.4142),
+                new Arc([487216.03522542125,5693964.088149761],100, 293.9588, 294.4762),
+                new Arc([487463.7210924364,5693853.436824404],100, 338.96999999999997, 338.97),
+                new Arc([487463.7210924364,5693853.436824404],100, 367.188, 367.3093),
+                new Arc([487440.8387526621,5693830.954053027],100, 381.3022, 381.4677),
+                new Arc([487489.07719867263,5693855.641020715],100, 236.32999999999998, 236.33),
+                new Arc([487464.3395340518,5693853.877663621],100, 244.9081, 246.9971),
+                new Arc([487464.3395340518,5693853.877663621],100, 253.2549, 253.5957),
+                new Arc([487464.3395340518,5693853.877663621],100, 264.2474, 264.6603),
+                new Arc([487588.33707796317,5693913.391157557],100, 278.1915, 278.531),
+                new Arc([487588.33707796317,5693913.391157557],100, 282.9398, 283.0663),
+                new Arc([487450.73381851043,5693354.420754052],100, 219.17999999999998, 219.18),
+                new Arc([487441.76641508547,5693339.873883185],100, 271.85999999999996, 271.86),
+                new Arc([487472.99771666917,5693331.939236315],100, 178.57999999999998, 178.58),
+                new Arc([487459.3920011277,5693290.062049926],100, 165.07999999999998, 165.08),
+                new Arc([487462.79343001306,5692955.933202974],100, 13.280000000000019, 67.68000000000002),
+                new Arc([487462.79343001306,5692955.933202974],100, 23.600000000000012, 78.00000000000001),
+                new Arc([487481.03745767084,5692892.018156244],100, 78.13, 78.13000000000001),
+                new Arc([487511.9595384468,5692775.209077801],100, 335.86, 337.5986),
+                new Arc([487528.9666828735,5692759.781577637],100, 21.939999999999987, 21.94),
+                new Arc([487541.3355151838,5692575.094426166],100, 271.3692, 271.3952),
+                new Arc([487530.51278691227,5692562.311924237],100, 30.653, 30.9643),
+                new Arc([487530.51278691227,5692562.311924237],100, 56.24, 56.24000000000002),
+                new Arc([487543.5000608381,5692558.785720019],100, 108.4364, 108.4488),
+                new Arc([487433.4174532759,5693029.546270663],100, 386.0845, 386.189),
+                new Arc([484489.0169217938,5695998.817575407],100, 145.1299, 146.4196),
+                new Arc([484489.0169217938,5695998.817575407],100, 168.1311, 172.6034),
+                new Arc([484489.0169217938,5695998.817575407],100, 173.4981, 175.6415),
+                new Arc([484489.0169217938,5695998.817575407],100, 178.6501, 182.301),
+                new Arc([484487.78003856284,5695992.203404063],100, 114.8978, 115.1625),
+                new Arc([484487.78003856284,5695992.203404063],100, 119.0501, 119.4319),
+                new Arc([484487.78003856284,5695992.203404063],100, 130.1846, 130.2029),
+                new Arc([484487.78003856284,5695992.203404063],100, 130.6055, 131.1248),
+                new Arc([484487.78003856284,5695992.203404063],100, 135.8782, 137.3234),
+                new Arc([484487.78003856284,5695992.203404063],100, 138.6877, 138.8175),
+                new Arc([484487.78003856284,5695992.203404063],100, 144.8335, 146.0981),
+                new Arc([484504.78718298965,5696025.274309666],100, 147.32999999999998, 148.022),
+                new Arc([484504.78718298965,5696025.274309666],100, 164.9211, 164.9396),
+                new Arc([484504.78718298965,5696025.274309666],100, 169.7927, 174.5177),
+                new Arc([484504.78718298965,5696025.274309666],100, 175.4021, 176.7111),
+                new Arc([484504.78718298965,5696025.274309666],100, 179.7544, 183.7921),
+                new Arc([484504.78718298965,5696025.274309666],100, 198.6854, 198.6863),
+                new Arc([484504.78718298965,5696025.274309666],100, 199.6647, 199.6675),
+                new Arc([484507.5701702594,5696019.5420106035],100, 131.8911, 132.4502),
+                new Arc([484507.5701702594,5696019.5420106035],100, 137.3229, 138.6979),
+                new Arc([484507.5701702594,5696019.5420106035],100, 140.0513, 140.2308),
+                new Arc([484507.5701702594,5696019.5420106035],100, 164.6253, 164.6508),
+                new Arc([484507.5701702594,5696019.5420106035],100, 169.5002, 174.1508),
+                new Arc([484507.5701702594,5696019.5420106035],100, 175.0312, 176.4958),
+                new Arc([484507.5701702594,5696019.5420106035],100, 179.5194, 183.4518),
+                new Arc([484507.5701702594,5696019.5420106035],100, 90.9516, 91.0225),
+                new Arc([484507.5701702594,5696019.5420106035],100, 93.5292, 93.55),
+                new Arc([484507.5701702594,5696019.5420106035],100, 94.2293, 94.4127),
+                new Arc([484507.5701702594,5696019.5420106035],100, 94.8464, 95.0647),
+                new Arc([484507.5701702594,5696019.5420106035],100, 98.4502, 99.1651),
+                new Arc([484490.8722466403,5695993.526237944],100, 115.0898, 115.391),
+                new Arc([484490.8722466403,5695993.526237944],100, 119.2665, 119.6102),
+                new Arc([484473.8651022137,5695998.817575407],100, 129.2654, 129.2726),
+                new Arc([484473.8651022137,5695998.817575407],100, 129.9117, 129.9537),
+                new Arc([484473.8651022137,5695998.817575407],100, 130.3592, 130.8765),
+                new Arc([484473.8651022137,5695998.817575407],100, 135.6664, 137.1345),
+                new Arc([484473.8651022137,5695998.817575407],100, 138.5151, 138.6065),
+                new Arc([484473.8651022137,5695998.817575407],100, 144.7058, 145.9786),
+                new Arc([484082.39155959064,5695947.227168626],100, 330.59999999999997, 330.6442),
+                new Arc([484082.39155959064,5695947.227168626],100, 348.9894, 349.0571),
+                new Arc([484082.39155959064,5695947.227168626],100, 296.92, 296.9656),
+                new Arc([484082.39155959064,5695947.227168626],100, 336.52, 336.52000000000004),
+                new Arc([484080.8454555518,5695819.795729373],100, 317.65, 317.65000000000003),
+                new Arc([484207.62598673307,5695723.231245452],100, 24.519999999999992, 24.52),
+                new Arc([484207.62598673307,5695723.231245452],100, 60.5951, 60.6441),
+                new Arc([484207.62598673307,5695723.231245452],100, 1.469999999999981, 1.47),
+                new Arc([483619.4880103753,5695565.37921927],100, 363.5643, 363.5939),
+                new Arc([483634.6398299555,5695573.756770789],100, 63.4643, 63.5991),
+                new Arc([483634.6398299555,5695573.756770789],100, 65.1926, 65.3277),
+                new Arc([483634.6398299555,5695573.756770789],100, 72.3185, 72.7582),
+                new Arc([483634.6398299555,5695573.756770789],100, 73.9445, 74.9398),
+                new Arc([483634.6398299555,5695573.756770789],100, 78.7731, 84.0654),
+                new Arc([483634.6398299555,5695573.756770789],100, 86.4067, 86.5349),
+                new Arc([483689.0626921211,5695607.267055323],100, 355.088, 355.112),
+                new Arc([483689.0626921211,5695607.267055323],100, 360.9482, 360.9755),
+                new Arc([483689.0626921211,5695607.267055323],100, 387.1069, 387.1189),
+                new Arc([483730.189059553,5695655.769005219],100, 119.8516, 123.2622),
+                new Arc([483728.0245138987,5695647.832304518],100, 94.96999999999998, 94.97),
+                new Arc([483728.0245138987,5695647.832304518],100, 118.2902, 122.2171),
+                new Arc([483729.8798387453,5695645.627666681],100, 118.4459, 122.2834),
+                new Arc([483729.26139712974,5695654.446221285],100, 174.3675, 176.6382),
+                new Arc([483733.5904884384,5695657.091789354],100, 120.8429, 123.8761),
+                new Arc([484382.33574311703,5695496.154488483],100, 141.037, 151.8678),
+                new Arc([484382.33574311703,5695496.154488483],100, 169.253, 169.9659),
+                new Arc([484382.33574311703,5695496.154488483],100, 178.1123, 181.3965),
+                new Arc([484393.77691300405,5695513.350390714],100, 302.2735, 302.3138),
+                new Arc([483750.28841205745,5692732.893712345],100, 70.2, 73.449),
+                new Arc([483750.28841205745,5692732.893712345],100, 77.3372, 77.6422),
+                new Arc([483750.28841205745,5692732.893712345],100, 78.2813, 80.4422),
+                new Arc([483750.28841205745,5692732.893712345],100, 81.6306, 82.2981),
+                new Arc([483750.28841205745,5692732.893712345],100, 82.8377, 83.3266),
+                new Arc([483750.28841205745,5692732.893712345],100, 89.4388, 109.80000000000001),
+                new Arc([483750.28841205745,5692732.893712345],100, 244.1254, 244.1883),
+                new Arc([483750.28841205745,5692732.893712345],100, 253.117, 253.2209),
+                new Arc([483874.90439758427,5692661.9277673215],100, 243.32999999999998, 243.33),
+                new Arc([483874.90439758427,5692661.9277673215],100, 246.9612, 246.9687),
+                new Arc([483874.90439758427,5692661.9277673215],100, 247.6499, 251.7927),
+                new Arc([483874.90439758427,5692661.9277673215],100, 254.1701, 254.8956),
+                new Arc([483874.90439758427,5692661.9277673215],100, 258.0235, 258.0255),
+                new Arc([483874.90439758427,5692661.9277673215],100, 273.8736, 273.9313),
+                new Arc([483874.90439758427,5692661.9277673215],100, 274.7128, 277.2515),
+                new Arc([483874.90439758427,5692661.9277673215],100, 281.1907, 281.5664),
+                new Arc([483875.5228391998,5692661.046206327],100, 223.23999999999998, 223.24),
+                new Arc([483875.5228391998,5692661.046206327],100, 234.076, 234.0937),
+                new Arc([483875.5228391998,5692661.046206327],100, 236.5016, 236.5119),
+                new Arc([483875.5228391998,5692661.046206327],100, 236.5119, 236.5328),
+                new Arc([483875.5228391998,5692661.046206327],100, 238.7846, 238.8439),
+                new Arc([483875.5228391998,5692661.046206327],100, 246.9243, 246.9335),
+                new Arc([483875.5228391998,5692661.046206327],100, 247.6145, 251.7295),
+                new Arc([483875.5228391998,5692661.046206327],100, 254.1339, 254.8486),
+                new Arc([483875.5228391998,5692661.046206327],100, 257.9771, 257.979),
+                new Arc([483875.5228391998,5692661.046206327],100, 260.2166, 260.2509),
+                new Arc([488596.39691125794,5691342.328172981],100, 377.745, 377.832),
+                new Arc([488596.39691125794,5691342.328172981],100, 377.832, 378.1579),
+                new Arc([488596.39691125794,5691342.328172981],100, 380.0902, 380.1182),
+                new Arc([487498.3538229054,5693302.845591304],100, 356.7201, 356.7447),
+                new Arc([487537.9340862985,5693250.829916254],100, 117.6538, 117.6659),
+                new Arc([487537.9340862985,5693250.829916254],100, 117.6659, 117.6735),
+                new Arc([487374.97472060943,5690817.892043137],100, 214.3, 214.3207),
+                new Arc([487374.97472060943,5690817.892043137],100, 215.0533, 216.96),
+                new Arc([487396.62017715257,5690840.367247121],100, 306.5898, 306.703),
+                new Arc([487616.785392277,5690464.025191412],100, 157.4539, 159.2776),
+                new Arc([487616.785392277,5690464.025191412],100, 160.7911, 162.1653),
+                new Arc([487616.785392277,5690464.025191412],100, 164.2783, 164.6145),
+                new Arc([487297.6695186697,5690699.347293115],100, 208.067, 208.0812),
+                new Arc([487297.6695186697,5690699.347293115],100, 208.4897, 209.25),
+                new Arc([487258.7076968921,5690594.465142841],100, 70.6183, 70.7061),
+                new Arc([487258.7076968921,5690594.465142841],100, 71.6399, 71.6466),
+                new Arc([487258.7076968921,5690594.465142841],100, 72.0981, 72.1358),
+                new Arc([487258.7076968921,5690594.465142841],100, 75.1933, 75.2007),
+                new Arc([487168.1060002186,5690635.007677086],100, 376.2718, 376.3902),
+                new Arc([487168.1060002186,5690635.007677086],100, 376.5628, 376.6877),
+                new Arc([487216.34444622905,5690664.974016058],100, 128.388, 128.8815),
+                new Arc([487215.4167838059,5690664.974016058],100, 127.6535, 128.2958),
+                new Arc([487175.8365204126,5690701.550712811],100, 299.076, 299.0859),
+                new Arc([487175.8365204126,5690701.550712811],100, 318.5944, 318.6398),
+                new Arc([487172.4350915273,5690708.601659486],100, 318.274, 318.3154),
+                new Arc([488980.4491544948,5690183.761994997],100, 54.8224, 55.0088),
+                new Arc([488952.00084018084,5690179.355411029],100, 42.25, 42.4817),
+                new Arc([488945.1979824102,5690183.3213365],100, 81.9855, 82.0003),
+                new Arc([486124.1765532239,5691688.737290333],100, 122.75, 124.1707),
+                new Arc([486124.1765532239,5691688.737290333],100, 130.0008, 130.063),
+                new Arc([486124.1765532239,5691688.737290333],100, 130.1467, 130.1942),
+                new Arc([486124.1765532239,5691688.737290333],100, 141.3157, 141.3396),
+                new Arc([486114.89992899116,5691681.244839341],100, 105.4282, 105.4581),
+                new Arc([486114.89992899116,5691681.244839341],100, 119.285, 119.3319),
+                new Arc([486114.89992899116,5691681.244839341],100, 121.7655, 123.7149),
+                new Arc([486114.89992899116,5691681.244839341],100, 129.1083, 129.171),
+                new Arc([486114.89992899116,5691681.244839341],100, 130.9198, 130.9764),
+                new Arc([486114.89992899116,5691681.244839341],100, 105.4282, 105.4581),
+                new Arc([486114.89992899116,5691681.244839341],100, 119.285, 119.3319),
+                new Arc([486114.89992899116,5691681.244839341],100, 121.7655, 122.25),
+                new Arc([487050.9113140779,5691573.706821901],100, 77.3299, 77.4332),
+                new Arc([487050.9113140779,5691573.706821901],100, 78.132, 78.3129),
+                new Arc([487050.9113140779,5691573.706821901],100, 90.2078, 90.2144),
+                new Arc([489123.61838848726,5688301.4667415405],100, 331.75, 333.9192),
+                new Arc([489164.1263143037,5688332.30640581],100, 3.75, 30.0627),
+                new Arc([489014.15422254056,5688354.334802463],100, 157.704, 158.0681),
+                new Arc([489061.15578531986,5687979.859429233],100, 96.5258, 96.7054),
+                new Arc([489061.15578531986,5687979.859429233],100, 103.8533, 103.9698),
+                new Arc([489025.5953924276,5688328.341300164],100, 348.7129, 349.0719),
+                new Arc([489062.7018893587,5688231.857604047],100, 91.75, 92.9039),
+                new Arc([489306.9863274884,5688296.179952617],100, 91.75, 136.25),
+                new Arc([489046.3131865474,5688380.768949983],100, 94.75, 139.25),
+                new Arc([489022.50318435,5688366.670728261],100, 166.4126, 166.7599),
+                new Arc([489992.83807909803,5688761.869915968],100, 137.4628, 137.7472),
+                new Arc([488342.5266280878,5686790.012793644],100, 163.3789, 163.6473),
+                new Arc([488342.5266280878,5686790.012793644],100, 163.6473, 163.8338),
+                new Arc([488342.5266280878,5686790.012793644],100, 163.3789, 163.6473),
+                new Arc([488342.5266280878,5686790.012793644],100, 163.6473, 163.8338),
+                new Arc([488274.8072711886,5686737.153967272],100, 249.6759, 249.7956),
+                new Arc([488325.519483661,5686837.145510283],100, 160.8196, 161.0987),
+                new Arc([488325.519483661,5686837.145510283],100, 194.56, 194.56000000000003),
+                new Arc([488391.69273652154,5687387.339214568],100, 11.50999999999998, 11.51),
+                new Arc([488637.52327868994,5691774.239822345],100, 74.8679, 75.3968),
+                new Arc([488486.93274531123,5691940.839885505],100, 6.989999999999998, 6.99),
+                new Arc([488596.70613206574,5692027.2263242565],100, 21.610000000000003, 76.01),
+                new Arc([488563.9287264432,5692049.704564912],100, 356.2349, 356.4199),
+                new Arc([488599.4891193356,5692053.67131912],100, 72.8, 72.80000000000003),
+                new Arc([488606.9104187218,5692051.467566568],100, 42.75999999999998, 42.76),
+                new Arc([488606.9104187218,5692051.467566568],100, 30.449999999999978, 30.45),
+                new Arc([488609.38418518385,5692052.349067528],100, 3.0699999999999825, 3.07),
+                new Arc([488618.0423678011,5692058.960327477],100, 48.499999999999986, 48.5),
+                new Arc([488618.0423678011,5692058.960327477],100, 63.1546, 63.8607),
+                new Arc([488722.2497800159,5692024.581829062],100, 354.2828, 355.6212),
+                new Arc([488919.22343455843,5691972.573582442],100, 107.86999999999999, 107.87),
+                new Arc([488907.47304386355,5691975.658808983],100, 93.93999999999998, 93.94),
+                new Arc([488899.1240820541,5691987.118231144],100, 164.42, 164.42000000000002),
+                new Arc([488899.1240820541,5692024.581829062],100, 107.11999999999999, 107.12),
+                new Arc([488889.84745782136,5692048.3823139],100, 238.35, 238.35000000000002),
+                new Arc([488608.14730195276,5691960.673432908],100, 17.189999999999987, 17.19),
+                new Arc([488483.5313164259,5691984.03300066],100, 278.1434, 278.2033),
+                new Arc([488510.433526701,5691946.56957246],100, 17.819999999999983, 17.82),
+                new Arc([488500.84768166044,5691940.839885505],100, 78.5343, 79.2413),
+                new Arc([488500.84768166044,5691940.839885505],100, 101.2751, 101.8319),
+                new Arc([488500.84768166044,5691940.839885505],100, 106.0826, 106.0852),
+                new Arc([488441.16806576285,5691984.914494975],100, 281.1296, 281.137),
+                new Arc([488441.16806576285,5691984.914494975],100, 339.8106, 339.8613),
+                new Arc([488436.22053283884,5691956.2659741305],100, 359.4033, 359.8785),
+                new Arc([488436.22053283884,5691956.2659741305],100, 249.079, 249.3629),
+                new Arc([487757.7900806152,5690681.719955059],100, 227.9074, 228.3728),
+                new Arc([487757.7900806152,5690681.719955059],100, 272.4762, 272.7361),
+                new Arc([487770.7773545411,5690680.8385890685],100, 265.1283, 265.3933),
+                new Arc([487817.160475705,5690687.448836119],100, 57.11999999999999, 57.12),
+                new Arc([487823.0356710524,5690677.313125968],100, 33.989999999999995, 33.99),
+                new Arc([487823.0356710524,5690677.313125968],100, 38.2294, 41.7934),
+                new Arc([487814.37748843513,5690685.245419891],100, 17.449999999999978, 17.5998),
+                new Arc([487803.55476016353,5690683.482687303],100, 15.489999999999998, 15.49),
+                new Arc([487803.55476016353,5690683.482687303],100, 15.49, 15.5198),
+                new Arc([487803.55476016353,5690683.482687303],100, 24.49999999999999, 24.5),
+                new Arc([487788.71216139116,5690683.042004209],100, 246.70999999999998, 246.71),
+                new Arc([487788.71216139116,5690683.042004209],100, 283.2936, 283.4467),
+                new Arc([487788.71216139116,5690683.042004209],100, 283.4467, 283.911),
+                new Arc([487788.71216139116,5690683.042004209],100, 287.4811, 287.7419),
+                new Arc([487779.4355371584,5690638.973804422],100, 237.3379, 238.8588),
+                new Arc([488056.8066017184,5690102.240542655],100, 252.6449, 253.3368),
+                new Arc([488073.1953045295,5690120.748050485],100, 314.83, 369.22999999999996),
+                new Arc([488184.5147953229,5690107.528398135],100, 92.94999999999997, 92.95),
+                new Arc([488184.5147953229,5690107.528398135],100, 98.3666, 98.6621),
+                new Arc([488184.5147953229,5690107.528398135],100, 99.1086, 99.2711),
+                new Arc([488025.5753001347,5690293.927299191],100, 59.67999999999999, 59.68),
+                new Arc([488025.5753001347,5690293.927299191],100, 84.7195, 84.84),
+                new Arc([488044.43776940805,5690282.910707768],100, 191.3503, 191.4651),
+                new Arc([488044.43776940805,5690282.910707768],100, 195.268, 195.577),
+                new Arc([488103.18972288223,5690312.435203305],100, 116.57999999999997, 116.58),
+                new Arc([488041.6547821382,5690295.689955078],100, 124.37999999999998, 124.38),
+                new Arc([488052.16828960204,5690285.995352004],100, 97.11999999999999, 97.12),
+                new Arc([488208.01557671255,5691232.590676175],100, 162.9495, 163.0789),
+                new Arc([487996.5085442053,5691586.92863963],100, 287.63000000000005, 342.03000000000003),
+                new Arc([488003.311401976,5691596.183923661],100, 283.6386, 283.8566),
+                new Arc([488008.5681557079,5691571.503187512],100, 80.87, 80.87000000000002),
+                new Arc([488826.45719223074,5690525.278850826],100, 316.41, 370.81),
+                new Arc([488940.86889110156,5690806.434117728],100, 96.68999999999998, 96.69),
+                new Arc([488939.9412286782,5690868.1308123],100, 277.6402, 278.6237),
+                new Arc([488939.9412286782,5690868.1308123],100, 282.8955, 284.0757),
+                new Arc([487965.2772426217,5691093.76805943],100, 22.5138, 22.8283),
+                new Arc([487840.6612570947,5691081.869078169],100, 9.9613, 9.9649),
+                new Arc([487840.6612570947,5691081.869078169],100, 11.1131, 11.3241),
+                new Arc([487840.6612570947,5691081.869078169],100, 61.94, 61.94000000000001),
+                new Arc([487859.2145055602,5691110.955504731],100, 281.6039, 281.6051),
+                new Arc([487859.2145055602,5691110.955504731],100, 281.6051, 281.6173),
+                new Arc([487859.2145055602,5691110.955504731],100, 281.8546, 281.9236),
+                new Arc([487891.6826903749,5690982.2708182745],100, 13.909999999999979, 13.91),
+                new Arc([493916.5409087531,5690188.609239872],100, 76.63, 76.63000000000001),
+                new Arc([493931.69272833335,5690210.201544368],100, 64.05, 64.05000000000003),
+                new Arc([487213.25223815144,5690180.236727649],100, 75.6094, 75.6335),
+                new Arc([487213.25223815144,5690180.236727649],100, 75.9455, 75.9801),
+                new Arc([487213.25223815144,5690180.236727649],100, 77.6321, 79.2795),
+                new Arc([488957.2575939128,5690181.999361147],100, 54.32999999999997, 54.33),
+                new Arc([488784.4031623755,5687298.7949511185],100, 320.8209, 321.3478),
+                new Arc([488390.45585329045,5687299.675984252],100, 223.26, 223.26000000000002),
+                new Arc([488337.2698743559,5687156.949746723],100, 84.87999999999998, 84.88),
+                new Arc([490530.2638429834,5689709.625998666],100, 65.42000000000003, 65.4729),
+                new Arc([490530.2638429834,5689709.625998666],100, 35.60999999999997, 35.61),
+                new Arc([489828.3326093702,5688416.895744461],100, 40.36, 94.75999999999999),
+                new Arc([490086.22276304127,5688793.151756077],100, 56.0635, 56.2378),
+                new Arc([490113.74341493193,5688808.131830883],100, 6.949999999999978, 6.95),
+                new Arc([490113.74341493193,5688808.131830883],100, 33.2355, 33.5482),
+                new Arc([490145.90237893874,5689103.332535903],100, 334.5842, 334.8873),
+                new Arc([490145.90237893874,5689103.332535903],100, 336.3348, 336.3519),
+                new Arc([490645.6032042774,5689009.043491641],100, 111.8, 111.80000000000001),
+                new Arc([490650.2415163939,5688977.760897256],100, 43.199999999999974, 43.2),
+                new Arc([491029.9646683221,5689267.679832566],100, 278.3695, 278.6086),
+                new Arc([491029.9646683221,5689267.679832566],100, 331.78, 331.78000000000003),
+                new Arc([491049.4455792108,5689136.818603642],100, 347.53, 347.530001),
+                new Arc([491047.8994751721,5689183.5230651805],100, 43.2861, 43.3266),
+                new Arc([491046.3533711332,5689217.89065473],100, 21.199999999999978, 21.2),
+                new Arc([490717.9608732931,5689261.951859959],100, 264.2995, 264.3755),
+                new Arc([489901.61794080905,5689558.048783805],100, 2.889999999999997, 2.89),
+                new Arc([489890.4859917298,5689559.811294814],100, 306.8469, 306.9021),
+                new Arc([489890.4859917298,5689559.811294814],100, 21.21999999999998, 21.22),
+                new Arc([489717.0131185769,5689880.153432964],100, 52.519999999999996, 92.12),
+                new Arc([489083.7289042863,5689258.8675685385],100, 222.25, 222.25000000000003),
+                new Arc([489067.95864309056,5689244.767964126],100, 55.999999999999986, 56),
+                new Arc([489067.95864309056,5689244.767964126],100, 104.0019, 104.1289),
+                new Arc([489067.95864309056,5689244.767964126],100, 104.3178, 104.3857),
+                new Arc([489067.95864309056,5689244.767964126],100, 105.8141, 105.8324),
+                new Arc([489067.95864309056,5689244.767964126],100, 105.9619, 105.9848),
+                new Arc([488977.3569464172,5689331.569006175],100, 197.3797, 197.7558),
+                new Arc([488952.61928179645,5689305.132051459],100, 20.129999999999985, 20.13),
+                new Arc([488952.61928179645,5689305.132051459],100, 45.373, 46.2441),
+                new Arc([488952.61928179645,5689305.132051459],100, 49.1021, 49.775),
+                new Arc([489058.68201885786,5690321.248504425],100, 112.5867, 112.7003),
+                new Arc([489164.7447559192,5690533.211010033],100, 212.6526, 212.7769),
+                new Arc([489164.7447559192,5690533.211010033],100, 213.3008, 213.4917),
+                new Arc([489555.9090777345,5690950.981328211],100, 46.739999999999995, 46.74),
+                new Arc([489555.9090777345,5690950.981328211],100, 82.0909, 82.1358),
+                new Arc([489329.5594464548,5690960.235954726],100, 124.05, 124.05000000000001),
+                new Arc([489664.13636045007,5691378.466920215],100, 52.63999999999997, 52.64),
+                new Arc([489489.1173832585,5691544.6188916415],100, 98.55999999999999, 98.56),
+                new Arc([489895.43352465396,5691229.505705746],100, 102.99999999999999, 103),
+                new Arc([489895.43352465396,5691229.505705746],100, 103, 103.4586),
+                new Arc([489039.8195495845,5690553.922792213],100, 236.43, 236.7088),
+                new Arc([488387.0544244051,5691601.472661694],100, 14.459999999999969, 14.46),
+                new Arc([488426.9439086061,5691633.205155494],100, 86.82999999999997, 86.83),
+                new Arc([488106.5911517675,5692824.577257024],100, 82.89999999999999, 82.9),
+                new Arc([488095.76842349605,5692821.4917378435],100, 94.09, 94.09000000000003),
+                new Arc([487289.01133605244,5693465.947549609],100, 159.6918, 159.8453),
+                new Arc([487276.02406212664,5693437.735106368],100, 174.9647, 175.0436),
+                new Arc([487276.02406212664,5693437.735106368],100, 196.17, 196.17000000000004),
+                new Arc([487241.39133165753,5693515.760361856],100, 34.80999999999999, 34.81),
+                new Arc([487241.39133165753,5693515.760361856],100, 52.0306, 52.0343),
+                new Arc([487241.39133165753,5693515.760361856],100, 55.9843, 56.1558),
+                new Arc([490361.1200611391,5686646.854193942],100, 72.32999999999997, 72.33),
+                new Arc([490361.1200611391,5686646.854193942],100, 81.4116, 81.547),
+                new Arc([490352.4618785219,5686658.306797703],100, 301.7839, 301.8131),
+                new Arc([490352.4618785219,5686658.306797703],100, 313.4525, 314.81),
+                new Arc([490345.04057913565,5686653.0209787665],100, 55.61999999999999, 55.62),
+                new Arc([490345.04057913565,5686653.0209787665],100, 61.4139, 61.7839),
+                new Arc([490012.31898998684,5687027.881373262],100, 65.42999999999999, 65.43),
+                new Arc([490012.31898998684,5687027.881373262],100, 106.4296, 106.4321),
+                new Arc([490012.31898998684,5687027.881373262],100, 106.8502, 106.9752),
+                new Arc([490012.31898998684,5687027.881373262],100, 108.4798, 108.512),
+                new Arc([490012.31898998684,5687027.881373262],100, 113.3844, 113.4626),
+                new Arc([490001.18704090756,5687068.848266398],100, 34.62999999999998, 34.63),
+                new Arc([489884.3015755745,5687404.079024475],100, 73.84999999999998, 73.85),
+                new Arc([489884.3015755745,5687404.079024475],100, 109.1003, 109.1333),
+                new Arc([489861.4192358004,5687424.343046748],100, 44.719999999999985, 44.72),
+                new Arc([489576.31765104656,5688245.955613515],100, 85.30999999999999, 85.31),
+                new Arc([489204.6342401201,5688282.962993959],100, 250.0627, 251.1791),
+                new Arc([489934.0861256238,5688800.201199924],100, 314.8284, 315.3956),
+                new Arc([489934.0861256238,5688800.201199924],100, 327.8248, 328.3648),
+                new Arc([488645.8722404994,5691767.188036224],100, 124.702, 124.961),
+                new Arc([488645.8722404994,5691767.188036224],100, 125.3986, 125.7513),
+                new Arc([489901.92716161686,5688453.90383141],100, 139.55, 139.5746),
+                new Arc([489901.92716161686,5688453.90383141],100, 193.1631, 193.1837),
+                new Arc([490800.83204977255,5689218.33126571],100, 146.7893, 149.131)];
+    var arcs2 = [];
+    for (var arc of arcs) {
+        if (arc.omega - arc.alpha &lt; 44) {
+            arcs2.push(arc);
+        }
+    }
+    return arcs2;
+}
+
+/**
+ * Sectors from months 02/2018 through 05/2018 (radius 300)
+ * @returns {Array&lt;Arc&gt;}  sectors
+ */
+export function sectorsStEtienne2345_r300() {
+    return [new Arc([485538.20312252047,5692058.519576657],100, 86.94999999999997, 86.95),
+            new Arc([485168.37503644056,5690734.161387739],100, 115.58, 155.18),
+            new Arc([485168.37503644056,5690734.161387739],100, 119.01, 158.61),
+            new Arc([485156.31542493793,5690754.432948245],100, 127.57000000000001, 167.17000000000002),
+            new Arc([485014.0738533688,5690961.55804501],100, 123.3893, 158.15000000000003),
+            new Arc([485014.0738533688,5690961.55804501],100, 135.81, 175.41),
+            new Arc([484325.4391144893,5691660.089717437],100, 118.82999999999997, 118.83),
+            new Arc([484325.4391144893,5691660.089717437],100, 126.9202, 128.2392),
+            new Arc([484325.4391144893,5691660.089717437],100, 132.9675, 135.8781),
+            new Arc([484325.4391144893,5691660.089717437],100, 142.2552, 144.0219),
+            new Arc([484325.4391144893,5691660.089717437],100, 147.7854, 173.22999999999996),
+            new Arc([486294.2479974915,5695593.157446534],100, 207.98999999999998, 207.99),
+            new Arc([482634.3105168548,5691842.113547831],100, 68.90999999999998, 68.91),
+            new Arc([482634.3105168548,5691842.113547831],100, 70.6277, 70.7682),
+            new Arc([481340.5306571908,5690449.923688883],100, 40.53999999999998, 40.54),
+            new Arc([481344.85974849935,5690455.2117497325],100, 62.28999999999998, 62.29),
+            new Arc([481332.8001369967,5690458.737125367],100, 34.9949, 35.3332),
+            new Arc([481332.8001369967,5690458.737125367],100, 51.91, 51.91000000000001),
+            new Arc([481327.2341624571,5690478.126716156],100, 79.53999999999998, 79.54),
+            new Arc([481366.19598423474,5690453.449062436],100, 106.4018, 106.7411),
+            new Arc([481366.19598423474,5690453.449062436],100, 125.91, 125.91000000000003),
+            new Arc([481867.75213442004,5690880.02950945],100, 63.59999999999998, 72.0789),
+            new Arc([481856.9294061485,5690881.351587892],100, 29.71999999999998, 29.72),
+            new Arc([481856.9294061485,5690881.351587892],100, 56.3307, 68.803),
+            new Arc([481836.5208328363,5690877.826045827],100, 52.3506, 63.6793),
+            new Arc([481836.5208328363,5690877.826045827],100, 74.4362, 74.8056),
+            new Arc([481923.4118798167,5691043.528023928],100, 13.909999999999979, 13.91),
+            new Arc([481923.4118798167,5691043.528023928],100, 31.7982, 42.8598),
+            new Arc([481937.94525778136,5691061.596776155],100, 32.050000000000026, 42.0128),
+            new Arc([481937.94525778136,5691061.596776155],100, 58.72, 71.65000000000003),
+            new Arc([481924.9579838555,5691080.106267476],100, 17.2689, 36.3031),
+            new Arc([481926.81330870197,5691063.800285021],100, 51.6286, 55.9099),
+            new Arc([481926.81330870197,5691063.800285021],100, 55.9099, 86.86000000000001),
+            new Arc([485038.81151798955,5693282.568258294],100, 78.62000000000002, 118.22000000000003),
+            new Arc([485047.160479799,5693275.515283671],100, 52.979999999999976, 92.57999999999998),
+            new Arc([485033.5547642576,5693279.041770288],100, 33.5111, 78.00000000000001),
+            new Arc([485805.06067961664,5687021.714330306],100, 21.869999999999994, 76.27),
+            new Arc([485794.237951345,5687027.881373262],100, 343.52000000000004, 397.92),
+            new Arc([485754.34846714407,5687069.729276909],100, 47.93999999999998, 102.33999999999997),
+            new Arc([485735.7952186785,5687179.856273578],100, 265.19, 273.7669),
+            new Arc([485735.7952186785,5687179.856273578],100, 286.378, 319.59),
+            new Arc([485680.75391489745,5687138.888872629],100, 303.8852, 356.95),
+            new Arc([485719.715736675,5687104.529261495],100, 340.75, 395.15),
+            new Arc([485771.97405318636,5687117.303973321],100, 112.73, 167.13),
+            new Arc([485818.666395158,5687115.9824505625],100, 228.07000000000002, 238.776),
+            new Arc([485818.666395158,5687115.9824505625],100, 269.4244, 271.7343),
+            new Arc([485818.666395158,5687115.9824505625],100, 276.8073, 279.9315),
+            new Arc([485844.0225013942,5687118.184988598],100, 10.929999999999996, 65.33),
+            new Arc([485871.233932477,5687121.268542762],100, 137.90000000000003, 192.30000000000004),
+            new Arc([485900.30068840634,5687126.554638081],100, 213.08, 219.909),
+            new Arc([485900.30068840634,5687126.554638081],100, 249.2841, 256.0601),
+            new Arc([485900.30068840634,5687126.554638081],100, 261.0756, 263.4411),
+            new Arc([485907.41276698484,5687132.721753233],100, 201.45000000000002, 219.9551),
+            new Arc([485907.41276698484,5687132.721753233],100, 248.2389, 255.85000000000002),
+            new Arc([485916.6893912176,5687126.995146166],100, 40.790000000000006, 95.19),
+            new Arc([485972.658357422,5687152.1041427795],100, 45.530000000000015, 99.93),
+            new Arc([485992.7577099263,5687167.521982605],100, 57.46000000000002, 111.86000000000001),
+            new Arc([486034.50251897384,5687177.213209796],100, 198.36, 252.76000000000002),
+            new Arc([485881.12899832526,5687071.931803573],100, 139.95, 194.35),
+            new Arc([485881.12899832526,5687071.931803573],100, 26.09000000000002, 80.49000000000002),
+            new Arc([485881.12899832526,5687071.931803573],100, 170.76999999999998, 208.6866),
+            new Arc([485866.9048411684,5687081.182421462],100, 188.92000000000002, 214.609),
+            new Arc([485866.9048411684,5687081.182421462],100, 243.32, 243.32000000000002),
+            new Arc([485861.9573082442,5687083.825456901],100, 191.17000000000002, 216.6161),
+            new Arc([485861.9573082442,5687083.825456901],100, 243.3903, 243.6561),
+            new Arc([485861.9573082442,5687083.825456901],100, 245.57, 245.57000000000002),
+            new Arc([487059.8787175029,5693926.616432178],100, 369.083, 374.2742),
+            new Arc([487059.8787175029,5693926.616432178],100, 378.0523, 380.174),
+            new Arc([487075.64897869865,5693928.37980361],100, 108.05, 108.3761),
+            new Arc([487075.64897869865,5693928.37980361],100, 115.1415, 115.233),
+            new Arc([487075.64897869865,5693928.37980361],100, 157.7834, 159.0591),
+            new Arc([487060.49715911853,5693924.412218386],100, 110.99, 110.99000000000001),
+            new Arc([487057.7141718486,5693928.37980361],100, 81.0044, 81.1563),
+            new Arc([487062.0432631573,5693930.143175378],100, 358.15999999999997, 358.16),
+            new Arc([487062.0432631573,5693930.143175378],100, 368.4426, 373.6568),
+            new Arc([487062.0432631573,5693930.143175378],100, 377.5308, 379.3874),
+            new Arc([487157.283271947,5693960.561393176],100, 297.97999999999996, 297.98),
+            new Arc([487157.283271947,5693960.561393176],100, 307.47999999999996, 307.48),
+            new Arc([487216.03522542125,5693964.088149761],100, 268.46999999999997, 269.4142),
+            new Arc([487216.03522542125,5693964.088149761],100, 293.9588, 294.4762),
+            new Arc([487463.7210924364,5693853.436824404],100, 338.96999999999997, 338.97),
+            new Arc([487463.7210924364,5693853.436824404],100, 367.188, 367.3093),
+            new Arc([487440.8387526621,5693830.954053027],100, 381.3022, 381.4677),
+            new Arc([487489.07719867263,5693855.641020715],100, 236.32999999999998, 236.33),
+            new Arc([487464.3395340518,5693853.877663621],100, 242.64000000000004, 246.9971),
+            new Arc([487464.3395340518,5693853.877663621],100, 253.2549, 253.5957),
+            new Arc([487464.3395340518,5693853.877663621],100, 264.2474, 264.6603),
+            new Arc([487588.33707796317,5693913.391157557],100, 278.1915, 278.531),
+            new Arc([487588.33707796317,5693913.391157557],100, 279.3944, 280.3684),
+            new Arc([487588.33707796317,5693913.391157557],100, 282.9398, 283.0663),
+            new Arc([487450.73381851043,5693354.420754052],100, 219.17999999999998, 219.18),
+            new Arc([487441.76641508547,5693339.873883185],100, 271.85999999999996, 271.86),
+            new Arc([487472.99771666917,5693331.939236315],100, 178.57999999999998, 178.58),
+            new Arc([487459.3920011277,5693290.062049926],100, 165.07999999999998, 165.08),
+            new Arc([487458.1551178967,5693272.429609019],100, 263.2596, 263.6077),
+            new Arc([487458.1551178967,5693272.429609019],100, 266.143, 268.19),
+            new Arc([487462.79343001306,5692955.933202974],100, 13.280000000000019, 67.68000000000002),
+            new Arc([487462.79343001306,5692955.933202974],100, 23.600000000000012, 78.00000000000001),
+            new Arc([487481.03745767084,5692892.018156244],100, 78.13, 78.13000000000001),
+            new Arc([487511.9595384468,5692775.209077801],100, 335.86, 337.5986),
+            new Arc([487528.9666828735,5692759.781577637],100, 21.939999999999987, 21.94),
+            new Arc([487541.3355151838,5692575.094426166],100, 271.3692, 271.3952),
+            new Arc([487541.3355151838,5692575.094426166],100, 277.2577, 278.4055),
+            new Arc([487530.51278691227,5692562.311924237],100, 30.653, 30.9643),
+            new Arc([487530.51278691227,5692562.311924237],100, 56.24, 56.24000000000002),
+            new Arc([487543.5000608381,5692558.785720019],100, 105.902, 113.31),
+            new Arc([487433.4174532759,5693029.546270663],100, 386.0845, 386.189),
+            new Arc([484489.0169217938,5695998.817575407],100, 139.75, 194.15),
+            new Arc([484487.78003856284,5695992.203404063],100, 103.9249, 106.9173),
+            new Arc([484487.78003856284,5695992.203404063],100, 110.5716, 120.6488),
+            new Arc([484487.78003856284,5695992.203404063],100, 127.1846, 156.64),
+            new Arc([484504.78718298965,5696025.274309666],100, 147.32999999999998, 148.1085),
+            new Arc([484504.78718298965,5696025.274309666],100, 157.2585, 199.6675),
+            new Arc([484507.5701702594,5696019.5420106035],100, 131.69, 145.469),
+            new Arc([484507.5701702594,5696019.5420106035],100, 153.8978, 186.09),
+            new Arc([484507.5701702594,5696019.5420106035],100, 90.9516, 91.0225),
+            new Arc([484507.5701702594,5696019.5420106035],100, 91.2059, 93.55),
+            new Arc([484507.5701702594,5696019.5420106035],100, 94.2293, 94.4127),
+            new Arc([484507.5701702594,5696019.5420106035],100, 94.8464, 95.0647),
+            new Arc([484507.5701702594,5696019.5420106035],100, 98.4502, 99.1651),
+            new Arc([484490.8722466403,5695993.526237944],100, 104.6138, 108.6625),
+            new Arc([484490.8722466403,5695993.526237944],100, 112.4128, 123.0116),
+            new Arc([484473.8651022137,5695998.817575407],100, 104.0468, 107.2536),
+            new Arc([484473.8651022137,5695998.817575407],100, 110.728, 113.3407),
+            new Arc([484473.8651022137,5695998.817575407],100, 120.4806, 153.76),
+            new Arc([484082.39155959064,5695947.227168626],100, 330.59999999999997, 352.0885),
+            new Arc([484082.39155959064,5695947.227168626],100, 360.1912, 370.2),
+            new Arc([484082.39155959064,5695947.227168626],100, 296.92, 336.52000000000004),
+            new Arc([484082.39155959064,5695947.227168626],100, 266.67, 306.27000000000004),
+            new Arc([484081.77311797516,5695854.188810969],100, 305.5, 345.1),
+            new Arc([484080.8454555518,5695819.795729373],100, 278.05, 317.65000000000003),
+            new Arc([484089.19441736134,5695788.489321324],100, 296.58, 336.18),
+            new Arc([484207.62598673307,5695723.231245452],100, 24.519999999999992, 48.6282),
+            new Arc([484207.62598673307,5695723.231245452],100, 54.2249, 64.11999999999999),
+            new Arc([484207.62598673307,5695723.231245452],100, 1.469999999999981, 3.1747),
+            new Arc([484207.62598673307,5695723.231245452],100, 5.8237, 14.3309),
+            new Arc([484207.62598673307,5695723.231245452],100, 20.3279, 20.4107),
+            new Arc([484207.62598673307,5695723.231245452],100, 22.2225, 41.06999999999998),
+            new Arc([483619.4880103753,5695565.37921927],100, 348.96, 388.56),
+            new Arc([483634.6398299555,5695573.756770789],100, 61.5595, 88.6031),
+            new Arc([483634.6398299555,5695573.756770789],100, 91.7419, 95.4193),
+            new Arc([483689.0626921211,5695607.267055323],100, 347.88, 387.48),
+            new Arc([483730.189059553,5695655.769005219],100, 107.89, 113.5892),
+            new Arc([483730.189059553,5695655.769005219],100, 119.8516, 127.1199),
+            new Arc([483728.0245138987,5695647.832304518],100, 94.96999999999998, 112.2918),
+            new Arc([483728.0245138987,5695647.832304518],100, 118.2902, 125.2813),
+            new Arc([483729.8798387453,5695645.627666681],100, 107.45, 112.5105),
+            new Arc([483729.8798387453,5695645.627666681],100, 118.4459, 125.3484),
+            new Arc([483729.26139712974,5695654.446221285],100, 171.7703, 488.8397),
+            new Arc([483733.5904884384,5695657.091789354],100, 107.41000000000001, 114.5322),
+            new Arc([483733.5904884384,5695657.091789354],100, 120.8429, 128.1308),
+            new Arc([483743.79477509443,5695660.17828643],100, 130.11, 130.9341),
+            new Arc([483743.79477509443,5695660.17828643],100, 158.2109, 160.829),
+            new Arc([483743.79477509443,5695660.17828643],100, 181.3744, 182.4069),
+            new Arc([484382.33574311703,5695496.154488483],100, 129.89, 184.29),
+            new Arc([484393.77691300405,5695513.350390714],100, 302.2735, 302.3138),
+            new Arc([483750.28841205745,5692732.893712345],100, 70.2, 109.80000000000001),
+            new Arc([483750.28841205745,5692732.893712345],100, 214.5, 254.1),
+            new Arc([483874.90439758427,5692661.9277673215],100, 243.32999999999998, 282.93),
+            new Arc([483875.5228391998,5692661.046206327],100, 223.23999999999998, 262.84),
+            new Arc([488596.39691125794,5691342.328172981],100, 377.745, 377.832),
+            new Arc([488596.39691125794,5691342.328172981],100, 377.832, 378.1579),
+            new Arc([488596.39691125794,5691342.328172981],100, 380.0902, 380.1182),
+            new Arc([487632.86487428047,5693682.833677036],100, 272.9548, 275.9909),
+            new Arc([487498.3538229054,5693302.845591304],100, 349.8373, 350.6064),
+            new Arc([487498.3538229054,5693302.845591304],100, 354.183, 356.9068),
+            new Arc([487530.82200772007,5693259.205301139],100, 66.8604, 71.3873),
+            new Arc([487537.9340862985,5693250.829916254],100, 116.3609, 117.8289),
+            new Arc([487537.9340862985,5693250.829916254],100, 124.3875, 125.7909),
+            new Arc([488983.5413625724,5690194.337805377],100, 61.6089, 64.727),
+            new Arc([487374.97472060943,5690817.892043137],100, 214.3, 216.96),
+            new Arc([487374.97472060943,5690817.892043137],100, 228.5091, 263.7),
+            new Arc([487396.62017715257,5690840.367247121],100, 265.2, 269.634),
+            new Arc([487396.62017715257,5690840.367247121],100, 275.148, 287.9016),
+            new Arc([487396.62017715257,5690840.367247121],100, 306.5898, 306.703),
+            new Arc([487398.78472280694,5690843.452083442],100, 267.2, 269.0611),
+            new Arc([487398.78472280694,5690843.452083442],100, 274.6513, 287.1487),
+            new Arc([487616.785392277,5690464.025191412],100, 131.4967, 137.9459),
+            new Arc([487616.785392277,5690464.025191412],100, 139.6386, 140.9904),
+            new Arc([487616.785392277,5690464.025191412],100, 157.3026, 172.79999999999998),
+            new Arc([487390.4357609974,5690951.422024497],100, 242.6762, 282.8765),
+            new Arc([487356.1122513361,5690891.046835734],100, 223.0358, 224.7092),
+            new Arc([487356.1122513361,5690891.046835734],100, 230.8436, 235.0996),
+            new Arc([487356.1122513361,5690891.046835734],100, 243.3508, 264.25),
+            new Arc([487297.6695186697,5690699.347293115],100, 207.7047, 209.25),
+            new Arc([487279.11627020413,5690650.87219699],100, 165.4654, 171.25),
+            new Arc([487258.7076968921,5690594.465142841],100, 69.75, 79.1976),
+            new Arc([487258.7076968921,5690594.465142841],100, 80.81, 80.9093),
+            new Arc([487258.7076968921,5690594.465142841],100, 81.8536, 91.3174),
+            new Arc([487168.1060002186,5690635.007677086],100, 358.82, 360.8215),
+            new Arc([487168.1060002186,5690635.007677086],100, 374.3293, 378.1021),
+            new Arc([487168.1060002186,5690635.007677086],100, 383.2608, 385.5391),
+            new Arc([487216.34444622905,5690664.974016058],100, 128.388, 128.8815),
+            new Arc([487215.4167838059,5690664.974016058],100, 127.6535, 128.2958),
+            new Arc([487165.6322337566,5690681.279272055],100, 348.235, 351.9173),
+            new Arc([487175.8365204126,5690701.550712811],100, 294.75, 326.5994),
+            new Arc([487462.79343001306,5692955.933202974],100, 13.280000000000019, 67.68000000000002),
+            new Arc([487462.79343001306,5692955.933202974],100, 23.600000000000012, 78.00000000000001),
+            new Arc([487462.79343001306,5692955.933202974],100, 13.280000000000019, 67.68000000000002),
+            new Arc([487462.79343001306,5692955.933202974],100, 23.600000000000012, 78.00000000000001),
+            new Arc([487172.4350915273,5690708.601659486],100, 305.75, 325.7492),
+            new Arc([487462.79343001306,5692955.933202974],100, 13.280000000000019, 67.68000000000002),
+            new Arc([487462.79343001306,5692955.933202974],100, 23.600000000000012, 78.00000000000001),
+            new Arc([487462.79343001306,5692955.933202974],100, 13.280000000000019, 67.68000000000002),
+            new Arc([487462.79343001306,5692955.933202974],100, 23.600000000000012, 78.00000000000001),
+            new Arc([487462.79343001306,5692955.933202974],100, 13.280000000000019, 67.68000000000002),
+            new Arc([487462.79343001306,5692955.933202974],100, 23.600000000000012, 78.00000000000001),
+            new Arc([487462.79343001306,5692955.933202974],100, 13.280000000000019, 67.68000000000002),
+            new Arc([487462.79343001306,5692955.933202974],100, 23.600000000000012, 78.00000000000001),
+            new Arc([488968.6987637999,5690163.491726695],100, 61.3088, 64.6375),
+            new Arc([488954.1653858352,5690173.626855112],100, 58.2266, 58.3582),
+            new Arc([487462.79343001306,5692955.933202974],100, 13.280000000000019, 67.68000000000002),
+            new Arc([487462.79343001306,5692955.933202974],100, 23.600000000000012, 78.00000000000001),
+            new Arc([487462.79343001306,5692955.933202974],100, 13.280000000000019, 67.68000000000002),
+            new Arc([487462.79343001306,5692955.933202974],100, 23.600000000000012, 78.00000000000001),
+            new Arc([487462.79343001306,5692955.933202974],100, 13.280000000000019, 67.68000000000002),
+            new Arc([487462.79343001306,5692955.933202974],100, 23.600000000000012, 78.00000000000001),
+            new Arc([488980.4491544948,5690183.761994997],100, 54.8224, 55.0088),
+            new Arc([488980.4491544948,5690183.761994997],100, 61.4169, 65.4386),
+            new Arc([487462.79343001306,5692955.933202974],100, 13.280000000000019, 67.68000000000002),
+            new Arc([487462.79343001306,5692955.933202974],100, 23.600000000000012, 78.00000000000001),
+            new Arc([488962.8235684525,5690166.576329782],100, 60.1541, 62.2861),
+            new Arc([487462.79343001306,5692955.933202974],100, 13.280000000000019, 67.68000000000002),
+            new Arc([487462.79343001306,5692955.933202974],100, 23.600000000000012, 78.00000000000001),
+            new Arc([488952.9285026042,5690171.864223257],100, 58.2052, 58.3128),
+            new Arc([488959.7313603749,5690182.440019579],100, 58.2431, 58.4024),
+            new Arc([488952.00084018084,5690179.355411029],100, 42.25, 42.4817),
+            new Arc([488945.1979824102,5690183.3213365],100, 81.9855, 82.0003),
+            new Arc([486124.1765532239,5691688.737290333],100, 122.75, 165.3342),
+            new Arc([486114.89992899116,5691681.244839341],100, 95.75, 140.25),
+            new Arc([486114.89992899116,5691681.244839341],100, 77.75, 122.25),
+            new Arc([487050.9113140779,5691573.706821901],100, 77.3299, 77.4332),
+            new Arc([487050.9113140779,5691573.706821901],100, 78.132, 78.3129),
+            new Arc([487050.9113140779,5691573.706821901],100, 87.1018, 90.5133),
+            new Arc([487045.6545603461,5691586.92863963],100, 86.2636, 89.3965),
+            new Arc([489123.61838848726,5688301.4667415405],100, 331.75, 333.9192),
+            new Arc([489164.1263143037,5688332.30640581],100, 3.75, 30.0627),
+            new Arc([489014.15422254056,5688354.334802463],100, 157.704, 158.0681),
+            new Arc([489061.15578531986,5687979.859429233],100, 96.5258, 96.7054),
+            new Arc([489061.15578531986,5687979.859429233],100, 99.7992, 103.2743),
+            new Arc([489061.15578531986,5687979.859429233],100, 103.8533, 103.9698),
+            new Arc([488978.5938296482,5688345.523437298],100, 358.2932, 368.25),
+            new Arc([489007.96980638534,5688357.4187823245],100, 351.1245, 362.25),
+            new Arc([489025.5953924276,5688328.341300164],100, 348.7129, 349.0719),
+            new Arc([489062.7018893587,5688231.857604047],100, 91.75, 92.9039),
+            new Arc([489306.9863274884,5688296.179952617],100, 91.75, 136.25),
+            new Arc([489046.3131865474,5688380.768949983],100, 94.75, 139.25),
+            new Arc([489022.50318435,5688366.670728261],100, 166.4126, 166.7599),
+            new Arc([489023.43084677326,5688365.349021113],100, 350.0704, 357.25),
+            new Arc([489014.77266415604,5688346.404573426],100, 356.7708, 381.7252),
+            new Arc([489204.6342401201,5688282.962993959],100, 250.0627, 251.1791),
+            new Arc([489217.3122932382,5688071.9348631995],100, 254.9, 257.3431),
+            new Arc([489874.09728891857,5688840.735609747],100, 233.4032, 239.718),
+            new Arc([489874.09728891857,5688840.735609747],100, 242.6907, 244.25),
+            new Arc([489934.0861256238,5688800.201199924],100, 314.8284, 315.3956),
+            new Arc([489934.0861256238,5688800.201199924],100, 317.785, 319.2751),
+            new Arc([489934.0861256238,5688800.201199924],100, 327.8248, 328.3648),
+            new Arc([489965.6266480153,5688777.290527716],100, 149.75, 151.519),
+            new Arc([489992.83807909803,5688761.869915968],100, 137.4628, 137.7472),
+            new Arc([489992.83807909803,5688761.869915968],100, 145.7046, 146.0651),
+            new Arc([489992.83807909803,5688761.869915968],100, 147.169, 151.3388),
+            new Arc([488342.5266280878,5686790.012793644],100, 135.1504, 136.668),
+            new Arc([488342.5266280878,5686790.012793644],100, 163.3789, 163.6473),
+            new Arc([488342.5266280878,5686790.012793644],100, 163.6473, 163.8338),
+            new Arc([488342.5266280878,5686790.012793644],100, 135.1504, 136.668),
+            new Arc([488342.5266280878,5686790.012793644],100, 163.3789, 163.6473),
+            new Arc([488342.5266280878,5686790.012793644],100, 163.6473, 163.8338),
+            new Arc([488274.8072711886,5686737.153967272],100, 249.6759, 249.7956),
+            new Arc([488263.67532210913,5686731.427613144],100, 313.8104, 314.0381),
+            new Arc([488325.519483661,5686837.145510283],100, 144.1214, 149.7723),
+            new Arc([488325.519483661,5686837.145510283],100, 158.1518, 160.8196),
+            new Arc([488325.519483661,5686837.145510283],100, 194.56, 194.56000000000003),
+            new Arc([488391.69273652154,5687387.339214568],100, 11.50999999999998, 11.51),
+            new Arc([488645.8722404994,5691767.188036224],100, 124.702, 124.961),
+            new Arc([488645.8722404994,5691767.188036224],100, 125.3986, 125.7513),
+            new Arc([488637.52327868994,5691774.239822345],100, 74.8679, 75.3968),
+            new Arc([488486.93274531123,5691940.839885505],100, 6.989999999999998, 6.99),
+            new Arc([488596.70613206574,5692027.2263242565],100, 21.610000000000003, 76.01),
+            new Arc([488563.9287264432,5692049.704564912],100, 356.2349, 356.4199),
+            new Arc([488563.9287264432,5692049.704564912],100, 358.5423, 361.19),
+            new Arc([488599.4891193356,5692053.67131912],100, 72.8, 72.80000000000003),
+            new Arc([488606.9104187218,5692051.467566568],100, 42.75999999999998, 42.76),
+            new Arc([488606.9104187218,5692051.467566568],100, 30.449999999999978, 30.45),
+            new Arc([488609.38418518385,5692052.349067528],100, 3.0699999999999825, 3.07),
+            new Arc([488618.0423678011,5692058.960327477],100, 48.499999999999986, 48.5),
+            new Arc([488722.2497800159,5692024.581829062],100, 354.2828, 355.6212),
+            new Arc([488919.22343455843,5691972.573582442],100, 107.86999999999999, 107.87),
+            new Arc([488907.47304386355,5691975.658808983],100, 93.93999999999998, 93.94),
+            new Arc([488899.1240820541,5691987.118231144],100, 164.42, 164.42000000000002),
+            new Arc([488899.1240820541,5692024.581829062],100, 107.11999999999999, 107.12),
+            new Arc([488889.84745782136,5692048.3823139],100, 238.35, 238.35000000000002),
+            new Arc([488608.14730195276,5691960.673432908],100, 17.189999999999987, 17.19),
+            new Arc([488483.5313164259,5691984.03300066],100, 278.1434, 278.2033),
+            new Arc([488510.433526701,5691946.56957246],100, 17.819999999999983, 17.82),
+            new Arc([488500.84768166044,5691940.839885505],100, 78.5343, 79.2413),
+            new Arc([488500.84768166044,5691940.839885505],100, 101.2751, 101.8319),
+            new Arc([488500.84768166044,5691940.839885505],100, 106.0826, 106.0852),
+            new Arc([488441.16806576285,5691984.914494975],100, 280.9901, 281.1296),
+            new Arc([488441.16806576285,5691984.914494975],100, 281.1296, 281.137),
+            new Arc([488441.16806576285,5691984.914494975],100, 339.8106, 339.8613),
+            new Arc([488436.22053283884,5691956.2659741305],100, 359.4033, 359.8785),
+            new Arc([488436.22053283884,5691956.2659741305],100, 249.079, 249.3629),
+            new Arc([488421.9963756819,5691917.921174346],100, 74.8397, 76.5644),
+            new Arc([488421.9963756819,5691917.921174346],100, 116.731, 119.1696),
+            new Arc([488421.9963756819,5691917.921174346],100, 74.8397, 76.5644),
+            new Arc([487757.7900806152,5690681.719955059],100, 227.9074, 228.3728),
+            new Arc([487757.7900806152,5690681.719955059],100, 272.4762, 272.7361),
+            new Arc([487770.7773545411,5690680.8385890685],100, 265.1283, 265.3933),
+            new Arc([487770.7773545411,5690680.8385890685],100, 298.874, 299.121),
+            new Arc([487817.160475705,5690687.448836119],100, 57.11999999999999, 57.12),
+            new Arc([487823.0356710524,5690677.313125968],100, 33.989999999999995, 33.99),
+            new Arc([487823.0356710524,5690677.313125968],100, 38.2294, 41.7934),
+            new Arc([487814.37748843513,5690685.245419891],100, 17.449999999999978, 17.5998),
+            new Arc([487803.55476016353,5690683.482687303],100, 15.489999999999998, 15.49),
+            new Arc([487803.55476016353,5690683.482687303],100, 15.49, 15.5198),
+            new Arc([487803.55476016353,5690683.482687303],100, 24.49999999999999, 24.5),
+            new Arc([487788.71216139116,5690683.042004209],100, 246.70999999999998, 246.71),
+            new Arc([487788.71216139116,5690683.042004209],100, 283.2936, 283.4467),
+            new Arc([487788.71216139116,5690683.042004209],100, 283.4467, 283.911),
+            new Arc([487788.71216139116,5690683.042004209],100, 287.4811, 287.7419),
+            new Arc([487779.4355371584,5690638.973804422],100, 237.3379, 238.8588),
+            new Arc([488056.8066017184,5690102.240542655],100, 252.6449, 253.3368),
+            new Arc([488056.8066017184,5690102.240542655],100, 259.5946, 260.8809),
+            new Arc([488073.1953045295,5690120.748050485],100, 314.83, 369.22999999999996),
+            new Arc([488184.5147953229,5690107.528398135],100, 92.94999999999997, 92.95),
+            new Arc([488184.5147953229,5690107.528398135],100, 98.3666, 98.6621),
+            new Arc([488184.5147953229,5690107.528398135],100, 99.1086, 99.2711),
+            new Arc([488025.5753001347,5690293.927299191],100, 59.67999999999999, 59.68),
+            new Arc([488025.5753001347,5690293.927299191],100, 84.7195, 84.84),
+            new Arc([488044.43776940805,5690282.910707768],100, 191.3503, 191.4651),
+            new Arc([488044.43776940805,5690282.910707768],100, 195.268, 195.577),
+            new Arc([488103.18972288223,5690312.435203305],100, 116.57999999999997, 116.58),
+            new Arc([488041.6547821382,5690295.689955078],100, 124.37999999999998, 124.38),
+            new Arc([488052.16828960204,5690285.995352004],100, 97.11999999999999, 97.12),
+            new Arc([488208.01557671255,5691232.590676175],100, 162.9495, 163.0789),
+            new Arc([487996.5085442053,5691586.92863963],100, 287.63000000000005, 342.03000000000003),
+            new Arc([488003.311401976,5691596.183923661],100, 283.6386, 283.8566),
+            new Arc([488008.5681557079,5691571.503187512],100, 80.87, 80.87000000000002),
+            new Arc([488826.45719223074,5690525.278850826],100, 316.41, 370.81),
+            new Arc([488940.86889110156,5690806.434117728],100, 96.68999999999998, 96.69),
+            new Arc([488939.9412286782,5690868.1308123],100, 277.6402, 278.6237),
+            new Arc([488939.9412286782,5690868.1308123],100, 282.8955, 284.0757),
+            new Arc([487965.2772426217,5691093.76805943],100, 13.54000000000001, 13.8348),
+            new Arc([487965.2772426217,5691093.76805943],100, 22.5138, 22.8283),
+            new Arc([487840.6612570947,5691081.869078169],100, 8.4029, 10.7852),
+            new Arc([487840.6612570947,5691081.869078169],100, 11.1131, 11.3241),
+            new Arc([487840.6612570947,5691081.869078169],100, 61.94, 61.94000000000001),
+            new Arc([487859.2145055602,5691110.955504731],100, 280.16, 281.9236),
+            new Arc([487891.6826903749,5690982.2708182745],100, 13.909999999999979, 13.91),
+            new Arc([493916.5409087531,5690188.609239872],100, 76.63, 76.63000000000001),
+            new Arc([493931.69272833335,5690210.201544368],100, 64.05, 64.05000000000003),
+            new Arc([487213.25223815144,5690180.236727649],100, 62.8, 96.6914),
+            new Arc([488957.2575939128,5690181.999361147],100, 54.32999999999997, 54.33),
+            new Arc([488957.2575939128,5690181.999361147],100, 55.6701, 57.6906),
+            new Arc([488784.4031623755,5687298.7949511185],100, 320.8209, 321.3478),
+            new Arc([488390.45585329045,5687299.675984252],100, 223.26, 223.26000000000002),
+            new Arc([488337.2698743559,5687156.949746723],100, 84.87999999999998, 84.88),
+            new Arc([490530.2638429834,5689709.625998666],100, 65.42000000000003, 65.4729),
+            new Arc([490530.2638429834,5689709.625998666],100, 35.60999999999997, 35.6562),
+            new Arc([489901.92716161686,5688453.90383141],100, 139.55, 139.5746),
+            new Arc([489901.92716161686,5688453.90383141],100, 140.0552, 141.4691),
+            new Arc([489901.92716161686,5688453.90383141],100, 149.6627, 149.7853),
+            new Arc([489901.92716161686,5688453.90383141],100, 193.1631, 193.1837),
+            new Arc([489901.92716161686,5688453.90383141],100, 193.2136, 499.55),
+            new Arc([489892.65053738403,5688443.330076676],100, 119.85000000000001, 134.5572),
+            new Arc([489892.65053738403,5688443.330076676],100, 140.2455, 140.6157),
+            new Arc([489828.3326093702,5688416.895744461],100, 40.36, 94.75999999999999),
+            new Arc([489764.32390216406,5688457.428419094],100, 93.1527, 93.195),
+            new Arc([489850.90572833666,5688861.002883471],100, 151.2971, 154.1051),
+            new Arc([489879.6632634582,5688846.903905587],100, 226.2393, 227.4359),
+            new Arc([490086.22276304127,5688793.151756077],100, 56.0635, 56.2378),
+            new Arc([490086.22276304127,5688793.151756077],100, 56.6236, 56.8244),
+            new Arc([490113.74341493193,5688808.131830883],100, 6.949999999999978, 6.95),
+            new Arc([490113.74341493193,5688808.131830883],100, 33.2355, 33.5482),
+            new Arc([490145.90237893874,5689103.332535903],100, 334.5842, 334.8873),
+            new Arc([490145.90237893874,5689103.332535903],100, 336.3348, 336.3519),
+            new Arc([490645.6032042774,5689009.043491641],100, 111.8, 111.80000000000001),
+            new Arc([490650.2415163939,5688977.760897256],100, 43.199999999999974, 43.2),
+            new Arc([490800.83204977255,5689218.33126571],100, 146.7893, 149.131),
+            new Arc([491029.9646683221,5689267.679832566],100, 278.3695, 278.6086),
+            new Arc([491029.9646683221,5689267.679832566],100, 279.3141, 283.4915),
+            new Arc([491029.9646683221,5689267.679832566],100, 331.78, 331.78000000000003),
+            new Arc([491042.9519422479,5689234.193275388],100, 346.6761, 356.0078),
+            new Arc([491049.4455792108,5689188.369768536],100, 358.96, 367.1163),
+            new Arc([491051.30090405734,5689169.864188014],100, 45.8096, 47.619),
+            new Arc([491053.15622890403,5689147.393177373],100, 372.2489, 375.1663),
+            new Arc([491050.9916832496,5689126.24404241],100, 53.3676, 53.4377),
+            new Arc([491049.4455792108,5689136.818603642],100, 347.53, 347.530001),
+            new Arc([491047.8994751721,5689183.5230651805],100, 3.0500000000000007, 8.024),
+            new Arc([491047.8994751721,5689183.5230651805],100, 43.2861, 43.6608),
+            new Arc([491046.3533711332,5689217.89065473],100, 21.199999999999978, 21.2),
+            new Arc([490717.9608732931,5689261.951859959],100, 264.2995, 264.3755),
+            new Arc([489901.61794080905,5689558.048783805],100, 2.889999999999997, 2.89),
+            new Arc([489890.4859917298,5689559.811294814],100, 303.78, 306.7307),
+            new Arc([489890.4859917298,5689559.811294814],100, 306.8469, 306.9021),
+            new Arc([489890.4859917298,5689559.811294814],100, 21.21999999999998, 21.22),
+            new Arc([489717.0131185769,5689880.153432964],100, 52.519999999999996, 92.12),
+            new Arc([489698.7690909192,5689933.471462691],100, 344.4286, 354.4986),
+            new Arc([489083.7289042863,5689258.8675685385],100, 222.25, 222.25000000000003),
+            new Arc([489067.95864309056,5689244.767964126],100, 55.999999999999986, 56),
+            new Arc([489067.95864309056,5689244.767964126],100, 103.9238, 106.0052),
+            new Arc([489067.95864309056,5689244.767964126],100, 106.1809, 106.2375),
+            new Arc([488977.3569464172,5689331.569006175],100, 197.3797, 197.7558),
+            new Arc([488952.61928179645,5689305.132051459],100, 20.129999999999985, 20.13),
+            new Arc([488952.61928179645,5689305.132051459],100, 45.373, 46.2441),
+            new Arc([488952.61928179645,5689305.132051459],100, 49.1021, 49.775),
+            new Arc([489058.68201885786,5690321.248504425],100, 111.5334, 112.123),
+            new Arc([489058.68201885786,5690321.248504425],100, 112.5867, 112.7003),
+            new Arc([489164.7447559192,5690533.211010033],100, 209.0545, 211.7253),
+            new Arc([489164.7447559192,5690533.211010033],100, 212.6526, 212.7769),
+            new Arc([489164.7447559192,5690533.211010033],100, 213.3008, 213.4917),
+            new Arc([489555.9090777345,5690950.981328211],100, 46.739999999999995, 46.74),
+            new Arc([489555.9090777345,5690950.981328211],100, 78.336, 82.9186),
+            new Arc([489329.5594464548,5690960.235954726],100, 124.05, 124.05000000000001),
+            new Arc([489362.64607288496,5691011.797620463],100, 222.8596, 227.81000000000003),
+            new Arc([489664.13636045007,5691378.466920215],100, 52.63999999999997, 52.64),
+            new Arc([489489.1173832585,5691544.6188916415],100, 98.55999999999999, 98.56),
+            new Arc([489859.25469014613,5691225.5393167585],100, 197.853, 198.27),
+            new Arc([489895.43352465396,5691229.505705746],100, 102.99999999999999, 103.4586),
+            new Arc([489895.43352465396,5691229.505705746],100, 108.4909, 119.7107),
+            new Arc([489039.8195495845,5690553.922792213],100, 236.43, 236.7088),
+            new Arc([488387.0544244051,5691601.472661694],100, 14.459999999999969, 14.46),
+            new Arc([488426.9439086061,5691633.205155494],100, 86.82999999999997, 86.83),
+            new Arc([488106.5911517675,5692824.577257024],100, 82.89999999999999, 82.9),
+            new Arc([488095.76842349605,5692821.4917378435],100, 94.09, 94.09000000000003),
+            new Arc([487289.01133605244,5693465.947549609],100, 154.2883, 159.8829),
+            new Arc([487276.02406212664,5693437.735106368],100, 174.9647, 175.0436),
+            new Arc([487276.02406212664,5693437.735106368],100, 196.17, 196.17000000000004),
+            new Arc([487232.73314904026,5693497.686654571],100, 203.64, 218.7426),
+            new Arc([487241.39133165753,5693515.760361856],100, 34.80999999999999, 34.81),
+            new Arc([487241.39133165753,5693515.760361856],100, 50.9611, 53.5271),
+            new Arc([487241.39133165753,5693515.760361856],100, 55.9843, 56.1558),
+            new Arc([487241.39133165753,5693515.760361856],100, 64.1614, 65.491),
+            new Arc([487241.39133165753,5693515.760361856],100, 75.0333, 79.1707),
+            new Arc([490619.93787723343,5686527.924174413],100, 89.6199, 92.0566),
+            new Arc([490619.93787723343,5686527.924174413],100, 100.622, 104.5125),
+            new Arc([490619.93787723343,5686527.924174413],100, 122.5653, 124.4248),
+            new Arc([490361.1200611391,5686646.854193942],100, 72.32999999999997, 72.33),
+            new Arc([490361.1200611391,5686646.854193942],100, 81.4116, 81.547),
+            new Arc([490352.4618785219,5686658.306797703],100, 301.7839, 301.8131),
+            new Arc([490352.4618785219,5686658.306797703],100, 311.1782, 311.6841),
+            new Arc([490352.4618785219,5686658.306797703],100, 312.4587, 314.81),
+            new Arc([490345.04057913565,5686653.0209787665],100, 55.61999999999999, 55.62),
+            new Arc([490345.04057913565,5686653.0209787665],100, 57.6477, 61.0102),
+            new Arc([490345.04057913565,5686653.0209787665],100, 61.4139, 61.7839),
+            new Arc([490012.31898998684,5687027.881373262],100, 65.42999999999999, 65.43),
+            new Arc([490012.31898998684,5687027.881373262],100, 106.4296, 106.4321),
+            new Arc([490012.31898998684,5687027.881373262],100, 106.8502, 106.9752),
+            new Arc([490012.31898998684,5687027.881373262],100, 107.1121, 113.9726),
+            new Arc([490001.18704090756,5687068.848266398],100, 34.62999999999998, 34.63),
+            new Arc([489884.3015755745,5687404.079024475],100, 73.84999999999998, 73.85),
+            new Arc([489884.3015755745,5687404.079024475],100, 108.9817, 113.44999999999999),
+            new Arc([489861.4192358004,5687424.343046748],100, 44.719999999999985, 44.72),
+            new Arc([489576.31765104656,5688245.955613515],100, 85.30999999999999, 85.31)];
+}
+
+/**
+ * Sectors from months 02/2018
+ * @param {number=} r radius
+ * @returns {Array&lt;Arc&gt;}  sectors
+ */
+export function sectorsStEtienne(r=100) {
+    var arcs = [new Arc([490530.2638429834,5689709.625998666],r, 65.42000000000003, 65.4729),
+
+                new Arc([490530.2638429834,5689709.625998666],r, 35.60999999999997, 35.6562),
+
+                new Arc([489901.92716161686,5688453.90383141],r, 139.55, 139.5746),
+
+                new Arc([489901.92716161686,5688453.90383141],r, 140.0552, 141.4691),
+
+                new Arc([489901.92716161686,5688453.90383141],r, 149.6627, 149.7853),
+
+                new Arc([489901.92716161686,5688453.90383141],r, 193.1631, 193.1837),
+
+                new Arc([489901.92716161686,5688453.90383141],r, 193.2136, 199.55),
+
+                new Arc([489892.65053738403,5688443.330076676],r, 119.85000000000001, 134.5572),
+
+                new Arc([489892.65053738403,5688443.330076676],r, 140.2455, 140.6157),
+
+                new Arc([489764.32390216406,5688457.428419094],r, 93.1527, 93.195),
+
+                new Arc([489850.90572833666,5688861.002883471],r, 151.2971, 154.1051),
+
+                new Arc([489879.6632634582,5688846.903905587],r, 226.2393, 227.4359),
+
+                new Arc([490086.22276304127,5688793.151756077],r, 56.0635, 56.2378),
+
+                new Arc([490086.22276304127,5688793.151756077],r, 56.6236, 56.8244),
+
+                new Arc([490113.74341493193,5688808.131830883],r, 6.949999999999978, 6.95),
+
+                new Arc([490113.74341493193,5688808.131830883],r, 33.2355, 33.5482),
+
+                new Arc([490145.90237893874,5689103.332535903],r, 334.5842, 334.8873),
+
+                new Arc([490145.90237893874,5689103.332535903],r, 336.3348, 336.3519),
+
+                new Arc([490645.6032042774,5689009.043491641],r, 111.8, 111.80000000000001),
+
+                new Arc([490650.2415163939,5688977.760897256],r, 43.199999999999974, 43.2),
+
+                new Arc([490800.83204977255,5689218.33126571],r, 146.7893, 149.131),
+
+                new Arc([491029.9646683221,5689267.679832566],r, 278.3695, 278.6086),
+
+                new Arc([491029.9646683221,5689267.679832566],r, 279.3141, 283.4915),
+
+                new Arc([491029.9646683221,5689267.679832566],r, 331.78, 331.78000000000003),
+
+                new Arc([491042.9519422479,5689234.193275388],r, 346.6761, 356.0078),
+
+                new Arc([491049.4455792108,5689188.369768536],r, 358.96, 367.1163),
+
+                new Arc([491051.30090405734,5689169.864188014],r, 45.8096, 47.619),
+
+                new Arc([491053.15622890403,5689147.393177373],r, 372.2489, 375.1663),
+
+                new Arc([491050.9916832496,5689126.24404241],r, 53.3676, 53.4377),
+
+                new Arc([491049.4455792108,5689136.818603642],r, 347.53, 347.530001),
+
+                new Arc([491047.8994751721,5689183.5230651805],r, 3.0500000000000007, 8.024),
+
+                new Arc([491047.8994751721,5689183.5230651805],r, 43.2861, 43.6608),
+
+                new Arc([491046.3533711332,5689217.89065473],r, 21.199999999999978, 21.2),
+
+                new Arc([490717.9608732931,5689261.951859959],r, 264.2995, 264.3755),
+
+                new Arc([489901.61794080905,5689558.048783805],r, 2.889999999999997, 2.89),
+
+                new Arc([489890.4859917298,5689559.811294814],r, 303.78, 306.7307),
+
+                new Arc([489890.4859917298,5689559.811294814],r, 306.8469, 306.9021),
+
+                new Arc([489890.4859917298,5689559.811294814],r, 21.21999999999998, 21.22),
+
+                new Arc([489698.7690909192,5689933.471462691],r, 344.4286, 354.4986),
+
+                new Arc([489083.7289042863,5689258.8675685385],r, 222.25, 222.25000000000003),
+
+                new Arc([489067.95864309056,5689244.767964126],r, 55.999999999999986, 56),
+
+                new Arc([489067.95864309056,5689244.767964126],r, 103.9238, 106.0052),
+
+                new Arc([489067.95864309056,5689244.767964126],r, 106.1809, 106.2375),
+
+                new Arc([488977.3569464172,5689331.569006175],r, 197.3797, 197.7558),
+
+                new Arc([488952.61928179645,5689305.132051459],r, 20.129999999999985, 20.13),
+
+                new Arc([488952.61928179645,5689305.132051459],r, 45.373, 46.2441),
+
+                new Arc([488952.61928179645,5689305.132051459],r, 49.1021, 49.775),
+
+                new Arc([489058.68201885786,5690321.248504425],r, 111.5334, 112.123),
+
+                new Arc([489058.68201885786,5690321.248504425],r, 112.5867, 112.7003),
+
+                new Arc([489164.7447559192,5690533.211010033],r, 209.0545, 211.7253),
+
+                new Arc([489164.7447559192,5690533.211010033],r, 212.6526, 212.7769),
+
+                new Arc([489164.7447559192,5690533.211010033],r, 213.3008, 213.4917),
+
+                new Arc([489555.9090777345,5690950.981328211],r, 46.739999999999995, 46.74),
+
+                new Arc([489555.9090777345,5690950.981328211],r, 78.336, 82.9186),
+
+                new Arc([489329.5594464548,5690960.235954726],r, 124.05, 124.05000000000001),
+
+                new Arc([489362.64607288496,5691011.797620463],r, 222.8596, 227.81000000000003),
+
+                new Arc([489664.13636045007,5691378.466920215],r, 52.63999999999997, 52.64),
+
+                new Arc([489489.1173832585,5691544.6188916415],r, 98.55999999999999, 98.56),
+
+                new Arc([489859.25469014613,5691225.5393167585],r, 197.853, 198.27),
+
+                new Arc([489895.43352465396,5691229.505705746],r, 102.99999999999999, 103.4586),
+
+                new Arc([489895.43352465396,5691229.505705746],r, 108.4909, 119.7107),
+
+                new Arc([489039.8195495845,5690553.922792213],r, 236.43, 236.7088),
+
+                new Arc([488387.0544244051,5691601.472661694],r, 14.459999999999969, 14.46),
+
+                new Arc([488426.9439086061,5691633.205155494],r, 86.82999999999997, 86.83),
+
+                new Arc([488106.5911517675,5692824.577257024],r, 82.89999999999999, 82.9),
+
+                new Arc([488095.76842349605,5692821.4917378435],r, 94.09, 94.09000000000003),
+
+                new Arc([487289.01133605244,5693465.947549609],r, 154.2883, 159.8829),
+
+                new Arc([487276.02406212664,5693437.735106368],r, 174.9647, 175.0436),
+
+                new Arc([487276.02406212664,5693437.735106368],r, 196.17, 196.17000000000004),
+
+                new Arc([487232.73314904026,5693497.686654571],r, 203.64, 218.7426),
+
+                new Arc([487241.39133165753,5693515.760361856],r, 34.80999999999999, 34.81),
+
+                new Arc([487241.39133165753,5693515.760361856],r, 50.9611, 53.5271),
+
+                new Arc([487241.39133165753,5693515.760361856],r, 55.9843, 56.1558),
+
+                new Arc([487241.39133165753,5693515.760361856],r, 64.1614, 65.491),
+
+                new Arc([487241.39133165753,5693515.760361856],r, 75.0333, 79.1707),
+
+                new Arc([490619.93787723343,5686527.924174413],r, 89.6199, 92.0566),
+
+                new Arc([490619.93787723343,5686527.924174413],r, 100.622, 104.5125),
+
+                new Arc([490619.93787723343,5686527.924174413],r, 122.5653, 124.4248),
+
+                new Arc([490361.1200611391,5686646.854193942],r, 72.32999999999997, 72.33),
+
+                new Arc([490361.1200611391,5686646.854193942],r, 81.4116, 81.547),
+
+                new Arc([490352.4618785219,5686658.306797703],r, 301.7839, 301.8131),
+
+                new Arc([490352.4618785219,5686658.306797703],r, 311.1782, 311.6841),
+
+                new Arc([490352.4618785219,5686658.306797703],r, 312.4587, 314.81),
+
+                new Arc([490345.04057913565,5686653.0209787665],r, 55.61999999999999, 55.62),
+
+                new Arc([490345.04057913565,5686653.0209787665],r, 57.6477, 61.0102),
+
+                new Arc([490345.04057913565,5686653.0209787665],r, 61.4139, 61.7839),
+
+                new Arc([490012.31898998684,5687027.881373262],r, 65.42999999999999, 65.43),
+
+                new Arc([490012.31898998684,5687027.881373262],r, 106.4296, 106.4321),
+
+                new Arc([490012.31898998684,5687027.881373262],r, 106.8502, 106.9752),
+
+                new Arc([490012.31898998684,5687027.881373262],r, 107.1121, 113.9726),
+
+                new Arc([490001.18704090756,5687068.848266398],r, 34.62999999999998, 34.63),
+
+                new Arc([489884.3015755745,5687404.079024475],r, 73.84999999999998, 73.85),
+
+                new Arc([489884.3015755745,5687404.079024475],r, 108.9817, 113.44999999999999),
+
+                new Arc([489861.4192358004,5687424.343046748],r, 44.719999999999985, 44.72),
+
+                new Arc([489576.31765104656,5688245.955613515],r, 85.30999999999999, 85.31)];
+
+    var arcs2 = [];
+    for (var arc of arcs) {
+        if (arc.omega - arc.alpha &gt; 1)
+            arcs2.push(arc);
+
+    }
+
+    arcs = arcs2;
+
+    var length = arcs.length;
+    for (var i  = 0; i &lt; length; i++) {
+        arcs[i].computeGeometry();
+    }
+    arcs = arcs.slice(0,length);
+
+    return arcs;
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

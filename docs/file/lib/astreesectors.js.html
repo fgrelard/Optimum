@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">lib/astreesectors.js | optimum</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Projet Optimum"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="optimum"><meta property="twitter:description" content="Projet Optimum"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/arc.js~Arc.html">Arc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/astree.js~ASTree.html">ASTree</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/astreesectors.js~ASTreeSectors.html">ASTreeSectors</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/cluster.js~Cluster.html">Cluster</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/dual.js~Dual.html">Dual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/dualrtree.js~DualRtree.html">DualRtree</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/heatmap.js~HeatMap.html">HeatMap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/isovistsectors2d.js~IsoVist.html">IsoVist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/isovistsectors3d.js~IsoVist3D.html">IsoVist3D</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/picture.js~Picture.html">Picture</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/plane.js~Plane.html">Plane</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/polardual.js~PolarDual.html">PolarDual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/sector.js~Sector.html">Sector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/vectorlayercolormap.js~VectorLayerColormap.html">VectorLayerColormap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/vectorlayercolormaprenderer.js~VectorLayerColormapRenderer.html">VectorLayerColormapRenderer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne">sectorsStEtienne</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne2345_r1500">sectorsStEtienne2345_r1500</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne2345_r300">sectorsStEtienne2345_r300</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-euclideanDistance">euclideanDistance</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-computeAlphaOmegaFromDir">computeAlphaOmegaFromDir</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-convertMetadataToJSON">convertMetadataToJSON</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createPositionArray">createPositionArray</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getOrientation">getOrientation</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getPosition">getPosition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-lonLatToDecimal">lonLatToDecimal</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-angleToVector">angleToVector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-bboxArrayToObject">bboxArrayToObject</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-boundingBox">boundingBox</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-cartesianToSpherical">cartesianToSpherical</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-centerOfMass">centerOfMass</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-intersectionLinePlane">intersectionLinePlane</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-planeFromThreePoints">planeFromThreePoints</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-project">project</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sphericalToCartesian">sphericalToCartesian</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-vectorToAngle">vectorToAngle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-changeLayout">changeLayout</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fillGrid">fillGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-filter">filter</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-generateGrid">generateGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-loadImageAndFillGrid">loadImageAndFillGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLineAndLineIntersection">halfLineAndLineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLineIntersection">halfLineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLinesIntersect">halfLinesIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-lineIntersection">lineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-onSegment">onSegment</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-rectangleContains">rectangleContains</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-rectanglesIntersect">rectanglesIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentIntersection">segmentIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentIntersectionExact">segmentIntersectionExact</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsEqual">segmentsEqual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsIntersect">segmentsIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setEpsilon">setEpsilon</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-addRandomArcs">addRandomArcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-addRandomLocations">addRandomLocations</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRandomArbitrary">getRandomArbitrary</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getBuildingSegments">getBuildingSegments</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollDB">pollDB</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollImages">pollImages</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollIsovist">pollIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollThumbnails">pollThumbnails</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsFromXMLRequest">segmentsFromXMLRequest</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCircleOutOverlay">createCircleOutOverlay</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createNewImage">createNewImage</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-gradient">gradient</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleArcs">setStyleArcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleClusters">setStyleClusters</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleInput">setStyleInput</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStylePolygonColormapIsovist">setStylePolygonColormapIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStylePolygonIsovist">setStylePolygonIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleTopo">setStyleTopo</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-arcs">arcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-clusterSource">clusterSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-imageStatic">imageStatic</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-inputLineSource">inputLineSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-inputLines">inputLines</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lineSource">lineSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lines">lines</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-olClusters">olClusters</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-onClickGroup">onClickGroup</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-overlay">overlay</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-overlayGroup">overlayGroup</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-polygonSource">polygonSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-source">source</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-thumbnails">thumbnails</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-vectorLayerArc">vectorLayerArc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-vectorLayerColormap">vectorLayerColormap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-epsilon">epsilon</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-pointRadius">pointRadius</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-stylesTopo">stylesTopo</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#clustering">clustering</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/clusteringstrategy.js~ClusteringStrategy.html">ClusteringStrategy</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/dendrogramstrategy.js~DistanceStrategy.html">DistanceStrategy</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/distancestrategy.js~DistanceStrategy.html">DistanceStrategy</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">lib/astreesectors.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/**
+ * @fileOverview Data structure based on separating sectors for angular sectors
+ * @name astreesectors.js
+ * @author Florent Gr&#xE9;lard
+ * @license
+ */
+import Arc from &apos;./arc.js&apos;;
+import {halfLineIntersection, segmentIntersection} from &apos;./lineintersection.js&apos;;
+import {euclideanDistance} from &apos;./distance.js&apos;;
+import Plane from &apos;./plane.js&apos;;
+import Sector from &apos;./sector.js&apos;;
+
+/**
+ * Class representing a node inside the tree
+ *  @deprecated use {@link DualRtree}
+ */
+class Node {
+    /**
+     * Constructor
+     * @param {Object} value the node value
+     */
+    constructor(value)  {
+        /**
+         * value
+         * @type {Object}
+         */
+        this.value = value;
+
+        /**
+         * Children nodes
+         * @type {Array&lt;Node&gt;}
+         */
+        this.children = [];
+
+        /**
+         * Parent node
+         * @type {Node}
+         */
+        this.parent = null;
+    }
+
+    /**
+     * Sets the parent node
+     * @param {Node} node
+     */
+    setParentNode(node) {
+        this.parent = node;
+    }
+
+    /**
+     * Gets the parent node
+     * @returns {Node} node
+     */
+    getParentNode() {
+        return this.parent;
+    }
+
+    /**
+     * Adds a child to the current node
+     * @param {Node} node
+     */
+    addChild(node) {
+        if (!this.hasChild(node)) {
+            node.setParentNode(this);
+            this.children[this.children.length] = node;
+        }
+    }
+
+    /**
+     * Gets the children associated with this node
+     * @returns {Array&lt;Node&gt;} the children
+     */
+    getChildren() {
+        return this.children;
+    }
+
+    /**
+     * Removes children
+     */
+    removeChildren () {
+        this.children = [];
+    }
+
+    /**
+     * Checks whether this node has a given child
+     * @param {Node} child child to test
+     * @returns {Boolean} whether this node has this child
+     */
+    hasChild(child) {
+        var childV = child.value;
+        for (let i = 0; i &lt; this.children.length; i++) {
+            var currentChildV = this.children[i].value;
+            if (currentChildV.alpha &amp;&amp; currentChildV.alpha === childV.alpha &amp;&amp;
+                currentChildV.omega &amp;&amp; currentChildV.omega === childV.omega &amp;&amp;
+                currentChildV.center &amp;&amp; currentChildV.center[0] === childV.center[0] &amp;&amp; currentChildV.center[1] === childV.center[1])
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Utility function used to display the node
+     * @returns {string} string representing the node
+     */
+    toString() {
+        var str = this.value.toString();
+        var children = this.children;
+
+        for (var i = 0; i &lt; children.length; i++) {
+            var child = children[i];
+            str += child.toString() + &quot;\n&quot;;
+        }
+        str += &quot;\n\n&quot;;
+
+        return str;
+    }
+}
+
+/**
+ * Data structure used for angular sectors,
+ * based on the sectors delimiting each angular sector
+ * the delineation is done according to the sector which separate
+ * the angular sectors into two balanced groups
+ * @deprecated use {@link DualRtree}
+ */
+export default class ASTreeSectors {
+    /**
+     * Constructor
+     * @param {Array&lt;Arc&gt;} sectors the angular sectors
+     * @param {number=} n maximum number of leaves
+     */
+    constructor(sectors, n = 2) {
+        /**
+         * data structure
+         * @type {Node}
+         */
+        this.tree = new Node(new Sector([0,0], [0,0], [0,0]));
+
+        /**
+         * angular sectors
+         * @type {Array&lt;Arc&gt;}
+         */
+        this.sectors = sectors;
+
+        /**
+         * maximum number of leaves
+         * @type {number}
+         */
+        this.maxNumberLeaves = n;
+
+        /**
+         *  processed sectors
+         * @type {Array&lt;Arc&gt;}
+         */
+        this.addedSectors = [];
+
+    }
+
+
+    /**
+     * Converts sectors to half planes
+     * @param {Arc} sector
+     * @returns {Plane} half planes
+     */
+    convertArcToHalfPlanes(sector) {
+        var plane1 = this.angleToPlane(sector.alpha, sector.center, true);
+        var plane2 = this.angleToPlane(sector.omega, sector.center);
+        var sectorAsPlanes = new Sector(sector.center, plane1.normal, plane2.normal);
+
+        return sectorAsPlanes;
+    }
+
+
+    /**
+     * Whether two sectors intersect
+     * @param {Arc} sector
+     * @param {Arc} otherSector
+     * @returns {boolean}
+     */
+    sectorsIntersect(sector, otherSector) {
+        var f = sector.center;
+        var la = sector.fullGeometry[1].getFlatCoordinates();
+        var lo = sector.fullGeometry[2].getFlatCoordinates();
+        var fOther = otherSector.center;
+        var laOther = otherSector.fullGeometry[1].getFlatCoordinates();
+        var loOther = otherSector.fullGeometry[2].getFlatCoordinates();
+        var i1 = halfLineIntersection(f[0], f[1],
+                                      la[0], la[1],
+                                      fOther[0], fOther[1],
+                                      laOther[0], laOther[1]);
+        var i2 = halfLineIntersection(f[0], f[1],
+                                      la[0], la[1],
+                                      fOther[0], fOther[1],
+                                      loOther[0], loOther[1]);
+        var i3 = halfLineIntersection(f[0], f[1],
+                                      lo[0], lo[1],
+                                      fOther[0], fOther[1],
+                                      laOther[0], laOther[1]);
+        var i4 = halfLineIntersection(f[0], f[1],
+                                      lo[0], lo[1],
+                                      fOther[0], fOther[1],
+                                      loOther[0], loOther[1]);
+
+        return (i1 || i2 || i3 || i4);
+    }
+
+
+    /**
+     * Intersection indices in the array of sectors
+     * @param {Array&lt;Arc&lt;} sectors
+     * @param {Arc} sector
+     * @param {number} index
+     * @returns {Array&lt;number&gt;} indices
+     */
+    intersectionIndices(sectors, sector, index) {
+        var length = sectors.length;
+        var cpt = 0;
+        var intersectionIndexes = [];
+        for (var i = 0; i &lt; length; i++) {
+            if (i === index) continue;
+            var otherSector = sectors[i];
+            if (this.sectorsIntersect(sector, otherSector)) {
+                intersectionIndexes.push(i);
+            }
+        }
+        return intersectionIndexes;
+    }
+
+    /**
+     * Connected components of intersecting sectors
+     * @param {Array&lt;number&gt;} cc the returned connected component
+     * @param {Array&lt;Arc&gt;} elements the sectors
+     * @param {number} index current index
+     * @param {Array&lt;number&gt;} knownIndices
+     */
+    connectedComponents(cc, elements, index, knownIndices) {
+        if (knownIndices.indexOf(index) &gt;= 0 || index &gt;= elements.length) return;
+        knownIndices.push(index);
+        cc.push(index);
+        var indices = elements[index];
+        for (var i = 0; i &lt; indices.length; i++) {
+            var newIndex = indices[i];
+            this.connectedComponents(cc, elements, newIndex, knownIndices);
+        }
+    }
+
+    /**
+     * Whether two arrays are equal
+     * @param {Array} a
+     * @param {Array} b
+     * @returns {Boolean}
+     */
+    arraysEqual(a, b) {
+        if (a === b) return true;
+        if (a == null || b == null) return false;
+        if (a.length != b.length) return false;
+
+        var copyA = a.slice();
+        copyA.sort();
+        var copyB = b.slice();
+        copyB.sort();
+        for (var i = 0; i &lt; copyA.length; ++i) {
+            if (copyA[i] !== copyB[i]) return false;
+        }
+        return true;
+    }
+
+
+    /**
+     * Removes the duplicates in an array
+     * @param {Array} cc
+     * @returns {Array} array without duplicates
+     */
+    removeDuplicates(cc) {
+        var that = this;
+        var unique = cc.filter(function(elem, index, self) {
+            return index === cc.findIndex(function(elem2) {
+                return that.arraysEqual(elem, elem2);
+            });
+        });
+        return unique;
+    }
+
+    /**
+     * Converts an angle in degrees to a 2D vector
+     * @param {number} angle
+     * @returns {Array&lt;number&gt;} 2D vector
+     */
+    angleToVector(angle) {
+        var rad = angle * Math.PI / 180;
+        var x = Math.cos(rad);
+        var y = Math.sin(rad);
+        return [x, y];
+    }
+
+    /**
+     * Converts an angle to a 2D plane
+     * @param {number} angle
+     * @param {Array&lt;number&gt;} center
+     * @param {Boolean=} isAlpha starting or ending angle of the sector
+     * @returns {Plane}
+     */
+    angleToPlane(angle, center, isAlpha = false) {
+        var vector = this.angleToVector(angle);
+
+        var orthogonalVector = [vector[1], -vector[0]];
+        if (isAlpha)
+            orthogonalVector = [-orthogonalVector[0], -orthogonalVector[1]];
+        var plane = new Plane(center, orthogonalVector);
+        return plane;
+    }
+
+    /**
+     * Complementary sector : sector with normal with reversed direction
+     * @param {Sector} sector
+     * @returns {Sector} complementary sector
+     */
+    complementarySector(sector) {
+        var center = sector.firstPlane.center;
+        var normal1 = sector.firstPlane.normal;
+        var normal2 = sector.secondPlane.normal;
+        var ort1 = [normal1[1], -normal1[0]];
+        var ort2 = [-normal2[1], normal2[0]];
+
+        var dirVector = [(ort1[0] + ort2[0]) / 2, (ort1[1] + ort2[1]) / 2];
+        var minusNormal1 = [-normal1[0], -normal1[1]];
+        var minusNormal2 = [-normal2[0], -normal2[1]];
+        var newCenter = [center[0] - dirVector[0],
+                         center[1] - dirVector[1]];
+        var compSector = new Sector(newCenter, minusNormal1, minusNormal2);
+        return compSector;
+    }
+
+
+    /**
+     * Bounding box of sectors
+     * @param {Array&lt;Arc&gt;} cones
+     * @returns {Array&lt;Array&lt;number&gt;&gt;} the bounding box
+     */
+    boundingBox(cones) {
+        var low = [Number.MAX_VALUE, Number.MAX_VALUE];
+        var up = [Number.MIN_VALUE, Number.MIN_VALUE];
+        for (var i = 0; i &lt; cones.length; i++) {
+            var cone = cones[i];
+            var position = cone.position;
+            for (let j = 0; j &lt; 2; j++) {
+                low[j] = (position[j] &lt; low[j]) ? position[j] : low[j];
+                up[j] = (position[j] &gt; up[j]) ? position[j] : up[j];
+            }
+        }
+        return [low, up];
+    }
+
+
+    /**
+     * Position from direction
+     * @param {Array&lt;Array&lt;number&gt;&gt;} boundingBox
+     * @param {Object} cones
+     * @returns {Array&lt;number&gt;} position
+     */
+    positionFromDirection(boundingBox, cones) {
+        var meanVector = [0,0];
+        for (let i = 0; i &lt; cones.length; i++) {
+            var vector = cones[i].vector;
+            for (let j = 0; j &lt; meanVector.length; j++)
+                meanVector[j] += vector[j];
+        }
+        var norm = euclideanDistance([0,0], meanVector);
+        for (let i = 0; i &lt; meanVector.length; i++) {
+            meanVector[i] /= -norm;
+        }
+
+        var position = boundingBox[0];
+        if (meanVector[0] &gt; 0) {
+            position[0] = boundingBox[1][0];
+        }
+        if (meanVector[1] &gt; 0) {
+            position[1] = boundingBox[1][1];
+        }
+        return position;
+    }
+
+
+    /**
+     * Returns the connected component with minimum intersecting elements
+     * @param {Array&lt;Array&lt;Object&gt;&gt;} elements
+     * @returns {Array&lt;Object&gt;} elements with min intersection
+     */
+    minimumIntersectingElements(elements) {
+        var minElements = [];
+        var minLength = Number.MAX_VALUE;
+        for (let i = 0; i &lt; elements.length; i++) {
+            if (elements[i].length &lt; minLength)
+                minLength = elements[i].length;
+        }
+        for (let i = 0; i &lt; elements.length; i++) {
+            if (elements[i].length === minLength) {
+                minElements.push(i);
+            }
+        }
+        return minElements;
+    }
+
+    /**
+     * List of parent nodes until root
+     * @param {Node} node
+     * @returns {Array&lt;Node&gt;}
+     */
+    traversedNodes(node) {
+        var parent = node;
+        var parentNodes = [];
+        while (parent) {
+            parentNodes.push(parent.value);
+            parent = parent.parent;
+        }
+        return parentNodes;
+    }
+
+    /**
+     * Sectors from indices
+     * @param {Array&lt;number&gt;} elements
+     * @returns {Array&lt;Arc&gt;} sectors
+     */
+    sectorsFromIndices(elements) {
+        var sectors = [];
+        for (let i = 0; i &lt; elements.length; i++) {
+            var sector = this.sectors[elements[i]];
+            sectors.push(sector);
+        }
+        return sectors;
+    }
+
+    /**
+     * Function returning the maximum number of intersection for the given sectors
+     * @param {Array&lt;Arc&gt;} sectors
+     * @returns {number} max number of intersection
+     */
+    maxNumberIntersection(sectors) {
+        var nb = 0;
+        for (let index in sectors) {
+            var sector = sectors[index];
+            for (let index2 in sectors) {
+                if (index2 &lt;= index) continue;
+                var otherSector = sectors[index2];
+                if (this.sectorsIntersect(sector, otherSector)) {
+                    nb++;
+                }
+            }
+        }
+        return nb;
+    }
+
+    /**
+     * Computes the max number of self intersections
+     * @param {Array} elements
+     * @returns {number}
+     */
+    maxNumberSelfIntersections(elements) {
+        var max = -1;
+        for (let indices of elements) {
+            var sectors = this.sectorsFromIndices(indices);
+            var nb = this.maxNumberIntersection(sectors);
+            if (nb &gt; max) {
+                max = nb;
+            }
+        }
+        return max;
+    }
+
+    /**
+     * Checks whether a sector is already existing in a parent
+     * @param {Node} node
+     * @param {Arc} sector
+     * @returns {boolean} found
+     */
+    findSectorInParents(node, sector) {
+        var parent = node;
+        var plane2 = this.complementarySector(sector);
+        var found = false;
+        while (parent &amp;&amp; !found) {
+            if (parent.value.equals(sector) || parent.value.equals(plane2))
+                found = true;
+            parent = parent.parent;
+        }
+        return found;
+    }
+
+    /**
+     * Computes the best separating sector
+     * @param {Array&lt;Arc&gt;} sectors
+     * @param {Node} node
+     * @param {Boolean=} isMinDifference strategy used
+     * @returns {Arc} best sector
+     */
+    separatingPlane(sectors, node, isMinDifference = false) {
+        var absDiff = ((a,b) =&gt; Math.abs(a-b));
+        var absDiffPositive = ((a,b) =&gt; (a === 0 || b === 0) ? 0 : Math.abs(a-b));
+        var func = (isMinDifference) ? absDiffPositive : absDiff;
+        var difference = (isMinDifference) ? -1 : Number.MAX_VALUE;
+
+        var parents = this.traversedNodes(node);
+
+        var bestSector;
+        for (let i = 0; i &lt; sectors.length; i++) {
+            if (!isMinDifference &amp;&amp; difference === 0) break;
+            var sector = sectors[i];
+            var sectorPlane = this.convertArcToHalfPlanes(sector);
+            var number = this.differenceAboveBelowPlane(sectorPlane, sectors, func);
+            var found = this.addedSectors.findIndex(function(op) {
+                return sectorPlane.equals(op);
+            });
+            found = this.findSectorInParents(node, sectorPlane);
+            var condition = (isMinDifference) ? number &gt; difference : number &lt; difference;
+            if (condition &amp;&amp; !found) {
+                difference = number;
+                bestSector = sectorPlane;
+            }
+
+        }
+        console.log(node.value);
+        console.log(difference);
+        if (bestSector)
+            this.addedSectors.push(bestSector);
+        return bestSector;
+    }
+
+    /**
+     * Number of sectors above/below the sector
+     * @param {Arc} sector
+     * @param {Array&lt;Arc&gt;} sectors
+     * @param {Function} func function to use
+     * @returns {Object} number of planes above/below sector
+     */
+    differenceAboveBelowPlane(sector, sectors, func = Math.abs) {
+        var numberLeft = 0;
+        var numberRight = 0;
+        var compSector = this.complementarySector(sector);
+        for (let i = 0; i &lt; sectors.length; i++) {
+            var otherSector = sectors[i];
+            var left = false, right = false;
+            if (sector.isSectorAbove(otherSector)) {
+                left = true;
+            }
+            if (compSector.isSectorAboveComplementary(otherSector)) {
+                right = true;
+            }
+            if (left  // &amp;&amp; !right
+               )
+                numberLeft++;
+            if (right  // &amp;&amp; !left
+               )
+                numberRight++;
+        }
+        return func(numberLeft, numberRight);
+    }
+
+    /**
+     * Converts a connected component to an angular sector
+     * @param {Object} cc
+     * @returns {Arc} angular sector
+     */
+    connectedComponentToSector(cc) {
+        var cones = [];
+        var minAlpha = 360;
+        var maxOmega = 0;
+        for (var i = 0; i &lt; cc.length; i++) {
+            var arc = this.sectors[cc[i]];
+            var alpha = arc.alpha;
+            var omega = arc.omega;
+
+            if (alpha &lt; minAlpha) {
+                minAlpha = alpha;
+            }
+
+            if (omega &gt; maxOmega) {
+                maxOmega = omega;
+            }
+
+            var vector = this.angleToVector((alpha + omega) / 2);
+            cones.push({position: arc.center, vector: vector});
+        }
+        var bb = this.boundingBox(cones);
+        var position = this.positionFromDirection(bb, cones);
+        return new Arc(position, 100, minAlpha, maxOmega);
+    }
+
+    /**
+     * Computes the data structure
+     * @param {Array} ccSectors
+     * @param {Node} node
+     * @param {Array} cc
+     * @param {number} indices
+     */
+    buildTreeRecursive(ccSectors, node, cc, indices) {
+        if (indices.length === 0) return;
+        var currentCCSectors = [];
+        for (let i = 0; i &lt; indices.length; i++) {
+            let cs = ccSectors[indices[i]];
+            currentCCSectors.push(cs);
+        }
+        var sector = ccSectors[indices[0]];
+        var sectorHalfPlanes = this.convertArcToHalfPlanes(sector);
+        var secondSector = this.complementarySector(sectorHalfPlanes);
+        var firstChild = new Node(sectorHalfPlanes);
+        var secondChild = new Node(secondSector);
+
+        if (indices.length === 1 || !sector) {
+            let currentSectors = [];
+            let ccIndices = [];
+            for (let index of indices) {
+                ccIndices = cc[index];
+                for (let ccIndex of ccIndices) {
+                    currentSectors.push(this.sectors[ccIndex]);
+                }
+            }
+
+            this.separateIntersectingSectors(currentSectors, node, ccIndices);
+            return;
+        }
+        node.addChild(firstChild);
+        node.addChild(secondChild);
+
+        var secondIndices = indices.slice(1,indices.length);
+        this.buildTreeRecursive(ccSectors, firstChild, cc,  [indices[0]]);
+        this.buildTreeRecursive(ccSectors, secondChild, cc, secondIndices);
+    }
+
+
+    /**
+     * Depth of a node
+     * @param {Node} node
+     * @returns {number} depth
+     */
+    depth(node) {
+        var parent = node;
+        var nb = 0;
+        while (parent) {
+            parent = parent.parent;
+            nb++;
+        }
+        return nb;
+    }
+
+    /**
+     * Separate sectors which intersect (no proper delineating sector)
+     * @param {Array&lt;Arc&gt;} sectors
+     * @param {Node} node modified node
+     * @param {Array&lt;number&gt;} cc
+     * @returns {void} nothing
+     */
+    separateIntersectingSectors(sectors, node, cc) {
+        var that = this;
+        var isLeaf = cc.every(function(element) {
+            return that.addedSectors.indexOf(element) !== -1;
+        });
+        var currentSector = node.value;
+        var bestSeparation = this.separatingPlane(sectors, node, false);
+        if (currentSector.firstPlane.normal[0] !== 0 &amp;&amp; currentSector.firstPlane.normal[1] !== 0 &amp;&amp; this.maxNumberLeaves &lt;= this.depth(node) // - node.children.length
+            || !bestSeparation) {
+            var nodes = [];
+            for (var i  = 0; i &lt; sectors.length; i++) {
+                let child = new Node(sectors[i]);
+                node.addChild(child);
+            }
+            return;
+        }
+
+        var compBestSeparation = this.complementarySector(bestSeparation);
+        var splitPlanes = [bestSeparation, compBestSeparation];
+        for (let j = 0; j &lt; splitPlanes.length; j++) {
+            let splitPlane = splitPlanes[j];
+            let child = new Node(splitPlane);
+            child.setParentNode(node);
+            // Left child
+            // if (j === 0) {
+            //     child.addChild(new Node(associatedSector));
+            // }
+            let subsectors = [];
+            for (let k = 0; k &lt; sectors.length; k++) {
+                let sector = sectors[k];
+                var isAbove;
+                if (j === 0)
+                    isAbove = splitPlane.isSectorAbove(sector);
+                else
+                    isAbove = splitPlane.isSectorAboveComplementary(sector);
+                // let isAddedSector = (sector.equals(bestSeparation));
+                if (isAbove //&amp;&amp; !isAddedSector
+                   ) {
+                       subsectors.push(sector);
+                   }
+            }
+
+            this.separateIntersectingSectors(subsectors, child, cc);
+            node.addChild(child);
+        }
+
+        return;
+    }
+
+    /**
+     * Number of intersections with half planes
+     * @param {Arc} sector
+     * @param {Array&lt;Arc&gt;} sectors
+     * @returns {number} number of intersections
+     */
+    numberIntersectionHalfPlanes(sector, sectors) {
+        var nb = 0;
+        for (let sector2 of sectors) {
+            if (sector.isSectorAbove(sector2)) {
+                nb++;
+            }
+        }
+        return nb;
+
+    }
+
+    /**
+     * Number intersection
+     * @param {Arc} sector
+     * @param {Array&lt;Arc&gt;} sectors
+     * @returns {number} nb
+     */
+    numberIntersection(sector, sectors) {
+        var nb = 0;
+        for (let sector2 of sectors) {
+            if (this.sectorsIntersect(sector, sector2)) {
+                nb++;
+            }
+        }
+        return nb;
+    }
+
+    /**
+     * Sorting by number intersecting
+     * @param {Array&lt;Arc&gt;} sectors
+     * @returns {void} sorted sectors
+     */
+    sortByNumberInTersection(sectors) {
+        var that = this;
+        sectors.sort(function(a,b) {
+            return that.numberIntersection(a, sectors) - that.numberIntersection(b, sectors);
+        });
+    }
+
+    /**
+     * Intersections between sectors
+     * @param {Arc} sector
+     * @param {Array&lt;Arc&gt;} sectors
+     * @returns {Array&lt;Object&gt;} intersections
+     */
+    intersections(sector, sectors) {
+        var inters = [];
+        inters.push(sector);
+        for (let sector2 of sectors) {
+            if (this.sectorsIntersect(sector, sector2)) {
+                inters.push(sector2);
+            }
+        }
+        return inters;
+    }
+
+
+    /**
+     * Build tree main function
+     * @param {Node} node
+     * @param {Array&lt;Arc&gt;} sectors
+     */
+    buildTreeIntersection(node, sectors) {
+        if (sectors.length === 0) return;
+        var sector = sectors.shift();
+        var inters = this.intersections(sector, sectors);
+        var converted = this.convertArcToHalfPlanes(sector);
+        var convertedComp = this.complementarySector(converted);
+        var child = new Node(converted);
+        child.setParentNode(node);
+        for (let s of inters) {
+            child.addChild(new Node(s));
+        }
+        var child2 = new Node(convertedComp);
+        node.addChild(child);
+        node.addChild(child2);
+        this.buildTreeIntersection(child2, sectors);
+    }
+
+    /**
+     * Loading the data structure
+     * @param {boolean} useHeuristic heuristic for number of leaves
+     */
+    load(useHeuristic = false) {
+        this.sortByNumberIntersection(this.sectors);
+        var index = 0;
+        this.buildTreeIntersection(this.tree, this.sectors);
+        // var elements = [];
+        // for (let i = 0; i &lt; this.sectors.length; i++) {
+        //     let arc = this.sectors[i];
+        //     let intersectingI = this.intersectionIndices(this.sectors, arc, i);
+        //     elements.push(intersectingI);
+        // }
+        // if (useHeuristic) {
+        //     var nb = this.maxNumberSelfIntersections(elements);
+        //     this.nb = nb;
+        // }
+
+        // var connectedComponents = [];
+        // for (let i = 0; i &lt; elements.length; i++) {
+        //     let cc = [];
+        //     this.connectedComponents(cc, elements, i, []);
+        //     connectedComponents.push(cc);
+        // }
+        // connectedComponents = this.removeDuplicates(connectedComponents);
+
+        // connectedComponents.sort(function(a,b) {
+        //     return (a.length - b.length);
+        // });
+
+        // var connectedSectors = [];
+        // for (let i = 0; i &lt; connectedComponents.length; i++) {
+        //     var connectedSector = this.connectedComponentToSector(connectedComponents[i]);
+        //     connectedSectors.push(connectedSector);
+        // }
+
+        // var length = connectedSectors.length;
+        // var indices = [...Array(length).keys()];
+        // this.buildTreeRecursive(connectedSectors, this.tree, connectedComponents, indices);
+        // console.log(this.tree);
+    }
+
+    /**
+     * Search function recursive
+     * @param {Array&lt;number&gt;} p point
+     * @param {Array&lt;Node&gt;} hits
+     * @param {Node} node current node
+     * @param {Object} number of hits
+     * @returns {void} nothing
+     */
+    searchRecursive(p, hits, node, number) {
+        number++;
+        var hasChildren = node.children;
+        if (!hasChildren) return number;
+        var nbChildren = node.children.length;
+        var index = 0;
+        //If it is a sector, return all sectors from this node
+        while (index &lt; nbChildren &amp;&amp; node.children[index].value.radius) {
+            var currentChild = node.children[index].value;
+            var found = hits.findIndex(function(a) {
+                return a.center[0] === currentChild.center[0] &amp;&amp;
+                    a.center[1] === currentChild.center[1] &amp;&amp;
+                    a.alpha === currentChild.alpha &amp;&amp;
+                    a.omega === currentChild.omega;
+            });
+            if (found === -1)
+                hits.push(currentChild);
+            index++;
+        }
+
+        if (index &gt;= nbChildren) { // a leaf was reached
+            return number;
+        }
+        var childLeft = node.children[index];
+        var childRight = node.children[index + 1];
+        if (childLeft.value.isAbove(p)) {
+            number = this.searchRecursive(p, hits, childLeft, number);
+        }
+        else {
+            number = this.searchRecursive(p, hits, childRight, number);
+        }
+        return number;
+    }
+
+    /**
+     * Search function
+     * @param {Array&lt;number&gt;} p
+     * @returns {Array&lt;Node&gt;} the hits
+     */
+    search(p) {
+        console.log(&quot;search&quot;);
+        var hits = [];
+        var number = 0;
+        number = this.searchRecursive(p, hits, this.tree, number);
+        console.log(number);
+        return hits;
+    }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

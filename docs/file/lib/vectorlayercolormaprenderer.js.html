@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">lib/vectorlayercolormaprenderer.js | optimum</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Projet Optimum"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="optimum"><meta property="twitter:description" content="Projet Optimum"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/arc.js~Arc.html">Arc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/astree.js~ASTree.html">ASTree</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/astreesectors.js~ASTreeSectors.html">ASTreeSectors</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/cluster.js~Cluster.html">Cluster</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/dual.js~Dual.html">Dual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/dualrtree.js~DualRtree.html">DualRtree</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/heatmap.js~HeatMap.html">HeatMap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/isovistsectors2d.js~IsoVist.html">IsoVist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/isovistsectors3d.js~IsoVist3D.html">IsoVist3D</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/picture.js~Picture.html">Picture</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/plane.js~Plane.html">Plane</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/polardual.js~PolarDual.html">PolarDual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/sector.js~Sector.html">Sector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/vectorlayercolormap.js~VectorLayerColormap.html">VectorLayerColormap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/vectorlayercolormaprenderer.js~VectorLayerColormapRenderer.html">VectorLayerColormapRenderer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne">sectorsStEtienne</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne2345_r1500">sectorsStEtienne2345_r1500</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sectorsStEtienne2345_r300">sectorsStEtienne2345_r300</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-euclideanDistance">euclideanDistance</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-computeAlphaOmegaFromDir">computeAlphaOmegaFromDir</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-convertMetadataToJSON">convertMetadataToJSON</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createPositionArray">createPositionArray</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getOrientation">getOrientation</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getPosition">getPosition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-lonLatToDecimal">lonLatToDecimal</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-angleToVector">angleToVector</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-bboxArrayToObject">bboxArrayToObject</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-boundingBox">boundingBox</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-cartesianToSpherical">cartesianToSpherical</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-centerOfMass">centerOfMass</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-intersectionLinePlane">intersectionLinePlane</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-planeFromThreePoints">planeFromThreePoints</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-project">project</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sphericalToCartesian">sphericalToCartesian</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-vectorToAngle">vectorToAngle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-changeLayout">changeLayout</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fillGrid">fillGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-filter">filter</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-generateGrid">generateGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-loadImageAndFillGrid">loadImageAndFillGrid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLineAndLineIntersection">halfLineAndLineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLineIntersection">halfLineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-halfLinesIntersect">halfLinesIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-lineIntersection">lineIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-onSegment">onSegment</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-rectangleContains">rectangleContains</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-rectanglesIntersect">rectanglesIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentIntersection">segmentIntersection</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentIntersectionExact">segmentIntersectionExact</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsEqual">segmentsEqual</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsIntersect">segmentsIntersect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setEpsilon">setEpsilon</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-addRandomArcs">addRandomArcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-addRandomLocations">addRandomLocations</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRandomArbitrary">getRandomArbitrary</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getBuildingSegments">getBuildingSegments</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollDB">pollDB</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollImages">pollImages</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollIsovist">pollIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pollThumbnails">pollThumbnails</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-segmentsFromXMLRequest">segmentsFromXMLRequest</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCircleOutOverlay">createCircleOutOverlay</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createNewImage">createNewImage</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-gradient">gradient</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleArcs">setStyleArcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleClusters">setStyleClusters</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleInput">setStyleInput</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStylePolygonColormapIsovist">setStylePolygonColormapIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStylePolygonIsovist">setStylePolygonIsovist</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setStyleTopo">setStyleTopo</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-arcs">arcs</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-clusterSource">clusterSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-imageStatic">imageStatic</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-inputLineSource">inputLineSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-inputLines">inputLines</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lineSource">lineSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lines">lines</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-olClusters">olClusters</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-onClickGroup">onClickGroup</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-overlay">overlay</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-overlayGroup">overlayGroup</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-polygonSource">polygonSource</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-source">source</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-thumbnails">thumbnails</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-vectorLayerArc">vectorLayerArc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-vectorLayerColormap">vectorLayerColormap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-epsilon">epsilon</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-pointRadius">pointRadius</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-stylesTopo">stylesTopo</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#clustering">clustering</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/clusteringstrategy.js~ClusteringStrategy.html">ClusteringStrategy</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/dendrogramstrategy.js~DistanceStrategy.html">DistanceStrategy</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/clustering/distancestrategy.js~DistanceStrategy.html">DistanceStrategy</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">lib/vectorlayercolormaprenderer.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/**
+ * @fileOverview Rendering of isovist intersection: actual computations
+ * @name vectorlayercolormaprenderer.js
+ * @author Florent Gr&#xE9;lard
+ * @license
+ */
+import CanvasImageLayerRenderer from &apos;ol/renderer/canvas/ImageLayer.js&apos;;
+import LayerType from &apos;ol/LayerType.js&apos;;
+import EventType from &apos;ol/events/EventType.js&apos;;
+import {createCanvasContext2D} from &apos;ol/dom&apos;;
+import * as transform from &apos;ol/transform&apos;;
+import ImageStatic from &apos;ol/source/ImageStatic&apos;;
+import * as render from &apos;ol/render&apos;;
+import Polygon from &apos;ol/geom/Polygon&apos;;
+import ImageCanvas from &apos;ol/ImageCanvas&apos;;
+import Fill from &apos;ol/style/Fill&apos;;
+import Style from &apos;ol/style/Style&apos;;
+
+/**
+ * Class for rendering of isovist intersection,
+ * based on the opacity at pixel level
+ */
+export default class VectorLayerColormapRenderer extends CanvasImageLayerRenderer {
+
+    /**
+     * Constructor
+     * @param {VectorLayerColorMap} imageLayer
+     */
+    constructor(imageLayer) {
+        super(imageLayer);
+
+        /**
+         * Gradient for heatmap (default jet : blue =&gt; red)
+         * @type {Uint8ClampedArray}
+         */
+        this.gradient = this.createGradient(imageLayer.colors);
+    };
+
+
+    /**
+     * Allows to create gradient from set of colors
+     * @param {Array&lt;string&gt;} colors
+     * @returns {Uint8ClampedArray} the gradient
+     */
+    createGradient(colors) {
+        var width = 1;
+        var height = 256;
+        var context = createCanvasContext2D(width, height);
+
+        var gradient = context.createLinearGradient(0, 0, width, height);
+        var step = 1 / (colors.length - 1);
+        for (var i = 0, ii = colors.length; i &lt; ii; ++i) {
+            gradient.addColorStop(i * step, colors[i]);
+        }
+
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, width, height);
+
+        return context.getImageData(0, 0, width, height).data;
+    }
+
+
+    /**
+     * Scales a point according to zoom level
+     * @param {Array&lt;number&gt;} coord the point
+     * @param {number} resolution current zoom level
+     * @param {Array} t transform
+     * @param {Array&lt;number&gt;} center center of transformation
+     */
+    scaleCoordinate(coord, resolution, t, center) {
+        var tCopy = t.slice();
+        var tmp = transform.create();
+
+        transform.translate(tmp, -center[0], -center[1]);
+        transform.apply(tmp, coord);
+
+        transform.reset(tmp);
+        var scale = (resolution &gt; VectorLayerColormapRenderer.LIMIT_RESOLUTION) ? resolution / 2.0 : 1.0;
+        transform.scale(tmp, scale, scale);
+        transform.apply(tmp, coord);
+
+        transform.reset(tmp);
+        transform.translate(tmp, center[0], center[1]);
+        transform.apply(tmp, coord);
+    }
+
+    /**
+     * Converts a polygon in cartesian coordinates to rasterized coordinates in the image canvas
+     * @param {ol.geom.Polygon} polygon
+     * @param {Array} t transform
+     * @param {number} resolution
+     * @returns {Array} the pixel coordinates in the image
+     */
+    polygonToPixelCoordinates(polygon, t, resolution) {
+        var pixelCoordinates = [];
+        var coordinates = polygon.getCoordinates()[0];
+        for (var j = 0; j &lt; coordinates.length; j++) {
+            var coord = coordinates[j].slice();
+            if (this.getLayer().isScale())
+                this.scaleCoordinate(coord, resolution, t, polygon.getFirstCoordinate());
+            var pixelCoordinate = transform.apply(t, coord);
+            pixelCoordinates.push(pixelCoordinate);
+        }
+        return pixelCoordinates;
+    }
+
+
+    /**
+     * Adaptative opacity for increasing number of photographs
+     * @param {number} maxOpacity the maximum opacity read in the image
+     * @param {CanvasImmediateRenderer} renderer
+     * @param {ol.style.Style} style
+     */
+    changeOpacityScale(maxOpacity, renderer, style) {
+        var color = style.getFill().getColor().toString();
+        var rgba = color.split(&quot;,&quot;);
+        var a = rgba[rgba.length-1].split(&quot;)&quot;)[0];
+        var anum = Number.parseFloat(a);
+        if (maxOpacity &lt; 200) {
+            anum += (anum + 0.05 &lt; 1) ? 0.05 : 0;
+        } else if (maxOpacity &gt;= 250) {
+            anum -= (anum - 0.05 &gt; 0) ? 0.05 : 0;
+        }
+        var newColor = rgba[0] + &quot;,&quot; + rgba[1] + &quot;,&quot; + rgba[2] + &quot;,&quot; + anum.toString() + &quot;)&quot;;
+        var fill = new Fill({
+            color: newColor
+        });
+        style.setFill(fill);
+        this.getLayer().setStyle([style]);
+        renderer.setStyle(style);
+    }
+
+    /**
+     * Isovist intersection to heatmap
+     * @param {CanvasImmediateRenderer} renderer
+     * @param {CanvasRenderingContext2D} context
+     * @param {ol.style.Style} style
+     * @param {number} resolution
+     * @param {number} width
+     * @param {number} height
+     */
+    rasterOpacityToContextColorMap(renderer, context, style, resolution, width, height) {
+        var image = context.getImageData(0, 0, width, height);
+        var view8 = image.data;
+        var i, length, alpha;
+        var maxOpacity = 0;
+        for (i = 0, length = view8.length; i &lt; length; i += 4) {
+            var alphaChar = view8[i+3];
+            if (alphaChar &gt; maxOpacity) {
+                maxOpacity = alphaChar;
+            }
+            alpha = alphaChar * 4;
+            if (alpha) {
+                for (var j = 0; j &lt; 3; j++)
+                    view8[i+j] = this.gradient[alpha + j];
+            }
+        }
+        this.changeOpacityScale(maxOpacity, renderer, style);
+        context.putImageData(image, 0,0);
+    }
+
+    /**
+     * Converts the context to a static image that can be displayed on the map layer ({@link VectorLayerColormap})
+     * @param {CanvasRenderingContext2D} context
+     * @param {Array&lt;number&gt;} extent image extent
+     * @returns {ol.source.ImageStatic}
+     */
+    contextToImageStatic(context, extent) {
+        var dataURL = context.canvas.toDataURL();
+
+        var imageStatic = new ImageStatic({
+            url: &apos;&apos;,
+            imageLoadFunction : function(image){
+                image.getImage().src = dataURL;
+            },
+            imageExtent: extent
+        });
+        return imageStatic;
+    }
+
+    /**
+     * Prepare the frame to display image when available
+     * @param {Object} frameState
+     * @param {Object} layerState
+     * @returns {boolean} frame is ready to be displayed
+     */
+    prepareFrame(frameState, layerState) {
+        var pixelRatio = frameState.pixelRatio;
+        var width = frameState.size[0] * pixelRatio;
+        var height = frameState.size[1] * pixelRatio;
+        var t = frameState.coordinateToPixelTransform.slice();
+        var resolution = frameState.viewState.resolution;
+        var extent = frameState.extent;
+        var context = createCanvasContext2D(width, height);
+        var canvas = context.canvas;
+        var renderer = render.toContext(context);
+
+        var style = this.getLayer().getStyle();
+        var actualStyle;
+        if (Array.isArray(style)) {
+            actualStyle = style[0];
+        }
+        else {
+            if (Array.isArray(style())) {
+                actualStyle = style()[0];
+            } else {
+                actualStyle = style();
+            }
+        }
+        actualStyle.setStroke();
+        renderer.setStyle(actualStyle);
+        var features = this.getLayer().getVectorSource().getFeatures();
+        for (var i = 0; i &lt; features.length; i++) {
+            var feature = features[i];
+            var pixelCoordinates = this.polygonToPixelCoordinates(feature.getGeometry(), t, resolution);
+            renderer.drawGeometry(new Polygon([pixelCoordinates]));
+        }
+        this.rasterOpacityToContextColorMap(renderer, context, actualStyle, resolution, width, height);
+
+        /**
+         * Image passed onto the layer
+         * @type {ImageCanvas}
+         */
+        this.image_ = new ImageCanvas(extent, resolution, pixelRatio, context.canvas);
+        this.getLayer().setImage(this.image_);
+        return true;
+    }
+
+    /**
+     * Whether this renderer handles a given layer
+     * @param {ol.source.Layer} layer
+     * @returns {boolean} whether layer is handled by this renderer
+     */
+    static handles(layer) {
+        return layer.getType() === &quot;VECTOR_COLORMAP&quot;;
+    }
+
+    /**
+     * Creates an instance of this renderer
+     * @param {Object} mapRenderer not used
+     * @param {VectorLayerColormap} layer
+     * @returns {VectorLayerColormapRenderer}
+     */
+    static create(mapRenderer, layer) {
+        return new VectorLayerColormapRenderer((layer));
+    }
+
+    /**
+     * Returns the limit resolution for this renderer
+     * @returns {number} the limit resolution
+     */
+    static get LIMIT_RESOLUTION() {
+        return 3;
+    }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

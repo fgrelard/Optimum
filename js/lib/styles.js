@@ -1,3 +1,9 @@
+/**
+ * @fileOverview Styles for the display of layers on the map by OpenLayers
+ * @name styles.js
+ * @author Florent Grélard
+ * @license
+ */
 import Style  from 'ol/style/Style';
 import Stroke  from 'ol/style/Stroke';
 import Fill  from 'ol/style/Fill';
@@ -8,13 +14,25 @@ import {getHeight, getWidth} from 'ol/extent';
 import ImageStatic from 'ol/source/ImageStatic';
 import Overlay from 'ol/Overlay';
 import Icon from 'ol/style/Icon';
-import * as Polls from './serverpoll';
 import Photo from 'ol-ext/style/Photo';
 import RegularShape from 'ol/style/RegularShape';
 
+/**
+ * Determines the size of the image
+ * @type {number}
+ */
 export var pointRadius = 20;
+
+/**
+ * Cache for style
+ * @type {Object}
+ */
 var styleCache = {};
 
+/**
+ * Styles to display XML data from cadastral information
+ * @type {Object}
+ */
 export var stylesTopo = {
     'amenity': {
         'parking': new Style({
@@ -77,6 +95,11 @@ export var stylesTopo = {
     }
 };
 
+/**
+ * Sets the styles for the XML data from cadastral information
+ * @param {ol.Feature} feature
+ * @returns {ol.style.Style} the style
+ */
 export function setStyleTopo(feature) {
     for (var key in stylesTopo) {
         var value = feature.get(key);
@@ -91,6 +114,10 @@ export function setStyleTopo(feature) {
     return null;
 }
 
+/**
+ * Sets the isovist style
+ * @returns {ol.style.Style}
+ */
 export function setStylePolygonIsovist() {
     return new Style({
         stroke : new Stroke({
@@ -102,6 +129,10 @@ export function setStylePolygonIsovist() {
     });
 }
 
+/**
+ * Sets the heatmap style
+ * @returns {ol.style.Style}
+ */
 export function setStylePolygonColormapIsovist() {
     return new Style({
         fill: new Fill({
@@ -110,16 +141,26 @@ export function setStylePolygonColormapIsovist() {
     });
 }
 
+/**
+ * Sets the style for building segments on request
+ * @returns {ol.style.Style}
+ */
 export function setStyleInput() {
     return new Style({
-         stroke : new Stroke({
-             color: '#0000FF',
-             width: 5
+        stroke : new Stroke({
+            color: '#0000FF',
+            width: 5
         })
     });
 }
 
 
+/**
+ * Sets the style for clusters of pictures
+ * @param {ol.Feature} feature
+ * @param {number} resolution
+ * @returns {Array<ol.style.Style>} the style
+ */
 export function setStyleClusters(feature, resolution) {
     var f = feature.get("features")[0];
 	var nb = feature.get("features").length;
@@ -173,48 +214,11 @@ export function setStyleClusters(feature, resolution) {
 }
 
 
-    // var styleCache = {};
-    // var features = feature.get('features');
-    // var size = features.length;
-    // var style = styleCache[size];
-    // var image = new Image();
-    // var icon = new Icon({
-    //     img: features[0].get('image') || image,
-    //     imgSize: [100, 100]
-    // });
-    // if (!features[0].get('image') && features.length > 0) {
-    //     Polls.pollImages(features[0].getProperties().filename, 100).then(function(url) {
-    //         image.src = url;
-    //         features[0].set('image', image);
-    //     });
-    // }
-    // if (!style) {
-    //     style = new Style({
-    //         image: icon,
-    //         stroke: new Stroke({
-    //             color: '#fff'
-    //         }),
-    //         text: new Text({
-    //             text: size.toString(),
-    //             fill: new Fill({
-    //                 color: '#fff'
-    //             }),
-    //             backgroundFill: new Fill({
-    //                 color: '#cc9933'
-    //             }),
-    //             backgroundStroke: new Stroke({
-    //                 color: '#fff'
-    //             }),
-    //             padding: [10,10,10,10],
-    //             textBaseline: 'top',
-    //             textAlign: 'right'
-    //         })
-    //     });
-    //     styleCache[size] = style;
-    // }
-    // return style;
-//}
-
+/**
+ * Circle around the picture when it visualizes a selected area on the map
+ * @param {Array<number>} position
+ * @returns {ol.Overlay}
+ */
 export function  createCircleOutOverlay(position) {
     var elem = document.createElement('div');
     elem.setAttribute('class', 'circleOut');
@@ -226,12 +230,18 @@ export function  createCircleOutOverlay(position) {
     });
 }
 
+/**
+ * Sets the style for the visibility cones (pale orange gradient)
+ * @param {Arc} arc
+ * @param {number} resolution
+ * @returns {ol.style.Style}
+ */
 export function setStyleArcs(arc, resolution) {
     var fill = new Fill();
     var style = new Style({
         stroke: new Stroke({
-        color: '#ff9933'
-    }),
+            color: '#ff9933'
+        }),
         fill: fill
     });
     fill.setColor(gradient(arc, resolution));
@@ -239,6 +249,12 @@ export function setStyleArcs(arc, resolution) {
 }
 
 
+/**
+ * Function allowing to generate a gradient in OpenLayers (pale orange for arcs)
+ * @param {Arc} arc
+ * @param {number} resolution
+ * @returns {CanvasGradient} the gradient
+ */
 export function gradient(arc, resolution) {
     var extent2 = arc.getGeometry().getExtent();
     var canvas = document.createElement('canvas');
@@ -294,9 +310,13 @@ export function gradient(arc, resolution) {
 }
 
 
-
-
-
+/**
+ * Function to create an image which can be displayed on the map
+ * @param {URL} url
+ * @param {Array<number>} position
+ * @param {ol.proj.Projection} projection
+ * @returns {ol.source.ImageStatic} the image
+ */
 export function createNewImage(url, position, projection) {
     var imageStatic = new ImageStatic({
         url: '',

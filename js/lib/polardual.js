@@ -1,9 +1,26 @@
+/**
+ * @fileOverview Polar dual
+ * @name polardual.js
+ * @author Florent Grélard
+ * @license
+ */
+
 import Dual from './dual.js';
 import {project, boundingBox, bboxArrayToObject} from './geometry.js';
 import {euclideanDistance} from './distance.js';
 
+/** Class representing the polar dual transform
+ */
 export default class PolarDual extends Dual {
 
+    /**
+     * Primal line to dual line
+     * @param {Array<number>} vector coefficients
+     * @param {Array<number>} center position
+     * @param {Array<number>} g barycenter
+     * @param {boolean=} vertical whether the line is vertical
+     * @returns {Array<number>} the dual of the line, a point
+     */
     static dualLine(vector, center, g, vertical = false) {
         var secondPoint = [center[0] + vector[0]*5,
                            center[1] + vector[1]*5];
@@ -21,7 +38,13 @@ export default class PolarDual extends Dual {
         return [theta, rho];
     }
 
-
+     /**
+     * Primal cone to dual cone
+     * @param {Arc} arc
+     * @param {Array<number>} g barycenter
+     * @param {boolean=} vertical whether the line is vertical
+     * @returns {Array<Array<number>>}  dual of a cone, a pair of coordinates
+     */
     static dualCone(arc, g, vertical = false) {
         var cone = super.dualCone(arc, g, vertical);
         var x0 = cone[0][0];
@@ -33,6 +56,13 @@ export default class PolarDual extends Dual {
         return cone;
     }
 
+    /**
+     * bounding dual rectangle of coordinates
+     * @param {Arc} arc
+     * @param {Array<number>} g barycenter
+     * @param {boolean=} vertical whether the sector contains the vertical line
+     * @returns {Array} the bounding box
+     */
     static dualBoundingRectangle(arc, g, vertical = false) {
         var dualArc = this.dualCone(arc, g, vertical);
         var bbox = boundingBox(dualArc);
@@ -81,6 +111,12 @@ export default class PolarDual extends Dual {
         }
     }
 
+     /**
+     * Intersection between primal point and rectangle
+     * @param {Array<number>} point request point
+     * @param {Array} rectangle the bounding box
+     * @returns {boolean} whether it intersects or not
+     */
     static intersectionRequestRectangle(point, rectangle) {
         var a = point[0];
         var b = point[1];
