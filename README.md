@@ -19,5 +19,9 @@ npm run start
 Then, open the `index.html` file in your browser. 
 
 
+## Examples
+
+Minimal examples can be found in the `test` directory. It contains code for the dual R-tree (`astree`), the isovist in 2D and 3D (`isovist` and `isovist3d`) as well as the heatmap (`polygonintersection`).
+
 
 
