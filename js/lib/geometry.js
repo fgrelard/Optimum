@@ -4,7 +4,7 @@
  * @author Florent Grélard
  * @license
  */
-import * as THREE from 'three';
+import {Vector3, Plane, Line3} from 'three';
 
 /**
  * Converts an angle in degrees to a 2D vector
@@ -145,10 +145,10 @@ export function cartesianToSpherical( coord ) {
  * @returns {THREE.Plane}
  */
 export function planeFromThreePoints(p1, p2, p3) {
-    var plane = new THREE.Plane();
-    plane.setFromCoplanarPoints(new THREE.Vector3(p1[0], p1[1], p1[2]),
-                                new THREE.Vector3(p2[0], p2[1], p2[2]),
-                                new THREE.Vector3(p3[0], p3[1], p3[2]));
+    var plane = new Plane();
+    plane.setFromCoplanarPoints(new Vector3(p1[0], p1[1], p1[2]),
+                                new Vector3(p2[0], p2[1], p2[2]),
+                                new Vector3(p3[0], p3[1], p3[2]));
     return plane;
 }
 
@@ -159,10 +159,10 @@ export function planeFromThreePoints(p1, p2, p3) {
  * @returns {THREE.Vector3|Boolean} the intersection
  */
 export function intersectionLinePlane(point, plane) {
-    var v1 = new THREE.Vector3(point[0], point[1], point[2]);
+    var v1 = new Vector3(point[0], point[1], point[2]);
     v1 = v1.normalize();
-    var line = new THREE.Line3(new THREE.Vector3(0,0,0), v1.multiplyScalar(10000));
-    var target = new THREE.Vector3();
+    var line = new Line3(new Vector3(0,0,0), v1.multiplyScalar(10000));
+    var target = new Vector3();
     var intersects = plane.intersectLine(line, target);
     if (intersects)
         return target;
