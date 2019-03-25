@@ -110,24 +110,30 @@ export default class IsoVist {
         return segments;
     }
 
+
+    /**
+     * Checks whether a building is in the field of view
+     * @param {ol.geom.Polygon} building
+     * @returns {boolean} whether it is in the FOV
+     */
+    isInFOV(building) {
+        if (euclideanDistance(building.getFirstCoordinate(), this.arc.center) > 2 * this.arc.radius) return false;
+        return (this.arc.geometry.intersectsExtent(building.getExtent()) &&
+                building.intersectsExtent(this.arc.geometry.getExtent()) && building.getType() === "Polygon");
+    }
+
     /**
      * From all the segments in the building, extract only those visible in field of view
      * @returns {Array.<ol.geom.LineString>} array of visible segments
      */
     segmentsIntersectingFOV() {
         var segments = [];
-        var geometryArc = this.arc.geometry;
-        var extentArc = geometryArc.getExtent();
         var that = this;
         for (let f of this.segments) {
             var geometryFeature = f.getGeometry();
-            if (euclideanDistance(geometryFeature.getFirstCoordinate(), that.arc.center) > 2 * that.arc.radius) continue;
-            if (geometryArc.intersectsExtent(geometryFeature.getExtent()) &&
-                geometryFeature.intersectsExtent(extentArc)) {
-                if (geometryFeature.getType() === "Polygon") {
-                    var segmentsPolygon = that.segmentsFromPolygon(geometryFeature, geometryArc);
-                    Array.prototype.push.apply(segments, segmentsPolygon);
-                }
+            if (this.isInFOV(geometryFeature)) {
+                var segmentsPolygon = that.segmentsFromPolygon(geometryFeature, this.arc.geometry);
+                Array.prototype.push.apply(segments, segmentsPolygon);
             }
         }
         return segments;

@@ -28,6 +28,7 @@ import * as render from 'ol/render';
 import Polygon from 'ol/geom/Polygon';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
+import LinearRing from 'ol/geom/LinearRing';
 
 var styles = [
     /* We are using two different styles for the polygons:
@@ -119,8 +120,27 @@ var geojsonObject = {
     }]
 };
 
+var features = (new GeoJSON()).readFeatures(geojsonObject);
+for (let f of features) {
+    var coords = f.getGeometry().getCoordinates()[0];
+    var c =  [coords[0][0] + 50, coords[0][1] + 50];
+
+    var newCoords = [];
+    newCoords.push(c);
+    for (var i = 1; i < coords.length; i++) {
+        newCoords.push(coords[i]);
+    }
+    if (f.getGeometry().getType() === 'Polygon')
+        f.getGeometry().appendLinearRing(new LinearRing(newCoords));
+
+    console.log(f.getGeometry().getLinearRing(0));
+    console.log(f.getGeometry().getLinearRing(1));
+}
+
+console.log(features);
+
 var source = new SourceVector({
-    features: (new GeoJSON()).readFeatures(geojsonObject)
+    features: features
 });
 
 var layer = new LayerVector({

@@ -61,7 +61,7 @@ function readTextFile(file, map, vector)
                     let coords = feature.getGeometry().flatCoordinates;
                     var array = [];
                     var height = getRandomArbitrary(10,30);
-                    height = 20;
+                    //height = 20;
                     for (let index = 0; index < coords.length; index+=2) {
                         array.push([coords[index], coords[index+1], height]);
                     }
@@ -93,12 +93,12 @@ var map;
 var featuresArc=[];
 var features=[];
 var featuresLine =[];
-var alpha = 190;
-var omega = 250;
+var alpha = 0;
+var omega = 70;
 var radius = 300;
 var position = [739885.8194006054, 5905880.253554305 ];
 position = [739800.8194006054, 5906000.253554305];
-position = [ 489298.32814487105, 5688013.78184738, 10];
+position = [ 489298.32814487105, 5688013.78184738, 100];
 var arc = new Arc(position, radius, alpha, omega);
 arc.computeGeometry();
 
@@ -290,7 +290,7 @@ var polygon = new Polygon([[[position[0], position[1], 600], [position[0]+100, p
 var featureArc = new Feature(arc);
 featuresArc.push(featureArc);
 
-features.push(new Feature(new Point([position[0], position[1], 0])));
+features.push(new Feature(new Point([position[0], position[1], position[2]])));
 
 var source = new Vector({
     features : features

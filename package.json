@@ -28,6 +28,7 @@
     "ol-ext": "^3.1.0",
     "ol-layerswitcher": "^2.0.0",
     "papaparse": "^4.3.7",
+    "polygon-tools": "^0.4.8",
     "rbush": "^2.0.2",
     "semver": "^5.6.0",
     "three": "^0.102.1",

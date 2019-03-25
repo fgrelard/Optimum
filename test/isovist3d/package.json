@@ -48,6 +48,7 @@
     "bigdecimal": "^0.6.1",
     "brfs": "^2.0.1",
     "jquery": "^3.3.1",
+    "polygon-tools": "^0.4.8",
     "three": "^0.102.1",
     "webpack-node-externals": "^1.7.2"
   }

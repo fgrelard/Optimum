@@ -8,6 +8,8 @@
 
 import LineString from 'ol/geom/LineString';
 import Polygon from 'ol/geom/Polygon';
+import MultiPolygon from 'ol/geom/MultiPolygon';
+import LinearRing from 'ol/geom/LinearRing';
 import * as Intersection from './lineintersection';
 import {euclideanDistance} from './distance';
 import {boundingExtent, containsExtent, intersects, getIntersection, getArea} from 'ol/extent';
@@ -15,7 +17,7 @@ import Arc from './arc';
 import IsoVist2D from './isovistsectors2d.js';
 import {toLonLat} from 'ol/proj';
 import {cartesianToSpherical, sphericalToCartesian, planeFromThreePoints, intersectionLinePlane} from './geometry';
-
+import {polygon as PolygonModule}  from 'polygon-tools';
 
 /** Object containing polygon and associated visibility sector
  */
@@ -119,8 +121,8 @@ export default class IsoVist3D extends IsoVist2D {
     segmentTo3DPolygon(segment) {
         var p1 = segment.getFirstCoordinate();
         var p2 = segment.getLastCoordinate();
-        var p3 = [p2[0], p2[1], 0];
-        var p4 = [p1[0], p1[1], 0];
+        var p3 = [p2[0], p2[1], 0]; //ground coordinate
+        var p4 = [p1[0], p1[1], 0]; //ground coordinate
         return new Polygon([[p1, p2, p3, p4]]);
     }
 
@@ -134,6 +136,14 @@ export default class IsoVist3D extends IsoVist2D {
         for (let segment of segments) {
             var p = this.segmentTo3DPolygon(segment);
             polygons.push(p);
+        }
+
+        //Roof
+        for (let building of this.segments) {
+            var geometry = building.getGeometry();
+            if (this.isInFOV(geometry)) {
+                polygons.push(geometry);
+            }
         }
         return polygons;
     }
@@ -168,15 +178,8 @@ export default class IsoVist3D extends IsoVist2D {
                                    coord[1] - this.arc.center[1],
                                    coord[2] - this.arc.center[2]];
             var sphericalNorm = cartesianToSpherical(coordTranslated);
-
-            // sphericalNorm.norm = 1;
-            // var c = sphericalToCartesian(sphericalNorm);
             sphericals.push(sphericalNorm);
-            // coordinates.push(coordTranslated);
         }
-        // var sphericalArray = sphericals.map(spherical => [spherical[0], spherical[1], spherical[2]]);
-        // var plane = planeFromThreePoints(coordinates[0], coordinates[1], coordinates[2]);
-        // intersectionLinePlane(sphericals[0], plane);
         return sphericals;
     }
 
@@ -449,11 +452,12 @@ export default class IsoVist3D extends IsoVist2D {
 
 
     /**
-     * Projects the spherical intersection in 2D, onto a 3D plane in cartesian coordinates
+     * Projects a spherical polygon in 2D, onto a 3D plane in cartesian coordinates
      * @param {Object} partialPart
      * @returns {ol.geom.Polygon} the 3D polygon in cartesian coordinates
      */
-    projectIntersectionOnFace(partialPart) {
+    projectSphericalPolygonOn3DFace(partialPart) {
+        if (partialPart.intersection.flatCoordinates.length === 0) return new Polygon([[[0,0,0]]]);
         var face = partialPart.polygon;
         var intersection = partialPart.intersection;
         var coordsFace = face.getCoordinates()[0];
@@ -466,16 +470,20 @@ export default class IsoVist3D extends IsoVist2D {
         }
 
         var plane = planeFromThreePoints(coordsFace[0], coordsFace[1], coordsFace[2]);
-        var p1 = intersectionLinePlane(cartesianIntersection[0], plane);
-        var p2 = intersectionLinePlane(cartesianIntersection[1], plane);
-        var p3 = intersectionLinePlane(cartesianIntersection[2], plane);
-        var p4 = intersectionLinePlane(cartesianIntersection[3], plane);
-        if (!p1 || !p2 || !p3 || !p4)
-            return new Polygon([[[0,0,0]]]);
-        var polygon = new Polygon([[ Object.values(p1), Object.values(p2), Object.values(p3), Object.values(p4)] ]);
+        var newCoords = [];
+        for (let p of cartesianIntersection) {
+            var i = intersectionLinePlane(p, plane);
+            if (!i)
+                return new Polygon([[[0,0,0]]]);
+            else
+                newCoords.push(Object.values(i));
+
+        }
+        var polygon = new Polygon([newCoords]);
         var translatedPolygon = this.translatePolygon(polygon, [-this.arc.center[0],
                                                                 -this.arc.center[1],
                                                                 -this.arc.center[2]]);
+
         return translatedPolygon;
     }
 
@@ -487,10 +495,22 @@ export default class IsoVist3D extends IsoVist2D {
     partiallyVisiblePolygon(partialParts) {
         let arrayPolygons =  [];
         for (let partialPart of partialParts) {
-            let projectionPolygon = this.projectIntersectionOnFace(partialPart);
+            let projectionPolygon = this.projectSphericalPolygonOn3DFace(partialPart);
             arrayPolygons.push(projectionPolygon);
         }
         return arrayPolygons;
+    }
+
+
+
+    polygonSubtractIntersection(poly, poly2) {
+        var factor = 1;
+        var coordinates1 = poly.getCoordinates()[0].map(coord => [coord[0] * factor, coord[1] * factor]);
+
+        var coordinates2 = poly2.getCoordinates()[0].map(coord => [coord[0] * factor, coord[1] * factor]);
+
+        var subtract = PolygonModule.subtract(coordinates1, coordinates2);
+        return new Polygon(subtract);
     }
 
     /**
@@ -518,18 +538,13 @@ export default class IsoVist3D extends IsoVist2D {
             for (let angleVision of visionField) {
                 let extentVision = angleVision.getExtent();
                 let intersection = getIntersection(extentCurrent, extentVision);
-                // let lowerBound = {theta: intersection[0], phi: intersection[1], norm: 1};
-                // let upperBound = {theta: intersection[2], phi: intersection[3], norm: 1};
-                // var extentCartesian = [sphericalToCartesian(lowerBound), sphericalToCartesian(upperBound)];
-                // extentCartesian = [].concat.apply([], extentCartesian);
                 let polyIntersection = this.polygonFromExtent(intersection);
-                // console.log(polyIntersection);
                 if (angleCurrent.intersectsExtent(extentVision) &&
                     angleVision.intersectsExtent(extentCurrent) &&
                     getArea(intersection) > 0)  {
                     isPartial = true;
-                    let objIntersectionToSpherical = {intersection: polyIntersection, polygon: coordinates};
-                    this.projectIntersectionOnFace (objIntersectionToSpherical);
+                    var polySubtract = this.polygonSubtractIntersection(angleCurrent, angleVision);
+                    let objIntersectionToSpherical = {intersection: polySubtract, polygon: coordinates};
                     partialParts.push(objIntersectionToSpherical);
                 }
             }
@@ -537,9 +552,8 @@ export default class IsoVist3D extends IsoVist2D {
                 var arrayPolygons = this.partiallyVisiblePolygon(partialParts);
                 Array.prototype.push.apply(visibleSegments, arrayPolygons);
             } else {
-                //visibleSegments.push(polyAngle.polygon);
+                visibleSegments.push(polyAngle.polygon);
             }
-            //break;
             visionField.push(polyAngle.angle);
             visionField = this.mergeOverlappingAngles(visionField);
 
@@ -573,7 +587,7 @@ export default class IsoVist3D extends IsoVist2D {
         var visibleSegments = this.visibleBlockingSegments(blockingSegments);
 
         var onlyPoly = blockingSegments.map(elem => elem.polygon);
-        onlyPoly = visibleSegments;
+        //onlyPoly = visibleSegments;
         //var onlyPoly = trimmed;
         //onlyPoly = blockingPoly.map(elem => elem.polygon);
         //onlyPoly = polyAngles.map(elem => elem.angle);
