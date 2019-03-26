@@ -1,0 +1,25 @@
+{
+    "name": "flickrpoll",
+    "version": "1.0.0",
+    "description": "",
+    "main": "bundle.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "rollup --config rollup.config.js",
+        "start": "rollup --config rollup.config.js --watch"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "flickr-sdk": "^3.8.0"
+    },
+    "devDependencies": {
+        "rollup": "^0.60.2",
+        "rollup-plugin-commonjs": "^7.0.0",
+        "rollup-plugin-node-builtins": "^2.1.2",
+        "rollup-plugin-node-resolve": "^2.1.1",
+        "rollup-plugin-uglify": "^1.0.2",
+        "rollup-plugin-uglify-es": "0.0.1",
+        "rollup-watch": "^4.3.1"
+    }
+}
