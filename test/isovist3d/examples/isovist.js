@@ -61,7 +61,7 @@ function readTextFile(file, map, vector)
                     let coords = feature.getGeometry().flatCoordinates;
                     var array = [];
                     var height = getRandomArbitrary(10,30);
-                    //height = 20;
+                    height = 20;
                     for (let index = 0; index < coords.length; index+=2) {
                         array.push([coords[index], coords[index+1], height]);
                     }
@@ -76,6 +76,9 @@ function readTextFile(file, map, vector)
                 for (var i = 0; i < visibleSegments.length
                      ; i++) {
                     var poly = visibleSegments[i];
+                    var coords = poly.getCoordinates()[0];
+                    // coords.push(position);
+                    // var newPoly = new Polygon([coords]);
                     featuresLine.push(new Feature({geometry : poly}));
                 }
                 lines.getSource().clear();
@@ -94,11 +97,9 @@ var featuresArc=[];
 var features=[];
 var featuresLine =[];
 var alpha = 0;
-var omega = 70;
+var omega = 90;
 var radius = 300;
-var position = [739885.8194006054, 5905880.253554305 ];
-position = [739800.8194006054, 5906000.253554305];
-position = [ 489298.32814487105, 5688013.78184738, 100];
+var position = [ 489298.32814487105, 5688023.78184738, 15];
 var arc = new Arc(position, radius, alpha, omega);
 arc.computeGeometry();
 
@@ -364,11 +365,11 @@ var lines = new VectorLayer({
     source: lineSource,
     style: new Style({
         stroke : new Stroke({
-            color: '#FF0000',
+            color: 'rgba(255,0,0,0.4)',
             width: 3
         })// ,
         // fill : new Fill({
-        //     color: "#33CC9977"
+        //     color: "rgba(255,0,0,0.1)"
         // })
     })
 });

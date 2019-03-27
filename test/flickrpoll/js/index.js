@@ -74,7 +74,7 @@ function flickRecursive(i) {
     }).catch(function(err)  {
         setTimeout(function(after) {
             flickRecursive(i);
-        }, 3600000);
+        }, 600000);
     });
 }
 

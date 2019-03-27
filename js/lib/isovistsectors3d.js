@@ -16,7 +16,7 @@ import {boundingExtent, containsExtent, intersects, getIntersection, getArea} fr
 import Arc from './arc';
 import IsoVist2D from './isovistsectors2d.js';
 import {toLonLat} from 'ol/proj';
-import {cartesianToSpherical, sphericalToCartesian, planeFromThreePoints, intersectionLinePlane} from './geometry';
+import {cartesianToSpherical, sphericalToCartesian, planeFromThreePoints, intersectionLinePlane, centerOfMass} from './geometry';
 import {polygon as PolygonModule}  from 'polygon-tools';
 
 /** Object containing polygon and associated visibility sector
@@ -68,7 +68,7 @@ class AngleToSegment {
 
 /** Class allowing to compute the isovist in 3D, inspired by Suleiman et al's 'A New Algorithm for 3D Isovists"
  * the space is delimited by a set of polygons and visibility can be determined by spherical coordiantes associated with these segments
- * WORK IN PROGRESS
+ * WORK IN PROGRESS: Need fixes for roofs + free segments
  */
 export default class IsoVist3D extends IsoVist2D {
     /**
@@ -109,6 +109,7 @@ export default class IsoVist3D extends IsoVist2D {
          * @type {number} epsilon tolerance for intersection
          */
         this.epsilon = epsilon;
+
     }
 
 
@@ -137,8 +138,18 @@ export default class IsoVist3D extends IsoVist2D {
             var p = this.segmentTo3DPolygon(segment);
             polygons.push(p);
         }
+        var roofs = this.roofPolygons();
+        Array.prototype.push.apply(polygons, roofs);
+        return polygons;
+    }
 
-        //Roof
+
+    /**
+     * Roof Polygons
+     * @returns {Array<ol.geom.Polygon>}
+     */
+    roofPolygons() {
+        var polygons = [];
         for (let building of this.segments) {
             var geometry = building.getGeometry();
             if (this.isInFOV(geometry)) {
@@ -172,12 +183,9 @@ export default class IsoVist3D extends IsoVist2D {
      */
     polygonToSphericalCoordinates(polygon) {
         var sphericals = [];
-        // var coordinates = [];
-        for (let coord of polygon.getCoordinates()[0]) {
-            var coordTranslated = [coord[0] - this.arc.center[0],
-                                   coord[1] - this.arc.center[1],
-                                   coord[2] - this.arc.center[2]];
-            var sphericalNorm = cartesianToSpherical(coordTranslated);
+        var translated = this.translatePolygon(polygon, this.arc.center);
+        for (let coord of translated.getCoordinates()[0]) {
+            var sphericalNorm = cartesianToSpherical(coord);
             sphericals.push(sphericalNorm);
         }
         return sphericals;
@@ -214,18 +222,23 @@ export default class IsoVist3D extends IsoVist2D {
     }
 
     /**
-     * Minimum distance of each corner in the polygon to the picture's position
+     * Checks whether this polygon is a roof (all z-coordinates greater than 0)
      * @param {ol.geom.Polygon} polygon
-     * @returns {number} min distance
+     * @returns {boolean} whether polygon is a roof
      */
-    polygonToMinDistance(polygon) {
-        var distance = Number.MAX_VALUE;
-        for (let coord of polygon.getCoordinates()[0]) {
-            let norm = euclideanDistance(coord, this.arc.center);
-            if (distance > norm) {
-                distance = norm;
-            }
-        }
+    isRoof(polygon) {
+        return polygon.getCoordinates()[0].every(e => e[2] > 0);
+    }
+
+
+    /**
+     * Distance to the polygon's centroid
+     * @param {ol.geom.Polygon} polygon
+     * @returns {number} distance
+     */
+    polygonToDistanceCentroid(polygon) {
+        var centroid = centerOfMass(polygon.getCoordinates()[0]);
+        var distance = euclideanDistance(centroid, this.arc.center);
         return distance;
     }
 
@@ -238,24 +251,21 @@ export default class IsoVist3D extends IsoVist2D {
     isNonBlocking(polyAngle, polyAngles) {
         var poly = polyAngle.polygon;
         var angle = polyAngle.angle;
-        var extent = angle.getExtent();
         var intersecting = [];
         var isBlocking = true;
         for (let j = 0; j < polyAngles.length; j++) {
             var polyAngle2 = polyAngles[j];
             var poly2 = polyAngle2.polygon;
             var angle2 = polyAngle2.angle;
-            var extent2 = angle2.getExtent();
+            var intersection =  PolygonModule.intersection(angle.getCoordinates()[0], angle2.getCoordinates()[0]);
 
-            if (angle.intersectsExtent(extent2) &&
-                angle2.intersectsExtent(extent) &&
-                getArea(getIntersection(extent, extent2)) > 0) {
+            if (intersection.length && intersection[0].length) {
                 intersecting.push(polyAngle2);
             }
         }
-        var minDCurrent = this.polygonToMinDistance(poly);
+        var minDCurrent = this.polygonToDistanceCentroid(poly);
         for (let e of intersecting) {
-            var minDOther = this.polygonToMinDistance(e.polygon);
+            var minDOther = this.polygonToDistanceCentroid(e.polygon);
             if (minDOther < minDCurrent) {
                 isBlocking = false;
             }
@@ -294,55 +304,6 @@ export default class IsoVist3D extends IsoVist2D {
     }
 
 
-    /**
-     * Minimum and maximum of angle
-     * @param {Array<ol.geom.Polygon>} angles
-     * @param {boolean=} theta theta or phi
-     * @returns {Array} min and max
-     */
-    minMaxAngle(angles, theta = false) {
-        var minX = Number.MAX_VALUE;
-        var maxX = -Number.MAX_VALUE;
-        for (let angle of angles) {
-            var extent = angle.getExtent();
-            var angleMin, angleMax;
-            if (theta) {
-                angleMin = extent[0];
-                angleMax = extent[2];
-            } else {
-                angleMin = extent[1];
-                angleMax = extent[3];
-            }
-
-            if (angleMin < minX) {
-                minX = angleMin;
-            }
-            if (angleMax > maxX) {
-                maxX = angleMax;
-            }
-        }
-        return [minX, maxX];
-    }
-
-
-    /**
-     * Computes the extent from a polygon
-     * @param {ol.extent.Extent} extent
-     * @returns {ol.geom.Polygon} polygon
-     */
-    polygonFromExtent(extent) {
-        var minX = extent[0];
-        var minY = extent[1];
-        var maxX = extent[2];
-        var maxY = extent[3];
-        var p1 = [minX, minY];
-        var p2 = [minX, maxY];
-        var p3 = [maxX, maxY];
-        var p4 = [maxX, minY];
-
-        return new Polygon([[ p1, p2, p3, p4 ]]);
-    }
-
 
     /**
      * Merges consecutive spherical coordinates
@@ -356,59 +317,27 @@ export default class IsoVist3D extends IsoVist2D {
         let minY =  2 * Math.PI;
         let maxX = -2 * Math.PI;
         let maxY = -2 * Math.PI;
-        var locallyIntersecting = [];
+        var union = [];
         var trimmedArray = [];
-        for (let i= 0; i < sortedAngles.length - 1; i++) {
+        for (let i = 0; i < sortedAngles.length-1; i++) {
             let current = sortedAngles[i];
             let next = sortedAngles[i+1];
-
-            let extentCurrent = current.getExtent();
-            let extentNext = next.getExtent();
-            let thetaMinCurrent = extentCurrent[0];
-            let phiMinCurrent = extentCurrent[1];
-            let thetaMaxCurrent = extentCurrent[2];
-            let phiMaxCurrent = extentCurrent[3];
-
-            let thetaMinNext = extentNext[0];
-            let phiMinNext = extentNext[1];
-            let thetaMaxNext = extentNext[2];
-            let phiMaxNext = extentNext[3];
+            let coordCurrent = current.getCoordinates()[0];
+            let coordNext = next.getCoordinates()[0];
             if (i === 0) {
-                minX = thetaMinCurrent;
-                minY = phiMinCurrent;
+                union = coordCurrent;
             }
-            if (minY > phiMinCurrent) {
-                minY = phiMinCurrent;
+            let currentUnion = PolygonModule.union(union, coordNext);
+
+            if (currentUnion && currentUnion.length === 1) {
+                union = currentUnion[0];
             }
-            if (thetaMaxCurrent > maxX) {
-                maxX = thetaMaxCurrent;
+            else {
+                trimmedArray.push(new Polygon([union]));
+                union = coordNext;
             }
-            if (phiMaxCurrent > maxY) {
-                maxY = phiMaxCurrent;
-            }
-            if (maxX < thetaMinNext ||
-                maxY < phiMinNext) {
-                let newExtent = boundingExtent([[minX, minY], [maxX, maxY]]);
-                let newPolygon = this.polygonFromExtent(newExtent);
-                trimmedArray.push(newPolygon);
-                minX = thetaMinNext;
-                minY = phiMinNext;
-                locallyIntersecting = [];
-            }
-            if (i === sortedAngles.length - 2) {
-                if (maxX < thetaMaxNext) {
-                    maxX = thetaMaxNext;
-                }
-                if (maxY < phiMaxNext) {
-                    maxY = phiMaxNext;
-                }
-                if (minY > phiMinNext) {
-                    minY = phiMinNext;
-                }
-                let newExtent = boundingExtent([[minX, minY], [maxX, maxY]]);
-                let newPolygon = this.polygonFromExtent(newExtent);
-                trimmedArray.push(newPolygon);
-            }
+
+
         }
         return trimmedArray;
     }
@@ -423,10 +352,15 @@ export default class IsoVist3D extends IsoVist2D {
         var isFree = true;
         var poly = polyAngle.polygon;
         var angle = polyAngle.angle;
-        var extent = angle.getExtent();
+        var coords = angle.getCoordinates()[0];
         for (let angle2 of blockingPolyAngles) {
-            var extent2 = angle2.getExtent();
-            if (Intersection.rectangleContains(extent2,extent)) {
+            var coords2 = angle2.getCoordinates()[0];
+            var intersection = PolygonModule.intersection(coords, coords2);
+            if (intersection && intersection.length)
+                var contains = intersection[0].flat().sort().every(e => coords.flat().sort().includes(e));
+            else
+                contains = true;
+            if (contains) {
                 isFree = false;
             }
         }
@@ -523,25 +457,21 @@ export default class IsoVist3D extends IsoVist2D {
         var visibleSegments = [];
         var position = this.arc.center;
 
+
         //Computing blocking segments hidden by other segments
         blockingPolyAngles.sort(function(a,b) {
-            return that.polygonToMinDistance(a.polygon) - that.polygonToMinDistance(b.polygon);
+            return that.polygonToDistanceCentroid(a.polygon) - that.polygonToDistanceCentroid(b.polygon);
         });
         var visionField = [];
         for (let polyAngle of blockingPolyAngles) {
             let angleCurrent = polyAngle.angle;
-            let extentCurrent = angleCurrent.getExtent();
             let polyCurrent = polyAngle.polygon;
             let isPartial = false;
             let coordinates = this.translatePolygon(polyCurrent, this.arc.center);
             let partialParts = [];
             for (let angleVision of visionField) {
-                let extentVision = angleVision.getExtent();
-                let intersection = getIntersection(extentCurrent, extentVision);
-                let polyIntersection = this.polygonFromExtent(intersection);
-                if (angleCurrent.intersectsExtent(extentVision) &&
-                    angleVision.intersectsExtent(extentCurrent) &&
-                    getArea(intersection) > 0)  {
+                var intersection = PolygonModule.intersection(angleCurrent.getCoordinates()[0], angleVision.getCoordinates()[0]);
+                if (intersection[0] && intersection[0].length)  {
                     isPartial = true;
                     var polySubtract = this.polygonSubtractIntersection(angleCurrent, angleVision);
                     let objIntersectionToSpherical = {intersection: polySubtract, polygon: coordinates};
@@ -561,6 +491,30 @@ export default class IsoVist3D extends IsoVist2D {
         return visibleSegments;
     }
 
+
+    /**
+     * Compute the isovists for a set of polygons
+     * @param {Array<ol.geom.Polygon>} polygons
+     * @returns {Array<ol.geom.Polygon>} the visible polygons
+     */
+    polygonsToVisiblePolygons(polygons) {
+        var polyAngles = this.polygonsToAngle(polygons);
+
+        var blockingSegments = this.blockingSegments(polyAngles);
+        var freeSegments = this.freeSegments(blockingSegments, polyAngles);
+        var partiallyVisible = [];
+        var that = this;
+        while (freeSegments.length > 0) {
+            freeSegments.sort(function(a,b) {
+                return that.polygonToDistanceCentroid(a.polygon) - that.polygonToDistanceCentroid(b.polygon);
+            });
+            blockingSegments.push(freeSegments[0]);
+            freeSegments = this.freeSegments(blockingSegments, polyAngles);
+        }
+        var visibleSegments = this.visibleBlockingSegments(blockingSegments);
+        return visibleSegments;
+    }
+
     /**
      * Main function
      * @returns {Array.<ol.geom.Polygon>} isovist as the polygons from buildings visible from the point of view
@@ -571,61 +525,8 @@ export default class IsoVist3D extends IsoVist2D {
         var position = this.arc.center;
 
         var polygons = this.segmentsToPolygons(segments);
-        var polyAngles = this.polygonsToAngle(polygons);
-        var blockingSegments = this.blockingSegments(polyAngles);
-        //var trimmed = this.mergeOverlappingAngles(toMerge);
-        var freeSegments = this.freeSegments(blockingSegments, polyAngles);
-        var partiallyVisible = [];
-        var that = this;
-        while (freeSegments.length > 0) {
-            freeSegments.sort(function(a,b) {
-                return that.polygonToMinDistance(a.polygon) - that.polygonToMinDistance(b.polygon);
-            });
-            blockingSegments.push(freeSegments[0]);
-            freeSegments = this.freeSegments(blockingSegments, polyAngles);
-        }
-        var visibleSegments = this.visibleBlockingSegments(blockingSegments);
-
-        var onlyPoly = blockingSegments.map(elem => elem.polygon);
-        //onlyPoly = visibleSegments;
-        //var onlyPoly = trimmed;
-        //onlyPoly = blockingPoly.map(elem => elem.polygon);
-        //onlyPoly = polyAngles.map(elem => elem.angle);
-        console.log(onlyPoly.map(elem => elem.flatCoordinates));
-        return onlyPoly;
-
-
-        var position = this.arc.center;
-        var blockingSegments = this.blockingSegments(segments);
-
-        if (this.isDisplayPartial) {
-            var visibleBlockingSegments = this.visibleBlockingSegments(blockingSegments);
-            Array.prototype.push.apply(visibleSegments, visibleBlockingSegments);
-        }
-        var freeSegments = this.freeSegments(blockingSegments, segments);
-
-        var partiallyVisible = [];
-        while (freeSegments.length > 0) {
-            freeSegments.sort(function(a,b) {
-                return euclideanDistance(position, a[0].getClosestPoint(position)) - euclideanDistance(position, b[0].getClosestPoint(position));
-            });
-            blockingSegments.push(freeSegments[0][0]);
-            partiallyVisible.push(freeSegments[0][1]);
-            freeSegments = this.freeSegments(blockingSegments, segments);
-        }
-
-        if (this.isDisplayPartial) {
-            for (let segments of partiallyVisible) {
-                Array.prototype.push.apply(visibleSegments, segments);
-            }
-        } else {
-            Array.prototype.push.apply(visibleSegments, blockingSegments);
-        }
-        if (this.isDisplayPolygon) {
-            var polygon = this.visibilityPolygon(visibleSegments);
-
-            return polygon;
-        }
+        var visiblePolygons = this.polygonsToVisiblePolygons(polygons);
+        Array.prototype.push.apply(visibleSegments, visiblePolygons);
         return visibleSegments;
     }
 }

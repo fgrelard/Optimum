@@ -72,13 +72,19 @@ export function bboxArrayToObject(array, feature) {
  * @returns {Array} barycenter
  */
 export function centerOfMass(positions) {
-    var g = [0,0];
-    for (var p of positions) {
-        g[0] += p[0];
-        g[1] += p[1];
+    if (positions.length === 0) return [0,0];
+    var g = [];
+    for (let i = 0; i < positions[0].length; i++) {
+        g[i] = 0;
     }
-    g[0] /= positions.length;
-    g[1] /= positions.length;
+    for (let p of positions) {
+        for (let i = 0; i < p.length; i++) {
+            g[i] += p[i];
+        }
+    }
+    for (let i = 0; i < g.length; i++) {
+        g[i] /= positions.length;
+    }
     return g;
 }
 
