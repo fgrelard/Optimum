@@ -101,6 +101,8 @@ export default class IsoVist {
     segmentsFromPolygon(polygon, arc) {
         var segments = [];
         var polygonVertices = polygon.getCoordinates()[0];
+        if (polygonVertices.length === 1)
+            polygonVertices = polygonVertices[0];
         for (let i = 0; i < polygonVertices.length-1; i++) {
             var p1 = polygonVertices[i];
             var p2 = polygonVertices[i+1];
@@ -119,7 +121,7 @@ export default class IsoVist {
     isInFOV(building) {
         if (euclideanDistance(building.getFirstCoordinate(), this.arc.center) > 2 * this.arc.radius) return false;
         return (this.arc.geometry.intersectsExtent(building.getExtent()) &&
-                building.intersectsExtent(this.arc.geometry.getExtent()) && building.getType() === "Polygon");
+                building.intersectsExtent(this.arc.geometry.getExtent()) && (building.getType() === "Polygon" || building.getType() === "MultiPolygon"));
     }
 
     /**
@@ -473,7 +475,7 @@ export default class IsoVist {
      * @param {Array.<ol.geom.LineString>} blockingSegments
      * @returns {Array.<ol.geom.Polygon>} the isovist
      */
-    visibilityPolygon(blockingSegments) {
+    anglesToSegments(blockingSegments) {
         var polygon = [];
         var that = this;
         var anglesToSegments = [];
@@ -496,6 +498,20 @@ export default class IsoVist {
         }
         var trimmedBlockingAngles = this.mergeOverlappingAngles(blockingAngles);
         var freeVisionAngles = this.freeAngles(trimmedBlockingAngles);
+        return [anglesToSegments, freeVisionAngles];
+    }
+
+    /**
+     * Computes the isovist polygon from blocking segments
+     * @param {Array.<ol.geom.LineString>} blockingSegments
+     * @returns {Array.<ol.geom.Polygon>} the isovist
+     */
+    visibilityPolygon(blockingSegments) {
+        var polygon = [];
+        var that = this;
+        var array = this.anglesToSegments(blockingSegments);
+        var anglesToSegments = array[0];
+        var freeVisionAngles = array[1];
         for (let angle of freeVisionAngles) {
             if (angle.omega - angle.alpha < 0.5) continue;
             angle.computeGeometry();
@@ -534,6 +550,7 @@ export default class IsoVist {
     isovist() {
         var visibleSegments = [];
         var segments = this.segmentsIntersectingFOV();
+        console.log(segments);
         var position = this.arc.center;
         var blockingSegments = this.blockingSegments(segments);
 
@@ -562,7 +579,7 @@ export default class IsoVist {
         }
 
         if (this.isDisplayPolygon) {
-            var polygon = this.visibilityPolygon(visibleSegments);
+            var polygon = this.anglesToSegments(visibleSegments);
             return polygon;
         }
         return visibleSegments;

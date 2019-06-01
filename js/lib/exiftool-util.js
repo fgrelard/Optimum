@@ -9,7 +9,8 @@ import Arc from './arc';
  * @returns {number} decimal
  */
 export function lonLatToDecimal(deg, min, sec) {
-    return deg + min / 60 + sec / 3600;
+    var sign = deg < 0 ? -1 : 1;
+    return deg + min*sign / 60 + sec*sign / 3600;
 }
 
 
@@ -36,7 +37,7 @@ export function convertMetadataToJSON(metadata) {
  * @returns {Array<number>} coordinates
  */
 export function createPositionArray(positionString) {
-    var patt1 = /[0-9.]/g;
+    var patt1 = /[\+\-0-9.]/g;
     var patt2 = /[a-zA-Z]/g;
     var arrayPos = [];
     var numberString = "";
@@ -62,17 +63,23 @@ export function createPositionArray(positionString) {
 export function getPosition(mapMetadata) {
     if (mapMetadata.hasOwnProperty('GPSPosition')) {
         var positionString = mapMetadata.GPSPosition;
-        var positionSplit = positionString.split(",");
-        if (positionSplit.length >= 2) {
-            var firstPos = positionSplit[0];
-            var secondPos = positionSplit[1];
-            var fPosDMS = createPositionArray(firstPos);
-            var sPosDMS = createPositionArray(secondPos);
-            var fPosDec = lonLatToDecimal(fPosDMS[0], fPosDMS[1], fPosDMS[2]);
-            var sPosDec = lonLatToDecimal(sPosDMS[0], sPosDMS[1], sPosDMS[2]);
-            var lonLat = [sPosDec, fPosDec];
-            return lonLat;
-        }
+    }  else if (mapMetadata.hasOwnProperty('GPSLatitude') && mapMetadata.hasOwnProperty('GPSLongitude')) {
+        var latSign = mapMetadata.GPSLatitudeRef == "North" ? "+": "-";
+        var lonSign = mapMetadata.GPSLatitudeRef == "East" ? "+": "-";
+        var positionString = latSign+ mapMetadata.GPSLatitude + "," + lonSign + mapMetadata.GPSLongitude;
+    } else {
+        return null;
+    }
+    var positionSplit = positionString.split(",");
+    if (positionSplit.length >= 2) {
+        var firstPos = positionSplit[0];
+        var secondPos = positionSplit[1];
+        var fPosDMS = createPositionArray(firstPos);
+        var sPosDMS = createPositionArray(secondPos);
+        var fPosDec = lonLatToDecimal(fPosDMS[0], fPosDMS[1], fPosDMS[2]);
+        var sPosDec = lonLatToDecimal(sPosDMS[0], sPosDMS[1], sPosDMS[2]);
+        var lonLat = [sPosDec, fPosDec];
+        return lonLat;
     }
     return null;
 }
@@ -100,12 +107,14 @@ export function computeAlphaOmegaFromDir(direction, fov) {
  * @returns {Arc} angular sector corresponding to the visibility cone
  */
 export function getOrientation(mapMetadata, position) {
-    if (mapMetadata.hasOwnProperty('GPSImgDirection') &&
-        mapMetadata.hasOwnProperty('Orientation') &&
-        mapMetadata.hasOwnProperty('FOV')) {
+    if (mapMetadata.hasOwnProperty('GPSImgDirection')) {
         var dir = mapMetadata.GPSImgDirection;
-        var orientation = mapMetadata.Orientation;
-        var fov = Number(mapMetadata.FOV.match(/[0-9.]+/g));
+        if (mapMetadata.hasOwnProperty('Orientation'))
+            var orientation = mapMetadata.Orientation;
+        if (mapMetadata.hasOwnProperty('FOV'))
+            var fov = Number(mapMetadata.FOV.match(/[0-9.]+/g));
+        else
+            fov = 60;
         var angles = computeAlphaOmegaFromDir(dir, fov);
         var radius = 300;
         var arc = new Arc([position[0], position[1]], radius, angles[0], angles[1]);

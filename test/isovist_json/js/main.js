@@ -2,9 +2,10 @@ import Map from 'ol/Map';
 import View from 'ol/View';
 import XYZ from 'ol/source/XYZ';
 import OSM from 'ol/source/OSM';
-import {transformExtent} from 'ol/proj';
+import {transformExtent, fromLonLat} from 'ol/proj';
 import Vector from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
+import TileLayer from 'ol/layer/Tile';
 import Point from 'ol/geom/Point';
 import Cluster from 'ol/source/Cluster';
 import Feature from 'ol/Feature';
@@ -20,7 +21,7 @@ import $ from 'jquery';
 import {defaults} from 'ol/control';
 import Select from 'ol/interaction/Select';
 import {bbox} from 'ol/loadingstrategy';
-
+import * as ExifToolUtil from '../../../js/lib/exiftool-util.js';
 import Arc from '../../../js/lib/arc';
 import IsoVist from '../../../js/lib/isovistsectors2d';
 import {segmentIntersection} from '../../../js/lib/lineintersection';
@@ -35,18 +36,65 @@ var radius = 300;
 var position = [739885.8194006054, 5905880.253554305 ];
 position = [739800.8194006054, 5906000.253554305];
 position = [ 489298.32814487105, 5688013.78184738 ];
+var lonlat = [-87.65005, 41.854];
+position = fromLonLat(lonlat);
 var arc = new Arc(position, radius, alpha, omega);
 arc.computeGeometry();
 
 var geoFormat = new GeoJSON();
 var buildingSegments = [];
-$.getJSON("data/stetienne.geojson", function(json) {
+
+$.getJSON("data/chicago_small.geojson", function(json) {
     buildingSegments = geoFormat.readFeatures(json, {
         featureProjection : map.getView().getProjection()
     });
-    vectorSource.clear();
-    vectorSource.addFeatures(buildingSegments);
+    vector.getSource().clear();
+    vector.getSource().addFeatures(buildingSegments);
+    // var arc = new Arc(position, 1000, 90,180);
+    // arc.computeGeometry();
+    // var isovistComputer = new IsoVist(arc, buildingSegments);
+
+    // var isovist = isovistComputer.isovist();
+    // if (isovist.length) {
+    //     var freeVisionAngles = isovist[1].slice();
+    //     for (let freeArc of freeVisionAngles) {
+    //         console.log("new Arc(["+ freeArc.center + "]," + 100 + ", " + freeArc.alpha + ", " + freeArc.omega + "),\n");
+    //     }
+    // }
+    $.getJSON("data/chicago_flickr.geojson", function(json) {
+        clusterSource.getSource().clear();
+        var i = 0;
+        for (var myDoc of json.features) {
+            i++;
+            if (i > 400)
+                break;
+
+            var pos = ExifToolUtil.getPosition(myDoc);
+            if (pos) {
+
+                var positionProj = fromLonLat(pos);
+                clusterSource.getSource().addFeature(new Feature(new Point(positionProj)));
+
+                var dir = ExifToolUtil.getOrientation(myDoc, positionProj);
+                var arc = new Arc(dir.center, 400, dir.alpha,
+                                  dir.omega);
+                arc.computeGeometry();
+                var isovistComputer = new IsoVist(arc, buildingSegments);
+
+                var isovist = isovistComputer.isovist();
+                if (isovist.length) {
+                    var freeVisionAngles = isovist[1].slice();
+                    for (let freeArc of freeVisionAngles) {
+                        console.log("new Arc(["+ freeArc.center + "]," + 100 + ", " + freeArc.alpha + ", " + freeArc.omega + "),\n");
+                    }
+                }
+            }
+        }
+    });
 });
+
+
+
 
 var vectorSource = new Vector();
 
@@ -178,24 +226,30 @@ function getStyleVisible() {
 var vector = new VectorLayer({
     source: vectorSource,
     style: function(feature) {
-        for (var key in styles) {
-            var value = feature.get(key);
-            if (value !== undefined) {
-                for (var regexp in styles[key]) {
-                    if (new RegExp(regexp).test(value)) {
-                        return styles[key][regexp];
-                    }
-                }
-            }
-        }
-        return null;
+        return styles['building']['.*'];
+        // for (var key in styles) {
+        //     var value = feature.get(key);
+        //     console.log(feature);
+        //     if (value !== undefined) {
+        //         for (var regexp in styles[key]) {
+        //             if (new RegExp(regexp).test(value)) {
+        //                 return styles[key][regexp];
+        //             }
+        //         }
+        //     }
+        // }
+        // return null;
     }
 });
 
 
 
 map = new Map({
-    layers: [vector],
+    layers: [
+        new TileLayer({
+        source: new OSM()
+    }),
+             vector],
     target: document.getElementById('map'),
     // controls: defaults({
     //     attributionOptions: {
