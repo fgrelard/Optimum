@@ -119,6 +119,8 @@ export default class IsoVist {
      * @returns {boolean} whether it is in the FOV
      */
     isInFOV(building) {
+        if (!building) return false;
+        if (!building.hasOwnProperty('flatCoordinates') || !building.flatCoordinates.length) return false;
         if (euclideanDistance(building.getFirstCoordinate(), this.arc.center) > 2 * this.arc.radius) return false;
         return (this.arc.geometry.intersectsExtent(building.getExtent()) &&
                 building.intersectsExtent(this.arc.geometry.getExtent()) && (building.getType() === "Polygon" || building.getType() === "MultiPolygon"));
