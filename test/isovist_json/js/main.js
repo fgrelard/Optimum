@@ -60,8 +60,8 @@ $.getJSON("data/chicago.geojson", function(json) {
     buildingSegments = geoFormat.readFeatures(json, {
         featureProjection : map.getView().getProjection()
     });
-    vector.getSource().clear();
-    vector.getSource().addFeatures(buildingSegments);
+//    vector.getSource().clear();
+//    vector.getSource().addFeatures(buildingSegments);
     $.getJSON("data/chicago_flickr.geojson", function(json) {
         clusterSource.getSource().clear();
         var content = '';
