@@ -56,7 +56,7 @@ function download(content, fileName, contentType) {
 }
 
 
-$.getJSON("data/chicago_small.geojson", function(json) {
+$.getJSON("data/chicago.geojson", function(json) {
     buildingSegments = geoFormat.readFeatures(json, {
         featureProjection : map.getView().getProjection()
     });
@@ -66,7 +66,7 @@ $.getJSON("data/chicago_small.geojson", function(json) {
         clusterSource.getSource().clear();
         var content = '';
         for (var myDoc of json.features) {
-            if (i===0) content = '{"arcs":[';
+            content = '{"arcs":[';
             var pos = ExifToolUtil.getPosition(myDoc);
             if (pos) {
 
