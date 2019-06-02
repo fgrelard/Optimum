@@ -44,31 +44,29 @@ arc.computeGeometry();
 var geoFormat = new GeoJSON();
 var buildingSegments = [];
 
+function download(content, fileName, contentType) {
+    var a = document.createElement("a");
+    var file = new Blob([content], {type: contentType});
+    console.log(content);
+    a.href = window.URL.createObjectURL(file);
+    a.setAttribute('download', fileName);
+    document.body.appendChild(a);
+    console.log(a);
+    a.click();
+}
+
+
 $.getJSON("data/chicago_small.geojson", function(json) {
     buildingSegments = geoFormat.readFeatures(json, {
         featureProjection : map.getView().getProjection()
     });
     vector.getSource().clear();
     vector.getSource().addFeatures(buildingSegments);
-    // var arc = new Arc(position, 1000, 90,180);
-    // arc.computeGeometry();
-    // var isovistComputer = new IsoVist(arc, buildingSegments);
-
-    // var isovist = isovistComputer.isovist();
-    // if (isovist.length) {
-    //     var freeVisionAngles = isovist[1].slice();
-    //     for (let freeArc of freeVisionAngles) {
-    //         console.log("new Arc(["+ freeArc.center + "]," + 100 + ", " + freeArc.alpha + ", " + freeArc.omega + "),\n");
-    //     }
-    // }
     $.getJSON("data/chicago_flickr.geojson", function(json) {
         clusterSource.getSource().clear();
-        var i = 0;
+        var content = '';
         for (var myDoc of json.features) {
-            i++;
-            if (i > 400)
-                break;
-
+            if (i===0) content = '{"arcs":[';
             var pos = ExifToolUtil.getPosition(myDoc);
             if (pos) {
 
@@ -82,14 +80,16 @@ $.getJSON("data/chicago_small.geojson", function(json) {
                 var isovistComputer = new IsoVist(arc, buildingSegments);
 
                 var isovist = isovistComputer.isovist();
-                if (isovist.length) {
+                if (isovist.length && isovist[0].length && isovist[1].length) {
                     var freeVisionAngles = isovist[1].slice();
                     for (let freeArc of freeVisionAngles) {
-                        console.log("new Arc(["+ freeArc.center + "]," + 100 + ", " + freeArc.alpha + ", " + freeArc.omega + "),\n");
+                        content += "new Arc(["+ freeArc.center + "]," + 100 + ", " + freeArc.alpha + ", " + freeArc.omega + "),";
                     }
                 }
             }
         }
+        content += ']}';
+        download(content, "freeAngles.json", "text/plain");
     });
 });
 

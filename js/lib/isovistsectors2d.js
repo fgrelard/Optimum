@@ -550,7 +550,6 @@ export default class IsoVist {
     isovist() {
         var visibleSegments = [];
         var segments = this.segmentsIntersectingFOV();
-        console.log(segments);
         var position = this.arc.center;
         var blockingSegments = this.blockingSegments(segments);
 
