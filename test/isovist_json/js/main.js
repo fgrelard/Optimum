@@ -64,9 +64,11 @@ $.getJSON("data/chicago.geojson", function(json) {
 //    vector.getSource().addFeatures(buildingSegments);
     $.getJSON("data/chicago_flickr.geojson", function(json) {
         clusterSource.getSource().clear();
-        var content = '';
+        var content = '{"arcs":[';
+        var i = 0;
         for (var myDoc of json.features) {
-            content = '{"arcs":[';
+            i++;
+            console.log(i);
             var pos = ExifToolUtil.getPosition(myDoc);
             if (pos) {
 
