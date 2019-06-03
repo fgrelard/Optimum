@@ -30,7 +30,7 @@ function contains(a, b) {
 rbush.prototype.searchCpt = function(bbox) {
 
     var node = this.data,
-        result = [],
+        result = [{hits:[], number:0}],
         toBBox = this.toBBox;
 
     if (!intersects(bbox, node)) return result;
@@ -582,7 +582,7 @@ function compareSearchTime(arcs, b, nbPoints, radius) {
     t1 = performance.now();
     var timeRtree = t1 - t0;
     console.log(resultRtree);
-    var hitsR = resultRtree.map((res) => res.length);
+    var hitsR = resultRtree.map((res) => res.hits.length);
     var accessR = resultRtree.map((res) => res.number);
     var dataR = firstCols + timeInitRtree + "\t" + timeRtree + "\t" + mean(hitsR) + "\t" + standardDeviation(hitsR) + "\t" + mean(accessR) + "\t" +standardDeviation(accessR)+"\tR-tree\n" ;
 
