@@ -581,8 +581,8 @@ function compareSearchTime(arcs, b, nbPoints, radius) {
     var resultRtree = searchRtree(rtree, locations);
     t1 = performance.now();
     var timeRtree = t1 - t0;
-
-    var hitsR = resultRtree.map((res) => res.hits.length);
+    console.log(resultRtree);
+    var hitsR = resultRtree.map((res) => res.length);
     var accessR = resultRtree.map((res) => res.number);
     var dataR = firstCols + timeInitRtree + "\t" + timeRtree + "\t" + mean(hitsR) + "\t" + standardDeviation(hitsR) + "\t" + mean(accessR) + "\t" +standardDeviation(accessR)+"\tR-tree\n" ;
 
@@ -599,35 +599,49 @@ function compareSearchTime(arcs, b, nbPoints, radius) {
 
 }
 
-console.log("Start");
-/* Real data */
-var arcs = sectorsStEtienne2345_r1500();
-// var g = centerOfMass(arcs.map((arc) => arc.center));
-var histo = histogramAngles(arcs);
-var cumulHisto = cumulativeHisto(histo);
-// var encodedUri = writeCsv(cumulHisto);
-
-/* Compare characteristics */
-var cpt = 0;
-let csvContent = "data:text/csv;charset=utf-8,";
-for (var i = 1000000; i <= 1000000; i=i*((cpt % 2 === 0) ? 5 : 2)) {
-    console.log("number of sectors " + i);
-    var ar = generateRandomSectors(i, 10000000, cumulHisto);
-    //var res = compareDualities(ar, 7, 5000, 5000);
-    //var res = compareSearchTime(ar, 7, 5000, 5000);
-    for (var b = 50; b <= 5000; b+=50) {
-        var res = compareSearchTime(ar, b, 500, 5000);
-        csvContent += res;
+$.getJSON('data/freeAngles2.json', function(json) {
+    /* Real data */
+    var arcString = json.arcs;
+    console.log(arcString);
+    var arcs = [];
+    for (var arcS of arcString) {
+        var posArray = arcS.position[0].split(",");
+        var arc = new Arc([Number.parseFloat(posArray[0]), Number.parseFloat(posArray[1])], Number.parseInt(arcS.radius), Number.parseFloat(arcS.alpha), Number.parseFloat(arcS.omega));
+        arc.computeGeometry();
+        arcs.push(arc);
     }
-    cpt++;
-}
-console.log("done");
-var encodedUri = encodeURI(csvContent);
-var link = document.createElement("a");
-link.setAttribute("href", encodedUri);
-link.setAttribute("download", "my_data.csv");
-document.body.appendChild(link);
-link.click(); // This will download the data file named "my_data.csv".
+    console.log(arcs);
+    // var g = centerOfMass(arcs.map((arc) => arc.center));
+    var histo = histogramAngles(arcs);
+    var cumulHisto = cumulativeHisto(histo);
+    var encodedUri = writeCsv(cumulHisto);
+
+    /* Compare characteristics */
+    var cpt = 0;
+    let csvContent = "data:text/csv;charset=utf-8,";
+    var res = compareSearchTime(arcs, 7, 500, 5000);
+    csvContent += res;
+    // for (var i = 1000000; i <= 1000000; i=i*((cpt % 2 === 0) ? 5 : 2)) {
+    //     console.log("number of sectors " + i);
+    //     var ar = generateRandomSectors(i, 10000000, cumulHisto);
+    //     //var res = compareDualities(ar, 7, 5000, 5000);
+    //     //var res = compareSearchTime(ar, 7, 5000, 5000);
+    //     for (var b = 50; b <= 5000; b+=50) {
+    //         var res = compareSearchTime(ar, b, 500, 5000);
+    //         csvContent += res;
+    //     }
+    //     cpt++;
+    // }
+    console.log("done");
+    var encodedUri = encodeURI(csvContent);
+    var link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "my_data.csv");
+    document.body.appendChild(link);
+    link.click(); // This will download the data file named "my_data.csv".
+
+});
+
 
 
 
