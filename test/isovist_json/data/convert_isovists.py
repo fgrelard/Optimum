@@ -24,7 +24,7 @@ with open(inputname) as f:
         elem = re.sub("[ a-zA-Z\(\[\]\)]", "", arc)
         elem = elem.split(",")
 
-        newcontent = {"position":[elem[0] + "," + elem[1]], "radius":elem[2],"alpha":elem[3],"omega":elem[4]}
+        newcontent = {"position":[elem[0] + "," + elem[1]], "radius":10000000,"alpha":elem[3],"omega":elem[4]}
         newfeatures.append(newcontent)
     data['arcs'] = newfeatures
     with open(outputname, 'w') as outfile:

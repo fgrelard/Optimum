@@ -36,17 +36,18 @@ var textFile = null,
 
 function flickRecursive(i) {
     console.log(i);
-    if (i > 1000) {
+    if (i > 1500) {
         console.log(allPhotos);
         download(allPhotos, 'json.txt', 'text/plain');
         return;
     }
     flickr.photos.search({
-        lat: '48.8534',
-        lon: '2.3488' ,
+        lat: '41.881832',
+        lon: '-87.623177' ,
         // radius: 5,
         page: i
     }).then(function(response) {
+        console.log(response.body.photos);
         var length = response.body.photos.photo.length;
         var array = [];
         var ind = 0;
@@ -73,7 +74,7 @@ function flickRecursive(i) {
         }).catch(reason => { flickRecursive(i+1); });
     }).catch(function(err)  {
         setTimeout(function(after) {
-            flickRecursive(i);
+            flickRecursive(i+1);
         }, 600000);
     });
 }

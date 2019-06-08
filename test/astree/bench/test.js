@@ -311,8 +311,8 @@ function intersectionDistance(arcs, g, dmin, dmax, step) {
 }
 
 function area(rectangle) {
-    var w = rectangle.maxX - rectangle.minX;
-    var h = rectangle.maxY - rectangle.minY;
+    var w = Math.abs(rectangle.maxX - rectangle.minX);
+    var h = Math.abs(rectangle.maxY - rectangle.minY);
     return w*h;
 }
 
@@ -370,13 +370,14 @@ function characteristicsTree(tree, firstCols) {
         var h = data.height;
         hist[h]++;
         var c = coverage(data, data.children);
+        var o = overlapLiterature(data, data.children);
         if (h === 1) {
             console.log("node");
             console.log(data);
             console.log(data.children);
-            console.log(c);
+            console.log(o);
+
         }
-        var o = overlapLiterature(data, data.children);
         str += firstCols +  h + "\t" + c + "\t" + o + "\n";
         if (!data.leaf) {
             for (var child of data.children) {
@@ -599,28 +600,51 @@ function compareSearchTime(arcs, b, nbPoints, radius) {
 
 }
 
-$.getJSON('data/freeAngles2.json', function(json) {
+
+function removeDuplicates(myArr) {
+    var newArcs = [];
+    for (var i = 0; i < myArr.length; i++) {
+        var arcI = myArr[i];
+        for (var j = i+1; j <myArr.length; j++) {
+            var arcJ = myArr[j];
+            if (arcI.equals(arcJ)) {
+                newArcs.push(j);
+            }
+        }
+    }
+    return newArcs;
+}
+
+
+
+$.getJSON('data/freeAnglesChicago_converted.json', function(json) {
     /* Real data */
     var arcString = json.arcs;
     console.log(arcString);
     var arcs = [];
     for (var arcS of arcString) {
         var posArray = arcS.position[0].split(",");
-        var arc = new Arc([Number.parseFloat(posArray[0]), Number.parseFloat(posArray[1])], Number.parseInt(arcS.radius), Number.parseFloat(arcS.alpha), Number.parseFloat(arcS.omega));
-        arc.computeGeometry();
-        arcs.push(arc);
+        var alpha = Number.parseFloat(arcS.alpha);
+        var omega = Number.parseFloat(arcS.omega);
+        var arc = new Arc([Number.parseFloat(posArray[0]), Number.parseFloat(posArray[1])], Number.parseInt(arcS.radius), alpha, omega);
+        if (Math.abs(omega - alpha) <= 11) {
+            arc.computeGeometry();
+            arcs.push(arc);
+        }
     }
     console.log(arcs);
     // var g = centerOfMass(arcs.map((arc) => arc.center));
     var histo = histogramAngles(arcs);
     var cumulHisto = cumulativeHisto(histo);
-    var encodedUri = writeCsv(cumulHisto);
+    var encodedUri = writeCsv(histo);
 
     /* Compare characteristics */
     var cpt = 0;
     let csvContent = "data:text/csv;charset=utf-8,";
-    var res = compareSearchTime(arcs, 7, 500, 5000);
+    var res = compareCharacteristics(arcs, 7// , 5000, 5000
+                                             );
     csvContent += res;
+
     // for (var i = 1000000; i <= 1000000; i=i*((cpt % 2 === 0) ? 5 : 2)) {
     //     console.log("number of sectors " + i);
     //     var ar = generateRandomSectors(i, 10000000, cumulHisto);

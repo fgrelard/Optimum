@@ -102,7 +102,6 @@ export default class PolarDual extends Dual {
 
             var bboxCoordinates1 = bboxArrayToObject(bbox1, arc);
             var bboxCoordinates2 = bboxArrayToObject(bbox2, arc);
-            console.log(arc.omega + " " + arc.alpha);
             return [bboxCoordinates1, bboxCoordinates2];
 
         }
