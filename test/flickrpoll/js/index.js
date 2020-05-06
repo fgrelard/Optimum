@@ -1,5 +1,8 @@
 var apiKey = '5d366d4aff4b6e9b8927d21156a83a31';
-var flickr = new Flickr(apiKey);
+
+var flickr = Flickr.tokenOnly({
+  api_key: apiKey
+});
 var cpt = 0;
 
 function download(content, fileName, contentType) {
@@ -71,7 +74,7 @@ function flickRecursive(i) {
         }
         Promise.all(array).then(function(values) {
             flickRecursive(i+1);
-        }).catch(reason => { flickRecursive(i+1); });
+        }).catch(reason => { console.log(reason); flickRecursive(i+1); });
     }).catch(function(err)  {
         setTimeout(function(after) {
             flickRecursive(i+1);

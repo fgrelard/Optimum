@@ -15,7 +15,6 @@ import Fill  from 'ol/style/Fill';
 import Text  from 'ol/style/Text';
 import LineString from 'ol/geom/LineString';
 import Polygon from 'ol/geom/Polygon';
-import CSV from 'papaparse';
 import transpose from 'transpose';
 
 import {defaults} from 'ol/control';
@@ -40,6 +39,7 @@ position = [739800.8194006054, 5906000.253554305];
 position = [ 489298.32814487105, 5688013.78184738 ];
 var arc = new Arc(position, radius, alpha, omega);
 arc.computeGeometry();
+
 
 // console.log(segmentIntersection(739885.8194006054, 5905880.253554305, 739885.8194006054, 5905730.253554305 , 739869.5666760689, 5905838.1341363415, 739897.5412641052, 5905829.974136281));
 
@@ -121,6 +121,45 @@ function getStyleVisible() {
     return style;
 }
 
+function visibilityPolygon(data, center, radius) {
+    var polygon = [];
+    var anglesToSegments = data[0].slice();
+    var freeVisionAngles = data[1].slice();
+    $.each(freeVisionAngles, function(i, arc) {
+//        console.log("new Arc(["+ arc.center + "]," + 100 + ", " + arc.alpha + ", " + arc.omega + "),\n");
+        var angle = new Arc(arc.center, radius || arc.radius, arc.alpha, arc.omega);
+        if (angle.omega - angle.alpha < 0.5) return;
+        angle.computeGeometry();
+        var freeSegment = new LineString([angle.fullGeometry[1].getFlatCoordinates(),
+                                          angle.fullGeometry[2].getFlatCoordinates()]);
+        var angleToSegment = {angle: angle, segment: freeSegment};
+        anglesToSegments.push(angleToSegment);
+    });
+
+    anglesToSegments.sort(function(a,b) {
+        if (a.angle.alpha === b.angle.alpha)
+            return a.angle.omega - b.angle.omega;
+        return a.angle.alpha - b.angle.alpha;
+    });
+    if (anglesToSegments.length > 0) {
+        polygon.push(center);
+        var firstCoords = anglesToSegments[0].segment.flatCoordinates;
+        polygon.push([firstCoords[0], firstCoords[1]]);
+        for (var i = 0; i < anglesToSegments.length; i++) {
+            var coords = anglesToSegments[i].segment.flatCoordinates;
+            var fc = [coords[0], coords[1]];
+            var lc = [coords[2], coords[3]];
+            polygon.push(fc);
+            polygon.push(lc);
+        }
+        polygon.push(center);
+    }
+    return new Polygon([polygon]);
+
+}
+
+
+
 
 var vectorSource = new Vector({
     format: new OSMXML(),
@@ -148,8 +187,8 @@ var vectorSource = new Vector({
 
             var isovist = new IsoVist(arc, vectorSource.getFeatures(), true);
             var visibleSegments = isovist.isovist();
-
-            featuresLine.push(new Feature({geometry : visibleSegments}));
+            var segs = visibilityPolygon(visibleSegments, arc.center, arc.radius);
+            featuresLine.push(new Feature({geometry : segs}));
             // console.log(visibleSegments);
             // $.each(visibleSegments, function(i, segment) {
             //     featuresLine.push(new Feature(new LineString([segment.getFirstCoordinate(), segment.getLastCoordinate()])));
@@ -286,13 +325,12 @@ var lines = new VectorLayer({
 map.addLayer(clusters);
 //map.addLayer(arcs);
 map.addLayer(lines);
-
 var select = new Select();
 map.addInteraction(select);
 select.on('select', function(e) {
     var selectedFeatures = select.getFeatures();
     e.selected.filter(function(feature) {
-        console.log(feature);
+          console.log(feature);
     });
 
 
